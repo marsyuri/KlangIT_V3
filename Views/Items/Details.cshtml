@@ -1,0 +1,147 @@
+﻿@model KlangIT_V3.Models.Item
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Item</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.AssetId)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.AssetId)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.SerialNo)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.SerialNo)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ItemType)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.ItemType.Name)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ItemBrand)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.ItemBrand.Name)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ItemModel)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.ItemModel.Name)</dd>
+
+        @* <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ItemStatus)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.ItemStatus.Name)</dd> *@
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ItemDescription)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.ItemDescription)</dd>
+
+        <dt class="col-sm-2">รูปภาพ</dt>
+        <dd class="col-sm-10">
+            @if (!string.IsNullOrEmpty(Model.ItemImageUrl))
+            {
+                <!-- Thumbnail — คลิกเพื่อขยาย -->
+                <img src="@Model.ItemImageUrl"
+                     alt="รูปอุปกรณ์"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imgModal"
+                     style="max-width:200px; max-height:200px; object-fit:contain;
+                cursor:zoom-in;" />
+            }
+            else
+            {
+                <span class="text-muted">ไม่มีรูปภาพ</span>
+            }
+        </dd>
+
+        <!-- Modal -->
+        <div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-transparent border-0">
+                    <div class="modal-body text-center p-0">
+                        <img id="imgModalPicture"
+                             src="@Model.ItemImageUrl"
+                             alt="รูปอุปกรณ์"
+                             style="max-width:100%; max-height:80vh;
+                        object-fit:contain; cursor:zoom-out;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+                    // คลิกรูปใน modal → ปิด modal กลับมารูปเล็ก
+                    document.getElementById('imgModalPicture').addEventListener('click', function () {
+                        bootstrap.Modal.getInstance(document.getElementById('imgModal')).hide();
+                    });
+        </script>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.TotalQuantity)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.TotalQuantity)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.StockBalance)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.StockBalance)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.StockUsed)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.StockUsed)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.MinimumQuantity)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.MinimumQuantity)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Remarks)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Remarks)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.CreatedDate)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ModifiedDate)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.ModifiedDate)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.CreatedBy)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.CreatedBy)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ModifiedBy)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.ModifiedBy)</dd>
+    </dl>
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
+
+<div class="mt-3">
+    <a asp-controller="BorrowHistories"
+       asp-action="Create"
+       asp-route-itemId="@Model.Id"
+       class="btn btn-primary">
+        ทำการยืม
+    </a>
+</div>
+
+@if (Model.BorrowHistories != null && Model.BorrowHistories.Any())
+{
+    <h2 class="mt-4">ประวัติการยืม</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ลำดับ</th>
+                <th>ชื่อผู้ยืม</th>
+                <th>ฝ่าย/กลุ่มงาน</th>
+                <th>หน่วยงาน</th>
+                <th>วันที่ยืม</th>
+                <th>ผู้ดำเนินการให้ยืม</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ int count = 0; }
+            @foreach (var borrowItem in Model.BorrowHistories)
+            {
+                count++;
+                <tr>
+                    <td>@count</td>
+                    <td>@Html.DisplayFor(_ => borrowItem.RequestUser)</td>
+                    <td>@Html.DisplayFor(_ => borrowItem.RequestDepartment.Name)</td>
+                    <td>@Html.DisplayFor(_ => borrowItem.RequestSection.Name)</td>
+                    <td>@Html.DisplayFor(_ => borrowItem.BorrowDate)</td>
+                    <td>@Html.DisplayFor(_ => borrowItem.Itstaff)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

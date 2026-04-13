@@ -1,0 +1,67 @@
+﻿@model IEnumerable<KlangIT_V3.Models.Item>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.AssetId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SerialNo)
+            </th>
+            <th>ประเภทอุปกรณ์</th>
+            <th>ยี่ห้อ</th>
+            <th>รุ่น</th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockBalance)
+            </th>
+            <th>
+                เวลาแก้ไขล่าสุด
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AssetId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SerialNo)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ItemType.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ItemBrand.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ItemModel.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StockBalance)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ModifiedDate)
+                </td>
+                
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

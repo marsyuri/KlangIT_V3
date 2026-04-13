@@ -1,0 +1,98 @@
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* Nav links */
+.nav-link {
+    position: relative;
+    padding: 8px 18px;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: color 0.25s ease, background 0.25s ease;
+}
+
+    /* Slide-in background fill */
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(123, 140, 255, 0.12);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+        border-radius: 8px;
+    }
+
+    /* Underline slide-in */
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        left: 10%;
+        bottom: 5px;
+        width: 80%;
+        height: 2px;
+        background: #7b8cff;
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .nav-link:hover {
+        color: #c8d0ff;
+    }
+
+        .nav-link:hover::before {
+            transform: scaleX(1);
+        }
+
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+
+/* Brand underline sweep */
+.navbar-brand {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+    .navbar-brand::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 0;
+        height: 2px;
+        background: #7b8cff;
+        transition: width 0.35s ease;
+    }
+
+    .navbar-brand:hover::after {
+        width: 100%;
+    }

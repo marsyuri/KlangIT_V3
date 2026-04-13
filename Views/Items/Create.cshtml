@@ -1,0 +1,325 @@
+﻿@model KlangIT_V3.ViewModels.ItemCreateViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+@* ── Serialize lookup data for JS cascading ── *@
+<script>
+    const typeToBrandsMap = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.TypeToBrandsMap));
+    const brandToTypesMap = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.BrandToTypesMap));
+    const brandToModelsMap = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.BrandToModelsMap));
+                                                                
+</script>
+
+<h1>Create</h1>
+
+<h4>Item</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+
+            <div class="form-group">
+                เลขครุภัณฑ์
+                <div class="d-flex align-items-flex-start gap-2">
+
+                    <div class="d-flex flex-column">
+                        <input asp-for="AssetId1" class="form-control" style="width: 120px;" />
+                        <span asp-validation-for="AssetId1" class="text-danger small"></span>
+                    </div>
+
+                    <div class="pt-2">-</div>
+
+                    <div class="d-flex flex-column">
+                        <input asp-for="AssetId2" class="form-control" style="width: 180px;" />
+                        <span asp-validation-for="AssetId2" class="text-danger small"></span>
+                    </div>
+
+                    <div class="pt-2">-</div>
+
+                    <div class="d-flex flex-column">
+                        <input asp-for="AssetId3" class="form-control" style="width: 180px;" />
+                        <span asp-validation-for="AssetId3" class="text-danger small"></span>
+                    </div>
+
+                    <div class="pt-2">-</div>
+
+                    <div class="d-flex flex-column">
+                        <input asp-for="AssetId4" class="form-control" style="width: 120px;" />
+                        <span asp-validation-for="AssetId4" class="text-danger small"></span>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="form-group">
+                เลขทะเบียนทรัพย์สินแบบอื่น
+                <input asp-for="OtherAssetId" class="form-control" />
+                <span asp-validation-for="OtherAssetId" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-group">
+                Serial Number
+                <input asp-for="SerialNo" class="form-control" />
+                <span asp-validation-for="SerialNo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SelectedItemTypeId" class="control-label">ประเภทอุปกรณ์</label>
+                <select asp-for="SelectedItemTypeId" id="ddlItemType" class="form-control" asp-items="Model.ItemTypes"></select>
+                <span asp-validation-for="SelectedItemTypeId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SelectedItemBrandId" class="control-label">ยี่ห้อ</label>
+                <select asp-for="SelectedItemBrandId" id="ddlItemBrand" class="form-control" asp-items="Model.ItemBrands"></select>
+                <span asp-validation-for="SelectedItemBrandId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SelectedItemModelId" class="control-label">รุ่น</label>
+                <select asp-for="SelectedItemModelId" id="ddlItemModel" class="form-control" asp-items="Model.ItemModels"></select>
+                <span asp-validation-for="SelectedItemModelId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ItemDescription" class="control-label"></label>
+                <input asp-for="ItemDescription" class="form-control" />
+                <span asp-validation-for="ItemDescription" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ItemImageFile" class="control-label">รูปภาพอุปกรณ์</label>
+    
+                <div class="mb-2">
+                    <img id="imgPreview" src="#" alt="preview"
+                         style="display:none; max-width:200px; max-height:200px; object-fit:contain;" />
+                </div>
+
+                <input asp-for="ItemImageFile"
+                       type="file"
+                       class="form-control"
+                       accept="image/*"
+                       id="inputImageFile" />
+                <span asp-validation-for="ItemImageFile" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="TotalQuantity" class="control-label"></label>
+                <input asp-for="TotalQuantity" id="totalQty" class="form-control" />
+                <span asp-validation-for="TotalQuantity" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MinimumQuantity" class="control-label"></label>
+                <input asp-for="MinimumQuantity" class="form-control" />
+                <span asp-validation-for="MinimumQuantity" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SelectedItemStatusId" class="control-label">สถานะของวัสดุ/ครุภัณฑ์</label>
+                <select asp-for="SelectedItemStatusId" class="form-control" asp-items="Model.ItemStatuses"></select>
+                <span asp-validation-for="SelectedItemStatusId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Remarks" class="control-label"></label>
+                <input asp-for="Remarks" class="form-control" />
+                <span asp-validation-for="Remarks" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // ── Step 3a: register validation method ──
+                $.validator.addMethod('numericfixedlength', function (value, element, params) {
+                    // empty = ผ่าน
+                    if (!value || value.trim() === '') return true;
+
+                    const length = parseInt(params.length);
+
+                    // เช็คตัวเลข
+                    if (!/^\d+$/.test(value)) return false;
+
+                    // เช็คความยาว (ถ้า length > 0)
+                    if (length > 0 && value.length !== length) return false;
+
+                    return true;
+                });
+
+                // ── Step 3b: map data-val-* attributes → validator params ──
+                $.validator.unobtrusive.adapters.add(
+                    'numericfixedlength',
+                    ['length'],
+                    function (options) {
+                        options.rules['numericfixedlength'] = { length: options.params['length'] };
+                        options.messages['numericfixedlength'] = options.message;
+                    }
+                );
+
+        // ── Register custom adapter สำหรับ fixedlength ──
+        $.validator.addMethod('fixedlength', function (value, element, length) {
+            if (!value || value.trim() === '') return true; // empty = OK
+            return value.trim().length === parseInt(length);
+        });
+
+        $.validator.unobtrusive.adapters.add('fixedlength', ['length'], function (options) {
+            options.rules['fixedlength'] = options.params['length'];
+            options.messages['fixedlength'] = options.message;
+        });
+
+        // ── Step 3a: register validation method ──
+        $.validator.addMethod('numericfixedlength', function (value, element, params) {
+            // empty = ผ่าน
+            if (!value || value.trim() === '') return true;
+
+            const length = parseInt(params.length);
+
+            // เช็คตัวเลข
+            if (!/^\d+$/.test(value)) return false;
+
+            // เช็คความยาว (ถ้า length > 0)
+            if (length > 0 && value.length !== length) return false;
+
+            return true;
+        });
+
+        // ── Step 3b: map data-val-* attributes → validator params ──
+        $.validator.unobtrusive.adapters.add(
+            'numericfixedlength',
+            ['length'],
+            function (options) {
+                options.rules['numericfixedlength'] = { length: options.params['length'] };
+                options.messages['numericfixedlength'] = options.message;
+            }
+        );
+
+        // ══════════════════════════════════════════════════════
+        //  Cascade Logic — pure client-side, no AJAX queries
+        // ══════════════════════════════════════════════════════
+
+        const ddlType  = document.getElementById('ddlItemType');
+        const ddlBrand = document.getElementById('ddlItemBrand');
+        const ddlModel = document.getElementById('ddlItemModel');
+
+        // Snapshot ALL original options before any filtering
+        const allTypeOptions  = snapshotOptions(ddlType);
+        const allBrandOptions = snapshotOptions(ddlBrand);
+        const allModelOptions = snapshotOptions(ddlModel);
+
+        function snapshotOptions(select) {
+            return Array.from(select.options).map(o => ({ value: o.value, text: o.text }));
+        }
+
+        function rebuildOptions(select, allOptions, allowedValues, placeholderText) {
+            const current = select.value;
+            select.innerHTML = '';
+
+            // Placeholder
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.text  = placeholderText;
+            select.appendChild(placeholder);
+
+            allOptions.forEach(o => {
+                if (o.value === '') return; // skip original placeholder (already re-added)
+                if (allowedValues === null || allowedValues.includes(String(o.value))) {
+                    const opt = document.createElement('option');
+                    opt.value = o.value;
+                    opt.text  = o.text;
+                    select.appendChild(opt);
+                }
+            });
+
+            // Restore previous selection if still available
+            if ([...select.options].some(o => o.value === current)) {
+                select.value = current;
+            } else {
+                select.value = '';
+            }
+        }
+
+        // Guard flag to prevent circular cascade between Type ↔ Brand
+        let isCascading = false;
+
+        // ── Type changed → filter Brands; then cascade to Model ──
+        ddlType.addEventListener('change', function () {
+            if (isCascading) return;
+            isCascading = true;
+
+            const typeId = this.value;
+
+            if (!typeId) {
+                // No type selected → restore ALL brands
+                rebuildOptions(ddlBrand, allBrandOptions, null, '-- เลือกยี่ห้อ --');
+            } else {
+                // Type selected → keep only brands linked to this type
+                const allowed = (typeToBrandsMap[typeId] || []).map(String);
+                rebuildOptions(ddlBrand, allBrandOptions, allowed, '-- เลือกยี่ห้อ --');
+            }
+
+            isCascading = false;
+
+            // Always cascade Brand → Model after Brand list changes
+            ddlBrand.dispatchEvent(new Event('change'));
+        });
+
+        // ── Brand changed → filter Models AND filter Types ──
+        ddlBrand.addEventListener('change', function () {
+            if (isCascading) return;
+            isCascading = true;
+
+            const brandId = this.value;
+
+            // 1) Filter Models by selected Brand
+            if (!brandId) {
+                // No brand selected → restore ALL models
+                rebuildOptions(ddlModel, allModelOptions, null, '-- เลือกรุ่น --');
+            } else {
+                // Brand selected → keep only models belonging to this brand
+                const allowed = (brandToModelsMap[brandId] || []).map(m => String(m.Value ?? m.value));
+                rebuildOptions(ddlModel, allModelOptions, allowed, '-- เลือกรุ่น --');
+            }
+
+            // 2) Reverse: filter Types by selected Brand
+            if (!brandId) {
+                // No brand selected → restore ALL types
+                rebuildOptions(ddlType, allTypeOptions, null, '-- เลือกประเภทอุปกรณ์ --');
+            } else {
+                // Brand selected → keep only types linked to this brand
+                const allowed = (brandToTypesMap[brandId] || []).map(String);
+                rebuildOptions(ddlType, allTypeOptions, allowed, '-- เลือกประเภทอุปกรณ์ --');
+            }
+
+            isCascading = false;
+        });
+
+        document.getElementById('inputImageFile').addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const preview = document.getElementById('imgPreview');
+                preview.src   = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+    </script>
+}

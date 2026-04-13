@@ -1,0 +1,137 @@
+﻿@model IEnumerable<KlangIT_V3.Models.BorrowHistory>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.RequestUser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsPermanentBorrow)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BorrowDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.HasExpectedReturnDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ExpectedReturnDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsReturn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ReturnDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DurationDays)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Itstaff)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Amount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ModifiedDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ModifiedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsDeleted)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Item)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RequestDepartment)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RequestSection)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.RequestUser)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsPermanentBorrow)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BorrowDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.HasExpectedReturnDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ExpectedReturnDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsReturn)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReturnDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DurationDays)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Itstaff)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Amount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ModifiedDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedBy)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ModifiedBy)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsDeleted)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RequestDepartment.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RequestSection.Id)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

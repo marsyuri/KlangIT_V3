@@ -1,0 +1,90 @@
+﻿@model KlangIT_V3.ViewModels.BorrowHistoryViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>BorrowHistory</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
+            @{
+                var a = Model.ItemAssetId;
+                var b = Model.ItemId;
+            }
+
+            <input type="hidden" asp-for="ItemId" />
+            <div class="form-group">
+                <label asp-for="ItemAssetId" class="control-label">เลขครุภัณฑ์</label>
+                <input asp-for="ItemAssetId" class="form-control" disabled/>
+            </div>
+
+
+            <div class="form-group">
+                <label asp-for="RequestUser" class="control-label"></label>
+                <input asp-for="RequestUser" class="form-control" />
+                <span asp-validation-for="RequestUser" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SelectedDepartmentId" class="control-label"></label>
+                <select asp-for="SelectedDepartmentId" class="form-control" asp-items="Model.Departments"></select>
+            </div>
+            
+
+            <div class="form-group">
+                <label asp-for="SelectedSectionId" class="control-label"></label>
+                <select asp-for="SelectedSectionId" class="form-control" asp-items="Model.Sections"></select>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsPermanentBorrow" /> @Html.DisplayNameFor(model => model.IsPermanentBorrow)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="BorrowDate" class="control-label"></label>
+                <input asp-for="BorrowDate" class="form-control" type="date" />
+                <span asp-validation-for="BorrowDate" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="HasExpectedReturnDate" /> @Html.DisplayNameFor(model => model.HasExpectedReturnDate)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="ExpectedReturnDate" class="control-label"></label>
+                <input asp-for="ExpectedReturnDate" class="form-control" type="date" />
+                <span asp-validation-for="ExpectedReturnDate" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Itstaff" class="control-label">ผู้ดำเนินการ</label>
+                <input asp-for="Itstaff" class="form-control" />
+                <span asp-validation-for="Itstaff" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Amount" class="control-label">จำนวนที่ยืม</label>
+                <input asp-for="Amount" class="form-control" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

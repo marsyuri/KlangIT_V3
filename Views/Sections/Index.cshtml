@@ -1,0 +1,89 @@
+﻿@model IEnumerable<KlangIT_V3.Models.Section>
+
+@{
+    ViewData["Title"] = "รายชื่อหน่วยงาน";
+}
+
+<h1>รายชื่อหน่วยงาน</h1>
+
+<div class="d-flex align-items-center gap-3 mb-3">
+    <a asp-action="Create" class="btn btn-primary">เพิ่มหน่วยงาน</a>
+
+    <form asp-controller="Sections" asp-action="Index" method="get" class="d-flex gap-2">
+        @* Preserve current sort when submitting a new search *@
+        <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
+        <select name="searchCondition" class="form-select" asp-items="ViewBag.SearchConditions" style="width: auto;">
+            <option value="">-- เลือกฝ่าย/กลุ่มงาน --</option>
+        </select>
+        <input type="text" name="searchBox" class="form-control"
+               placeholder="ค้นหา..." value="@ViewBag.CurrentSearch" />
+        <button type="submit" class="btn btn-primary">ค้นหา</button>
+    </form>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ลำดับ</th>
+            <th>
+                @* All sort links now carry the current search state *@
+                <a asp-action="Index"
+                       asp-route-sortOrder="@ViewBag.SortByDept"
+                       asp-route-searchCondition="@ViewBag.CurrentCondition"
+                       asp-route-searchBox="@ViewBag.CurrentSearch">
+                    ฝ่าย/กลุ่มงาน
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index"
+                       asp-route-sortOrder="@ViewBag.SortByName"
+                       asp-route-searchCondition="@ViewBag.CurrentCondition"
+                       asp-route-searchBox="@ViewBag.CurrentSearch">
+                    หน่วยงาน
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index"
+                       asp-route-sortOrder="@ViewBag.SortByModDate"
+                       asp-route-searchCondition="@ViewBag.CurrentCondition"
+                       asp-route-searchBox="@ViewBag.CurrentSearch">
+                    เวลาแก้ไขล่าสุด
+                </a>
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="100" class="py-4">
+                    <div class="d-flex align-items-center justify-content-center text-danger">
+                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
+                        <span class="px-3 fw-bold">ไม่พบข้อมูล</span>
+                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
+                    </div>
+                </td>
+            </tr>
+        }
+        else
+        {
+            int count = 0;
+            foreach (var item in Model)
+            {
+                count++;
+                <tr>
+                    <td>@count</td>
+                    <td>@Html.DisplayFor(_ => item.Department.Name)</td>
+                    <td>@Html.DisplayFor(_ => item.Name)</td>
+                    <td>@Html.DisplayFor(_ => item.ModifiedDate)</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

@@ -1,0 +1,51 @@
+﻿@model IEnumerable<KlangIT_V3.Models.Department>
+
+@{
+    ViewData["Title"] = "All Index";
+}
+
+<h1>รายชื่อฝ่าย/กลุ่มงาน</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ลำดับ</th>
+            <th>ชื่อ</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int count = 0;
+            foreach (var item in Model)
+            {
+                count++;
+                var a = item.IsDeleted;
+                <tr>
+                    <td style="@(item.IsDeleted ? "color:red; font-weight:bold;" : null)">
+                        @count
+                    </td>
+                    <td style="@(item.IsDeleted ? "color:red; font-weight:bold;" : null)">
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @if (item.IsDeleted)
+                        {
+                            <span style="color:red; font-weight:bold">รายการนี้ถูกยกเลิกแล้ว</span>
+                        } else
+                        {
+                            <span>
+                                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                            </span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
