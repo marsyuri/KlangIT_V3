@@ -23,7 +23,7 @@ public partial class ItemModel
 
     public bool IsDeleted { get; set; }
 
-    public virtual ICollection<Item> Items { get; set; } = new List<Item>();
-
     public virtual ItemBrand ItemBrand { get; set; } = null!;
+
+    public virtual ICollection<Item> Items { get; set; } = new List<Item>();
 }

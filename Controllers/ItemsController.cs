@@ -191,7 +191,7 @@ namespace KlangIT_V3.Controllers
             }
 
             string assetId = string.Empty;
-            if (!string.IsNullOrWhiteSpace(itemVM.AssetId1) && !string.IsNullOrWhiteSpace(itemVM.AssetId2) 
+            if (!string.IsNullOrWhiteSpace(itemVM.AssetId1) && !string.IsNullOrWhiteSpace(itemVM.AssetId2)
                 && !string.IsNullOrWhiteSpace(itemVM.AssetId3) && !string.IsNullOrWhiteSpace(itemVM.AssetId4))
             {
                 assetId = string.Format("{0}-{1}-{2}-{3}", itemVM.AssetId1, itemVM.AssetId2, itemVM.AssetId3, itemVM.AssetId4);
@@ -199,7 +199,8 @@ namespace KlangIT_V3.Controllers
             else if (!string.IsNullOrWhiteSpace(itemVM.OtherAssetId))
             {
                 assetId = itemVM.OtherAssetId;
-            } else
+            }
+            else
             {
                 assetId = string.Empty;
             }
@@ -249,10 +250,12 @@ namespace KlangIT_V3.Controllers
                 ItemModelId = itemVM.SelectedItemModelId,
                 ItemDescription = itemVM.ItemDescription,
                 ItemImageUrl = imageUrl,
-                TotalQuantity = itemVM.TotalQuantity,
-                StockBalance = itemVM.TotalQuantity,
-                StockUsed = 0,
-                MinimumQuantity = itemVM.MinimumQuantity,
+                TotalAmount = itemVM.TotalAmount,
+                ActiveAmount = itemVM.TotalAmount,
+                AvailableAmount = itemVM.TotalAmount,
+                BorrowedAmount = 0,
+                DamagedAmount = 0,
+                MinimumAmount = itemVM.MinimumAmount,
                 ItemStatusId = itemVM.SelectedItemStatusId,
                 Remarks = itemVM.Remarks,
                 CreatedDate = DateTime.Now,
@@ -270,9 +273,9 @@ namespace KlangIT_V3.Controllers
             {
                 ItemId = item.Id,
                 OldStock = 0,
-                NumberOfChange = item.TotalQuantity,
-                NewStock = item.TotalQuantity,
-                Remarks = "เพิ่ม Item ใหม่",
+                NumberOfChange = item.TotalAmount,
+                NewStock = item.TotalAmount,
+                Remarks = "สร้างข้อมูล Item ใหม่",
                 RunningNo = runNo,
                 LogNo = $"st{logNoLeftPadded}",
                 StockLogTypeId = (int)StockTypeEnum.Initial,
@@ -309,7 +312,7 @@ namespace KlangIT_V3.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,AssetId,SerialNo,ItemTypeId,ItemBrandId,ItemModelId,ItemDescription,ItemImageUrl,TotalQuantity,StockBalance,StockUsed,MinimumQuantity,ItemStatusId,AssetId1,AssetId2,AssetId3,AssetId4,Remarks,CreatedDate,ModifiedDate,CreatedBy,ModifiedBy,IsDeleted")] Item item)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,AssetId,SerialNo,ItemTypeId,ItemBrandId,ItemModelId,ItemDescription,ItemImageUrl,TotalAmount,AvailableAmount,BorrowedAmount,MinimumAmount,ItemStatusId,AssetId1,AssetId2,AssetId3,AssetId4,Remarks,CreatedDate,ModifiedDate,CreatedBy,ModifiedBy,IsDeleted")] Item item)
         {
             if (id != item.Id)
             {

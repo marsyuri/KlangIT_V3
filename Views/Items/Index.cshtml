@@ -22,7 +22,7 @@
             <th>ยี่ห้อ</th>
             <th>รุ่น</th>
             <th>
-                @Html.DisplayNameFor(model => model.StockBalance)
+                @Html.DisplayNameFor(model => model.AvailableAmount)
             </th>
             <th>
                 เวลาแก้ไขล่าสุด
@@ -50,7 +50,7 @@
                     @Html.DisplayFor(modelItem => item.ItemModel.Name)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.StockBalance)
+                    @Html.DisplayFor(modelItem => item.AvailableAmount)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.ModifiedDate)

@@ -33,13 +33,13 @@ namespace KlangIT_V3.ViewModels
 
         public string? ItemImageUrl { get; set; }
 
-        public int TotalQuantity { get; set; }
+        public int TotalAmount { get; set; }
 
-        public int StockBalance { get; set; }
+        public int AvailableAmount { get; set; }
 
-        public int StockUsed { get; set; }
+        public int BorrowedAmount { get; set; }
 
-        public int MinimumQuantity { get; set; }
+        public int MinimumAmount { get; set; }
 
         public int SelectedItemStatusId { get; set; }
         public List<SelectListItem> ItemStatuses { get; set; } = new();

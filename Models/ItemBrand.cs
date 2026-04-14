@@ -21,6 +21,8 @@ public partial class ItemBrand
 
     public bool IsDeleted { get; set; }
 
+    public virtual ICollection<ItemModel> ItemModels { get; set; } = new List<ItemModel>();
+
     public virtual ICollection<ItemTypeToBrand> ItemTypeToBrands { get; set; } = new List<ItemTypeToBrand>();
 
     public virtual ICollection<Item> Items { get; set; } = new List<Item>();

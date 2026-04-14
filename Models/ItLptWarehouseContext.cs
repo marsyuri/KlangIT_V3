@@ -121,6 +121,9 @@ public partial class ItLptWarehouseContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.OrderNo).HasDefaultValue(1, "DF_Item_OrderNo");
+            entity.Property(e => e.OtherAssetId)
+                .HasMaxLength(100)
+                .IsUnicode(false);
             entity.Property(e => e.Remarks).HasMaxLength(1000);
             entity.Property(e => e.SerialNo).HasMaxLength(100);
 
@@ -167,15 +170,24 @@ public partial class ItLptWarehouseContext : DbContext
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(1000);
             entity.Property(e => e.OrderNo).HasDefaultValue(1, "DF_ItemModel_OrderNo");
+
+            entity.HasOne(d => d.ItemBrand).WithMany(p => p.ItemModels)
+                .HasForeignKey(d => d.ItemBrandId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ItemModel_ItemBrand");
         });
 
         modelBuilder.Entity<ItemType>(entity =>
         {
             entity.ToTable("ItemType");
 
-            entity.Property(e => e.CreatedBy).HasMaxLength(100);
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .IsUnicode(false);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
-            entity.Property(e => e.ModifiedBy).HasMaxLength(100);
+            entity.Property(e => e.ModifiedBy)
+                .HasMaxLength(100)
+                .IsUnicode(false);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(1000);
             entity.Property(e => e.OrderNo).HasDefaultValue(1, "DF_ItemType_OrderNo");
@@ -184,6 +196,21 @@ public partial class ItLptWarehouseContext : DbContext
         modelBuilder.Entity<ItemTypeToBrand>(entity =>
         {
             entity.ToTable("ItemTypeToBrand");
+
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasDefaultValue("Tont", "DF_ItemTypeToBrand_CreatedBy");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValue(new DateTime(2026, 4, 7, 9, 17, 53, 920, DateTimeKind.Unspecified), "DF_ItemTypeToBrand_CreatedDate")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ModifiedBy)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasDefaultValue("Tont", "DF_ItemTypeToBrand_ModifiedBy");
+            entity.Property(e => e.ModifiedDate)
+                .HasDefaultValue(new DateTime(2026, 4, 7, 9, 17, 53, 920, DateTimeKind.Unspecified), "DF_ItemTypeToBrand_ModifiedDate")
+                .HasColumnType("datetime");
 
             entity.HasOne(d => d.ItemBrand).WithMany(p => p.ItemTypeToBrands)
                 .HasForeignKey(d => d.ItemBrandId)

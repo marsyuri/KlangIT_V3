@@ -50,8 +50,9 @@ namespace KlangIT_V3.ViewModels
         public string? ItemDescription { get; set; }
         public string? ItemImageUrl { get; set; }
         public IFormFile? ItemImageFile { get; set; }
-        public int TotalQuantity { get; set; }
-        public int MinimumQuantity { get; set; }
+        public int TotalAmount { get; set; }
+
+        public int MinimumAmount { get; set; }
         public string? Remarks { get; set; }
     }
 }

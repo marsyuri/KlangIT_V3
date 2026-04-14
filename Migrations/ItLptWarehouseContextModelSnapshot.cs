@@ -210,7 +210,7 @@ namespace KlangIT_V3.Migrations
                     b.Property<int>("ItemTypeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("MinimumQuantity")
+                    b.Property<int>("MinimumAmount")
                         .HasColumnType("int");
 
                     b.Property<string>("ModifiedBy")
@@ -230,13 +230,13 @@ namespace KlangIT_V3.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("StockBalance")
+                    b.Property<int>("AvailableAmount")
                         .HasColumnType("int");
 
-                    b.Property<int>("StockUsed")
+                    b.Property<int>("BorrowedAmount")
                         .HasColumnType("int");
 
-                    b.Property<int>("TotalQuantity")
+                    b.Property<int>("TotalAmount")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

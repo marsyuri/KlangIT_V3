@@ -9,6 +9,8 @@ public partial class Item
 
     public int OrderNo { get; set; }
 
+    public bool IsBulk { get; set; }
+
     public string? AssetId { get; set; }
 
     public string? SerialNo { get; set; }
@@ -23,13 +25,17 @@ public partial class Item
 
     public string? ItemImageUrl { get; set; }
 
-    public int TotalQuantity { get; set; }
+    public int TotalAmount { get; set; }
 
-    public int StockBalance { get; set; }
+    public int ActiveAmount { get; set; }
 
-    public int StockUsed { get; set; }
+    public int AvailableAmount { get; set; }
 
-    public int MinimumQuantity { get; set; }
+    public int BorrowedAmount { get; set; }
+
+    public int DamagedAmount { get; set; }
+
+    public int MinimumAmount { get; set; }
 
     public int ItemStatusId { get; set; }
 
@@ -40,6 +46,8 @@ public partial class Item
     public string? AssetId3 { get; set; }
 
     public string? AssetId4 { get; set; }
+
+    public string? OtherAssetId { get; set; }
 
     public string? Remarks { get; set; }
 
