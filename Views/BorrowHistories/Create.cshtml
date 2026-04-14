@@ -1,90 +1,150 @@
 ﻿@model KlangIT_V3.ViewModels.BorrowHistoryViewModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "ทำการยืม";
 }
 
-<h1>Create</h1>
+<div class="container py-4">
 
-<h4>BorrowHistory</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="fs-3 fw-bold mb-1">
+                <i class="bi bi-box-arrow-up-right text-primary me-2"></i>ทำการยืม
+            </h1>
+            </div>
+    </div>
 
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row g-4">
 
+        <!-- Left: Reference Image Card -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <img src="~/Images/ItemStatesThai_V2.png"
+                         alt="รูปอุปกรณ์"
+                         class="img-fluid rounded"
+                         data-bs-toggle="modal"
+                         data-bs-target="#imgModal"
+                         style="max-width:100%; max-height:320px; object-fit:contain; cursor:zoom-in;" />
+                    <div class="text-center text-muted small mt-2">
+                        <i class="bi bi-zoom-in me-1"></i>คลิกที่รูปเพื่อขยาย
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            @{
-                var a = Model.ItemAssetId;
-                var b = Model.ItemId;
-            }
+        <!-- Right: Borrow Form Card -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 pt-3">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i class="bi bi-pencil-square text-primary me-2"></i>รายละเอียดการยืม
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <input type="hidden" asp-for="ItemId" />
-            <div class="form-group">
-                <label asp-for="ItemAssetId" class="control-label">เลขครุภัณฑ์</label>
-                <input asp-for="ItemAssetId" class="form-control" disabled/>
-            </div>
+                        <input type="hidden" asp-for="ItemId" />
 
+                        <div class="mb-3">
+                            <label asp-for="ItemAssetId" class="form-label fw-semibold">เลขครุภัณฑ์</label>
+                            <input asp-for="ItemAssetId" class="form-control bg-light" disabled />
+                        </div>
 
-            <div class="form-group">
-                <label asp-for="RequestUser" class="control-label"></label>
-                <input asp-for="RequestUser" class="form-control" />
-                <span asp-validation-for="RequestUser" class="text-danger"></span>
-            </div>
+                        <div class="mb-3">
+                            <label asp-for="RequestUser" class="form-label fw-semibold"></label>
+                            <input asp-for="RequestUser" class="form-control" />
+                            <span asp-validation-for="RequestUser" class="text-danger small"></span>
+                        </div>
 
-            <div class="form-group">
-                <label asp-for="SelectedDepartmentId" class="control-label"></label>
-                <select asp-for="SelectedDepartmentId" class="form-control" asp-items="Model.Departments"></select>
-            </div>
-            
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SelectedDepartmentId" class="form-label fw-semibold"></label>
+                                <select asp-for="SelectedDepartmentId" class="form-select" asp-items="Model.Departments"></select>
+                            </div>
 
-            <div class="form-group">
-                <label asp-for="SelectedSectionId" class="control-label"></label>
-                <select asp-for="SelectedSectionId" class="form-control" asp-items="Model.Sections"></select>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SelectedSectionId" class="form-label fw-semibold"></label>
+                                <select asp-for="SelectedSectionId" class="form-select" asp-items="Model.Sections"></select>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" asp-for="IsPermanentBorrow" />
+                            <label class="form-check-label" asp-for="IsPermanentBorrow">
+                                @Html.DisplayNameFor(model => model.IsPermanentBorrow)
+                            </label>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="BorrowDate" class="form-label fw-semibold"></label>
+                                <input asp-for="BorrowDate" class="form-control" type="date" />
+                                <span asp-validation-for="BorrowDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ExpectedReturnDate" class="form-label fw-semibold"></label>
+                                <input asp-for="ExpectedReturnDate" class="form-control" type="date" />
+                                <span asp-validation-for="ExpectedReturnDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" asp-for="HasExpectedReturnDate" />
+                            <label class="form-check-label" asp-for="HasExpectedReturnDate">
+                                @Html.DisplayNameFor(model => model.HasExpectedReturnDate)
+                            </label>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Itstaff" class="form-label fw-semibold">ผู้ดำเนินการ</label>
+                                <input asp-for="Itstaff" class="form-control" />
+                                <span asp-validation-for="Itstaff" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Amount" class="form-label fw-semibold">จำนวนที่ยืม</label>
+                                <input asp-for="Amount" class="form-control" />
+                                <span asp-validation-for="Amount" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-light">ยกเลิก</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-1"></i> บันทึกการยืม
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsPermanentBorrow" /> @Html.DisplayNameFor(model => model.IsPermanentBorrow)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="BorrowDate" class="control-label"></label>
-                <input asp-for="BorrowDate" class="form-control" type="date" />
-                <span asp-validation-for="BorrowDate" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="HasExpectedReturnDate" /> @Html.DisplayNameFor(model => model.HasExpectedReturnDate)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="ExpectedReturnDate" class="control-label"></label>
-                <input asp-for="ExpectedReturnDate" class="form-control" type="date" />
-                <span asp-validation-for="ExpectedReturnDate" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <label asp-for="Itstaff" class="control-label">ผู้ดำเนินการ</label>
-                <input asp-for="Itstaff" class="form-control" />
-                <span asp-validation-for="Itstaff" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Amount" class="control-label">จำนวนที่ยืม</label>
-                <input asp-for="Amount" class="form-control" />
-                <span asp-validation-for="Amount" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<!-- Image Zoom Modal -->
+<div class="modal fade" id="imgModal" tabindex="-1" aria-labelledby="imgModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content border-0 bg-transparent">
+            <div class="modal-body text-center p-0">
+                <img src="~/Images/ItemStatesThai_V2.png"
+                     alt="รูปอุปกรณ์"
+                     class="img-fluid"
+                     data-bs-dismiss="modal"
+                     style="cursor:zoom-out;" />
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
