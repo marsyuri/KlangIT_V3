@@ -283,10 +283,10 @@ namespace KlangIT_V3.Controllers
                 OldStock = 0,
                 NumberOfChange = item.TotalAmount,
                 NewStock = item.TotalAmount,
-                Remarks = StockTypeEnum.Initial.GetDisplayName(),
+                Remarks = StockLogTypeEnum.Initial.GetDisplayName(),
                 RunningNo = runNo,
                 LogNo = $"ST{logNoLeftPadded}",
-                StockLogType = StockTypeEnum.Initial,
+                StockLogType = StockLogTypeEnum.Initial,
                 CreatedDate = DateTime.Now,
                 CreatedBy = Utility.GetCurrentUserName()
             };

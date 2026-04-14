@@ -114,6 +114,9 @@
                 <label asp-for="TotalAmount" class="control-label"></label>
                 <input asp-for="TotalAmount" id="totalQty" class="form-control bg-light" />
                 <span asp-validation-for="TotalAmount" class="text-danger"></span>
+                <span id="totalAmountError" class="text-danger small" style="display:none;">
+                    จำนวนทั้งหมดต้องเป็น 1 เมื่อไม่ใช่กลุ่มวัสดุ
+                </span>
             </div>
 
             <div class="form-group mb-4">
@@ -193,6 +196,7 @@
             const totalQtyInput      = document.getElementById('totalQty');
             const minimumAmountInput = document.getElementById('MinimumAmount');
             const errorSpan          = document.getElementById('minimumAmountError');
+            const totalAmountError   = document.getElementById('totalAmountError');
             const ddlType            = document.getElementById('ddlItemType');
             const ddlBrand           = document.getElementById('ddlItemBrand');
             const ddlModel           = document.getElementById('ddlItemModel');
@@ -201,6 +205,28 @@
             const allTypeOptions  = snapshotOptions(ddlType);
             const allBrandOptions = snapshotOptions(ddlBrand);
             const allModelOptions = snapshotOptions(ddlModel);
+
+            // ══════════════════════════════════════════════════════
+            //  TotalAmount = 1 enforcement when IsBulk = false
+            // ══════════════════════════════════════════════════════
+
+            function validateTotalAmount() {
+                const isBulk = isBulkCheckbox.checked;
+                if (!isBulk) {
+                    const val = parseInt(totalQtyInput.value) || 0;
+                    if (val !== 1) {
+                        totalQtyInput.classList.add('is-invalid');
+                        totalAmountError.style.display = 'block';
+                    } else {
+                        totalQtyInput.classList.remove('is-invalid');
+                        totalAmountError.style.display = 'none';
+                    }
+                } else {
+                    // Bulk mode — clear any error
+                    totalQtyInput.classList.remove('is-invalid');
+                    totalAmountError.style.display = 'none';
+                }
+            }
 
             // ══════════════════════════════════════════════════════
             //  IsBulk Toggle — enable/disable TotalAmount
@@ -218,21 +244,30 @@
                     totalQtyInput.disabled = true;
                     totalQtyInput.classList.add('bg-light');
 
+                    // Force value to 1 when not bulk
+                    totalQtyInput.value = 1;
+
                     // Inject hidden input so value still reaches controller
-                    if (!document.querySelector('input[type="hidden"][name="TotalAmount"]')) {
+                    const existingHidden = document.querySelector('input[type="hidden"][name="TotalAmount"]');
+                    if (!existingHidden) {
                         const hidden = document.createElement('input');
                         hidden.type  = 'hidden';
                         hidden.name  = 'TotalAmount';
-                        hidden.value = totalQtyInput.value;
+                        hidden.value = 1;
                         totalQtyInput.closest('form').appendChild(hidden);
+                    } else {
+                        existingHidden.value = 1;
                     }
                 }
+
+                validateTotalAmount();
             }
 
-            // Sync hidden input value when user types (bulk=off state)
+            // Sync hidden input value when user types (bulk=on state)
             totalQtyInput.addEventListener('input', function () {
                 const h = document.querySelector('input[type="hidden"][name="TotalAmount"]');
                 if (h) h.value = this.value;
+                validateTotalAmount();
                 validateMinimumAmount();
             });
 

@@ -2,7 +2,7 @@
 
 namespace KlangIT_V3.Models.Enums
 {
-    public enum StockTypeEnum
+    public enum StockLogTypeEnum
     {
         [Display(Name = "ไม่ระบุประเภท Stock")]
         Undefined = 0,

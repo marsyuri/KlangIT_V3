@@ -22,7 +22,7 @@ public partial class StockLog
 
     public string LogNo { get; set; } = null!;
 
-    public StockTypeEnum StockLogType { get; set; }
+    public StockLogTypeEnum StockLogType { get; set; }
 
     public DateTime CreatedDate { get; set; }
 
