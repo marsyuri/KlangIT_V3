@@ -48,7 +48,7 @@ namespace KlangIT_V3.Controllers
         public IActionResult Create()
         {
             ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Id");
-            //ViewData["StockLogTypeId"] = new SelectList(_context.StockLogTypes, "Id", "Id");
+            //ViewData["StockLogType"] = new SelectList(_context.StockLogTypes, "Id", "Id");
             return View();
         }
 
@@ -57,7 +57,7 @@ namespace KlangIT_V3.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ItemId,OldStock,NumberOfChange,NewStock,Remarks,RunningNo,LogNo,StockLogTypeId,CreatedDate,CreatedBy")] StockLog stockLog)
+        public async Task<IActionResult> Create([Bind("Id,ItemId,OldStock,NumberOfChange,NewStock,Remarks,RunningNo,LogNo,StockLogType,CreatedDate,CreatedBy")] StockLog stockLog)
         {
             if (ModelState.IsValid)
             {
@@ -66,7 +66,7 @@ namespace KlangIT_V3.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Id", stockLog.ItemId);
-            //ViewData["StockLogTypeId"] = new SelectList(_context.StockLogTypes, "Id", "Id", stockLog.StockLogTypeId);
+            //ViewData["StockLogType"] = new SelectList(_context.StockLogTypes, "Id", "Id", stockLog.StockLogType);
             return View(stockLog);
         }
 
@@ -84,7 +84,7 @@ namespace KlangIT_V3.Controllers
                 return NotFound();
             }
             ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Id", stockLog.ItemId);
-            //ViewData["StockLogTypeId"] = new SelectList(_context.StockLogTypes, "Id", "Id", stockLog.StockLogTypeId);
+            //ViewData["StockLogType"] = new SelectList(_context.StockLogTypes, "Id", "Id", stockLog.StockLogType);
             return View(stockLog);
         }
 
@@ -93,7 +93,7 @@ namespace KlangIT_V3.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ItemId,OldStock,NumberOfChange,NewStock,Remarks,RunningNo,LogNo,StockLogTypeId,CreatedDate,CreatedBy")] StockLog stockLog)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,ItemId,OldStock,NumberOfChange,NewStock,Remarks,RunningNo,LogNo,StockLogType,CreatedDate,CreatedBy")] StockLog stockLog)
         {
             if (id != stockLog.Id)
             {
@@ -121,7 +121,7 @@ namespace KlangIT_V3.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Id", stockLog.ItemId);
-            //ViewData["StockLogTypeId"] = new SelectList(_context.StockLogTypes, "Id", "Id", stockLog.StockLogTypeId);
+            //ViewData["StockLogType"] = new SelectList(_context.StockLogTypes, "Id", "Id", stockLog.StockLogType);
             return View(stockLog);
         }
 

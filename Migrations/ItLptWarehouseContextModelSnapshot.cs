@@ -498,14 +498,14 @@ namespace KlangIT_V3.Migrations
                     b.Property<int>("RunningNo")
                         .HasColumnType("int");
 
-                    b.Property<int>("StockLogTypeId")
+                    b.Property<int>("StockLogType")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ItemId");
 
-                    b.HasIndex("StockLogTypeId");
+                    b.HasIndex("StockLogType");
 
                     b.ToTable("StockLog", (string)null);
                 });
@@ -641,7 +641,7 @@ namespace KlangIT_V3.Migrations
 
                     b.HasOne("KlangIT_V3.Models.StockLogType", "StockLogType")
                         .WithMany("StockLogs")
-                        .HasForeignKey("StockLogTypeId")
+                        .HasForeignKey("StockLogType")
                         .IsRequired()
                         .HasConstraintName("FK_StockLog_StockLogType");
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KlangIT_V3.Models.Enums;
+using System;
 using System.Collections.Generic;
 
 namespace KlangIT_V3.Models;
@@ -35,9 +36,11 @@ public partial class Item
 
     public int DamagedAmount { get; set; }
 
+    public int DisposedAmount { get; set; }
+
     public int MinimumAmount { get; set; }
 
-    public int ItemStatusId { get; set; }
+    public ItemStatusEnum ItemStatus { get; set; }
 
     public string? AssetId1 { get; set; }
 

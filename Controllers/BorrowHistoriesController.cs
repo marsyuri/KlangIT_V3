@@ -62,7 +62,7 @@ namespace KlangIT_V3.Controllers
                 return NotFound();
             }
 
-            BorrowHistoryViewModel viewModel = new BorrowHistoryViewModel
+            BorrowHistoryCreateViewModel viewModel = new BorrowHistoryCreateViewModel
             {
                 ItemId = item.Id,
                 ItemAssetId = item.AssetId == null ? string.Empty : item.AssetId,
@@ -79,7 +79,7 @@ namespace KlangIT_V3.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(BorrowHistoryViewModel bhVM)
+        public async Task<IActionResult> Create(BorrowHistoryCreateViewModel bhVM)
         {
             if (ModelState.IsValid)
             {
@@ -205,7 +205,7 @@ namespace KlangIT_V3.Controllers
             return _context.BorrowHistories.Any(e => e.Id == id);
         }
 
-        private void PopulateDepartments(BorrowHistoryViewModel model)
+        private void PopulateDepartments(BorrowHistoryCreateViewModel model)
         {
             model.Departments = _context.Departments
                 .Where(d => !d.IsDeleted)
@@ -221,7 +221,7 @@ namespace KlangIT_V3.Controllers
                 new SelectListItem { Value = "", Text = "-- เลือกฝ่าย/กลุ่มงาน --" });
         }
 
-        private void PopulateSections(BorrowHistoryViewModel model)
+        private void PopulateSections(BorrowHistoryCreateViewModel model)
         {
             model.Sections = _context.Sections
                 .Where(d => !d.IsDeleted)

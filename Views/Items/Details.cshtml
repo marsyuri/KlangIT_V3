@@ -10,29 +10,36 @@
     <h4>Item</h4>
     <hr />
     <dl class="row">
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.AssetId)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.AssetId)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.AssetId)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.AssetId)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.SerialNo)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.SerialNo)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.SerialNo)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.SerialNo)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ItemType)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.ItemType.Name)</dd>
+        @if (Model.ItemType != null)
+        {
+            <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ItemType)</dt>
+            <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemType.Name)</dd>
+        }
+        @if (Model.ItemBrand != null)
+        {
+            <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ItemBrand)</dt>
+            <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemBrand.Name)</dd>
+        }
+        @if (Model.ItemModel != null)
+        {
+            <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ItemModel)</dt>
+            <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemModel.Name)</dd>
+        }
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ItemBrand)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.ItemBrand.Name)</dd>
+        <dt class="col-sm-2 mb-4 py2">สถานะของวัสดุ</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemStatus)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ItemModel)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.ItemModel.Name)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ItemDescription)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemDescription)</dd>
 
-        @* <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ItemStatus)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.ItemStatus.Name)</dd> *@
-
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ItemDescription)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.ItemDescription)</dd>
-
-        <dt class="col-sm-2">รูปภาพ</dt>
-        <dd class="col-sm-10">
+        <dt class="col-sm-2 mb-4 py2">รูปภาพ</dt>
+        <dd class="col-sm-10 mb-4 py2">
             @if (!string.IsNullOrEmpty(Model.ItemImageUrl))
             {
                 <!-- Thumbnail — คลิกเพื่อขยาย -->
@@ -64,39 +71,34 @@
             </div>
         </div>
 
-        <script>
-                    // คลิกรูปใน modal → ปิด modal กลับมารูปเล็ก
-                    document.getElementById('imgModalPicture').addEventListener('click', function () {
-                        bootstrap.Modal.getInstance(document.getElementById('imgModal')).hide();
-                    });
-        </script>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.TotalAmount)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.TotalAmount)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.TotalAmount)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.TotalAmount)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.AvailableAmount)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.AvailableAmount)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.AvailableAmount)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.AvailableAmount)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.BorrowedAmount)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.BorrowedAmount)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.BorrowedAmount)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.BorrowedAmount)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.MinimumAmount)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.MinimumAmount)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.MinimumAmount)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.MinimumAmount)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.Remarks)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.Remarks)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Remarks)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.Remarks)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.CreatedDate)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.CreatedDate)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ModifiedDate)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ModifiedDate)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ModifiedDate)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.ModifiedDate)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.CreatedBy)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.CreatedBy)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.CreatedBy)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.CreatedBy)</dd>
+        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ModifiedBy)</dt>
+        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ModifiedBy)</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ModifiedBy)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.ModifiedBy)</dd>
+        
     </dl>
 </div>
 
@@ -145,3 +147,9 @@
         </tbody>
     </table>
 }
+
+<script>
+    document.getElementById('imgModalPicture').addEventListener('click', function () {
+        bootstrap.Modal.getInstance(document.getElementById('imgModal')).hide();
+    });
+</script>

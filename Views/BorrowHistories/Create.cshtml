@@ -1,4 +1,4 @@
-﻿@model KlangIT_V3.ViewModels.BorrowHistoryViewModel
+﻿@model KlangIT_V3.ViewModels.BorrowHistoryCreateViewModel
 
 @{
     ViewData["Title"] = "ทำการยืม";
@@ -44,34 +44,33 @@
                 </div>
                 <div class="card-body">
                     <form asp-action="Create">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
 
                         <input type="hidden" asp-for="ItemId" />
-
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label asp-for="ItemAssetId" class="form-label fw-semibold">เลขครุภัณฑ์</label>
                             <input asp-for="ItemAssetId" class="form-control bg-light" disabled />
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label asp-for="RequestUser" class="form-label fw-semibold"></label>
                             <input asp-for="RequestUser" class="form-control" />
                             <span asp-validation-for="RequestUser" class="text-danger small"></span>
                         </div>
 
                         <div class="row g-3">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-4">
                                 <label asp-for="SelectedDepartmentId" class="form-label fw-semibold"></label>
                                 <select asp-for="SelectedDepartmentId" class="form-select" asp-items="Model.Departments"></select>
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-4">
                                 <label asp-for="SelectedSectionId" class="form-label fw-semibold"></label>
                                 <select asp-for="SelectedSectionId" class="form-select" asp-items="Model.Sections"></select>
                             </div>
                         </div>
 
-                        <div class="form-check form-switch mb-3">
+                        <div class="form-check form-switch mb-4">
                             <input class="form-check-input" type="checkbox" asp-for="IsPermanentBorrow" />
                             <label class="form-check-label" asp-for="IsPermanentBorrow">
                                 @Html.DisplayNameFor(model => model.IsPermanentBorrow)
@@ -79,20 +78,20 @@
                         </div>
 
                         <div class="row g-3">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-4">
                                 <label asp-for="BorrowDate" class="form-label fw-semibold"></label>
                                 <input asp-for="BorrowDate" class="form-control" type="date" />
                                 <span asp-validation-for="BorrowDate" class="text-danger small"></span>
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-4">
                                 <label asp-for="ExpectedReturnDate" class="form-label fw-semibold"></label>
                                 <input asp-for="ExpectedReturnDate" class="form-control" type="date" />
                                 <span asp-validation-for="ExpectedReturnDate" class="text-danger small"></span>
                             </div>
                         </div>
 
-                        <div class="form-check form-switch mb-3">
+                        <div class="form-check form-switch mb-4">
                             <input class="form-check-input" type="checkbox" asp-for="HasExpectedReturnDate" />
                             <label class="form-check-label" asp-for="HasExpectedReturnDate">
                                 @Html.DisplayNameFor(model => model.HasExpectedReturnDate)
@@ -100,13 +99,13 @@
                         </div>
 
                         <div class="row g-3">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-4">
                                 <label asp-for="Itstaff" class="form-label fw-semibold">ผู้ดำเนินการ</label>
                                 <input asp-for="Itstaff" class="form-control" />
                                 <span asp-validation-for="Itstaff" class="text-danger small"></span>
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-4">
                                 <label asp-for="Amount" class="form-label fw-semibold">จำนวนที่ยืม</label>
                                 <input asp-for="Amount" class="form-control" />
                                 <span asp-validation-for="Amount" class="text-danger small"></span>

@@ -1,6 +1,5 @@
 ﻿using KlangIT_V3.Helpers;
 using KlangIT_V3.Models;
-using KlangIT_V3.Models.Enum;
 using KlangIT_V3.Models.Enums;
 using KlangIT_V3.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -71,6 +70,8 @@ namespace KlangIT_V3.Controllers
             PopulateItemModels(viewModel);
             PopulateItemStatuses(viewModel);
             PopulateCascadeMaps(viewModel);
+            viewModel.SelectedItemStatus = ItemStatusEnum.Available;
+            viewModel.TotalAmount = 1;
             return View(viewModel);
         }
 
@@ -128,7 +129,7 @@ namespace KlangIT_V3.Controllers
                 {
                     Value = ((int)e).ToString(),
                     Text = e.GetDisplayName(),
-                    Selected = (int)e == vm.SelectedItemStatusId
+                    Selected = (ItemStatusEnum)e == vm.SelectedItemStatus
                 }).ToList();
 
             vm.ItemStatuses.Insert(0,
@@ -243,20 +244,27 @@ namespace KlangIT_V3.Controllers
 
             Item item = new Item
             {
+                IsBulk = itemVM.IsBulk,
                 AssetId = assetId,
+                AssetId1 = itemVM.AssetId1,
+                AssetId2 = itemVM.AssetId2,
+                AssetId3 = itemVM.AssetId3,
+                AssetId4 = itemVM.AssetId4,
+                OtherAssetId = itemVM.OtherAssetId,
                 SerialNo = itemVM.SerialNo,
                 ItemTypeId = itemVM.SelectedItemTypeId,
                 ItemBrandId = itemVM.SelectedItemBrandId,
                 ItemModelId = itemVM.SelectedItemModelId,
                 ItemDescription = itemVM.ItemDescription,
                 ItemImageUrl = imageUrl,
-                TotalAmount = itemVM.TotalAmount,
+                TotalAmount = itemVM.IsBulk ? itemVM.TotalAmount : 1,
                 ActiveAmount = itemVM.TotalAmount,
                 AvailableAmount = itemVM.TotalAmount,
                 BorrowedAmount = 0,
                 DamagedAmount = 0,
+                DisposedAmount = 0,
                 MinimumAmount = itemVM.MinimumAmount,
-                ItemStatusId = itemVM.SelectedItemStatusId,
+                ItemStatus = ItemStatusEnum.Available,
                 Remarks = itemVM.Remarks,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
@@ -275,10 +283,10 @@ namespace KlangIT_V3.Controllers
                 OldStock = 0,
                 NumberOfChange = item.TotalAmount,
                 NewStock = item.TotalAmount,
-                Remarks = "สร้างข้อมูล Item ใหม่",
+                Remarks = StockTypeEnum.Initial.GetDisplayName(),
                 RunningNo = runNo,
-                LogNo = $"st{logNoLeftPadded}",
-                StockLogTypeId = (int)StockTypeEnum.Initial,
+                LogNo = $"ST{logNoLeftPadded}",
+                StockLogType = StockTypeEnum.Initial,
                 CreatedDate = DateTime.Now,
                 CreatedBy = Utility.GetCurrentUserName()
             };

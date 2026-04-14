@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using KlangIT_V3.Models.Enums;
 
 namespace KlangIT_V3.Models;
 
@@ -21,7 +22,7 @@ public partial class StockLog
 
     public string LogNo { get; set; } = null!;
 
-    public int StockLogTypeId { get; set; }
+    public StockTypeEnum StockLogType { get; set; }
 
     public DateTime CreatedDate { get; set; }
 

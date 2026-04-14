@@ -13,12 +13,12 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="SelectedDepartmentId"></label>
                 <select asp-for="SelectedDepartmentId"
                         asp-items="Model.Departments"
@@ -26,7 +26,7 @@
                 </select>
                 <span asp-validation-for="SelectedDepartmentId" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>

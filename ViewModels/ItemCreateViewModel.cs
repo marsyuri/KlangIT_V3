@@ -1,10 +1,14 @@
-﻿using KlangIT_V3.Validation;
+﻿using KlangIT_V3.Models.Enums;
+using KlangIT_V3.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace KlangIT_V3.ViewModels
 {
-    public class ItemCreateViewModel
+    public class ItemCreateViewModel : IValidatableObject
     {
+        public bool IsBulk { get; set; }
+
         // ── Asset ID (split into 4 parts) ──
         [NumericFixedLengthAttribute(4)]
         public string? AssetId1 { get; set; }
@@ -26,7 +30,10 @@ namespace KlangIT_V3.ViewModels
         public int? SelectedItemTypeId { get; set; }
         public int? SelectedItemBrandId { get; set; }
         public int? SelectedItemModelId { get; set; }
-        public int SelectedItemStatusId { get; set; }
+
+        //public int SelectedItemStatusId { get; set; }
+        public ItemStatusEnum? SelectedItemStatus { get; set; }  // nullable to allow "not selected"
+        
 
         // ── Dropdown lists (rendered into <select> via asp-items) ──
         public List<SelectListItem> ItemTypes { get; set; } = new();
@@ -54,5 +61,16 @@ namespace KlangIT_V3.ViewModels
 
         public int MinimumAmount { get; set; }
         public string? Remarks { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (MinimumAmount >= TotalAmount)
+            {
+                yield return new ValidationResult(
+                    "จำนวนขั้นต่ำต้องน้อยกว่าจำนวนทั้งหมด",
+                    new[] { nameof(MinimumAmount) }
+                );
+            }
+        }
     }
 }

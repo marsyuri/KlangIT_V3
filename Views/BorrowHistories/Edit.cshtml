@@ -13,22 +13,22 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="ItemId" class="control-label"></label>
                 <select asp-for="ItemId" class="form-control" asp-items="ViewBag.ItemId"></select>
                 <span asp-validation-for="ItemId" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="RequestUser" class="control-label"></label>
                 <input asp-for="RequestUser" class="form-control" />
                 <span asp-validation-for="RequestUser" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="RequestSectionId" class="control-label"></label>
                 <select asp-for="RequestSectionId" class="form-control" asp-items="ViewBag.RequestSectionId"></select>
                 <span asp-validation-for="RequestSectionId" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="RequestDepartmentId" class="control-label"></label>
                 <select asp-for="RequestDepartmentId" class="form-control" asp-items="ViewBag.RequestDepartmentId"></select>
                 <span asp-validation-for="RequestDepartmentId" class="text-danger"></span>
@@ -38,7 +38,7 @@
                     <input class="form-check-input" asp-for="IsPermanentBorrow" /> @Html.DisplayNameFor(model => model.IsPermanentBorrow)
                 </label>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="BorrowDate" class="control-label"></label>
                 <input asp-for="BorrowDate" class="form-control" />
                 <span asp-validation-for="BorrowDate" class="text-danger"></span>
@@ -48,7 +48,7 @@
                     <input class="form-check-input" asp-for="HasExpectedReturnDate" /> @Html.DisplayNameFor(model => model.HasExpectedReturnDate)
                 </label>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="ExpectedReturnDate" class="control-label"></label>
                 <input asp-for="ExpectedReturnDate" class="form-control" />
                 <span asp-validation-for="ExpectedReturnDate" class="text-danger"></span>
@@ -58,42 +58,42 @@
                     <input class="form-check-input" asp-for="IsReturn" /> @Html.DisplayNameFor(model => model.IsReturn)
                 </label>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="ReturnDate" class="control-label"></label>
                 <input asp-for="ReturnDate" class="form-control" />
                 <span asp-validation-for="ReturnDate" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="DurationDays" class="control-label"></label>
                 <input asp-for="DurationDays" class="form-control" />
                 <span asp-validation-for="DurationDays" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="Itstaff" class="control-label"></label>
                 <input asp-for="Itstaff" class="form-control" />
                 <span asp-validation-for="Itstaff" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="Amount" class="control-label"></label>
                 <input asp-for="Amount" class="form-control" />
                 <span asp-validation-for="Amount" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="CreatedDate" class="control-label"></label>
                 <input asp-for="CreatedDate" class="form-control" />
                 <span asp-validation-for="CreatedDate" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="ModifiedDate" class="control-label"></label>
                 <input asp-for="ModifiedDate" class="form-control" />
                 <span asp-validation-for="ModifiedDate" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="CreatedBy" class="control-label"></label>
                 <input asp-for="CreatedBy" class="form-control" />
                 <span asp-validation-for="CreatedBy" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label asp-for="ModifiedBy" class="control-label"></label>
                 <input asp-for="ModifiedBy" class="form-control" />
                 <span asp-validation-for="ModifiedBy" class="text-danger"></span>
@@ -103,7 +103,7 @@
                     <input class="form-check-input" asp-for="IsDeleted" /> @Html.DisplayNameFor(model => model.IsDeleted)
                 </label>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>

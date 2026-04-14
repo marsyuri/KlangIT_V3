@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KlangIT_V3.ViewModels
 {
-    public class BorrowHistoryViewModel
+    public class BorrowHistoryCreateViewModel
     {
         public int Id { get; set; }
 
