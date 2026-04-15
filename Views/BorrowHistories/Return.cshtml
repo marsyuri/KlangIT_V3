@@ -1,8 +1,8 @@
-﻿@model KlangIT_V3.ViewModels.BorrowCreateViewModel
-@using KlangIT_V3.Models.Enums
+﻿@using KlangIT_V3.Models.Enums
+@model KlangIT_V3.ViewModels.ReturnCreateViewModel
 
 @{
-    ViewData["Title"] = "ทำการยืม";
+    ViewData["Title"] = "ทำการคืน";
 }
 
 <div class="container py-4">
@@ -11,7 +11,7 @@
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
             <h1 class="fs-3 fw-bold mb-1">
-                <i class="bi bi-box-arrow-up-right text-primary me-2"></i>ทำการยืม
+                <i class="bi bi-box-arrow-up-right text-primary me-2"></i>ทำการคืน
             </h1>
         </div>
     </div>
@@ -39,15 +39,15 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white border-0 pt-3">
                     <h5 class="card-title mb-0 fw-semibold">
-                        <i class="bi bi-pencil-square text-primary me-2"></i>รายละเอียดการยืม
+                        <i class="bi bi-pencil-square text-primary me-2"></i>รายละเอียดการคืน
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Create">
+                    <form asp-action="Return">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
 
+                        <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="ItemId" />
-                        
                         <div class="mb-4">
                             <label asp-for="ItemHeader" class="form-label fw-semibold">ข้อมูลวัสดุ</label>
                             <input asp-for="ItemHeader" class="form-control bg-light" readonly />
@@ -72,50 +72,22 @@
                             </div>
                         </div>
 
+                        <input type="hidden" asp-for="RequestUser" />
                         <div class="mb-4">
-                            <label asp-for="RequestUser" class="form-label fw-semibold"></label>
-                            <input asp-for="RequestUser" class="form-control" />
-                            <span asp-validation-for="RequestUser" class="text-danger small"></span>
+                            <label asp-for="RequestUser" class="form-label fw-semibold">ผู้ยืม</label>
+                            <input asp-for="RequestUser" class="form-control" disabled />
                         </div>
 
                         <div class="row g-3">
                             <div class="col-md-6 mb-4">
                                 <label asp-for="SelectedDepartmentId" class="form-label fw-semibold"></label>
-                                <select asp-for="SelectedDepartmentId" class="form-select" asp-items="Model.Departments"></select>
+                                <select asp-for="SelectedDepartmentId" class="form-select" disabled asp-items="Model.Departments"></select>
                             </div>
 
                             <div class="col-md-6 mb-4">
                                 <label asp-for="SelectedSectionId" class="form-label fw-semibold"></label>
-                                <select asp-for="SelectedSectionId" class="form-select" asp-items="Model.Sections"></select>
+                                <select asp-for="SelectedSectionId" class="form-select" disabled asp-items="Model.Sections"></select>
                             </div>
-                        </div>
-
-                        <div class="form-check form-switch mb-4">
-                            <input class="form-check-input" type="checkbox" asp-for="IsPermanentBorrow" />
-                            <label class="form-check-label" asp-for="IsPermanentBorrow">
-                                @Html.DisplayNameFor(model => model.IsPermanentBorrow)
-                            </label>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-6 mb-4">
-                                <label asp-for="BorrowDate" class="form-label fw-semibold"></label>
-                                <input asp-for="BorrowDate" class="form-control" type="date" />
-                                <span asp-validation-for="BorrowDate" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-6 mb-4">
-                                <label asp-for="ExpectedReturnDate" class="form-label fw-semibold"></label>
-                                <input asp-for="ExpectedReturnDate" class="form-control" type="date" />
-                                <span asp-validation-for="ExpectedReturnDate" class="text-danger small"></span>
-                            </div>
-                        </div>
-
-                        <div class="form-check form-switch mb-4">
-                            <input class="form-check-input" type="checkbox" asp-for="HasExpectedReturnDate" />
-                            <label class="form-check-label" asp-for="HasExpectedReturnDate">
-                                @Html.DisplayNameFor(model => model.HasExpectedReturnDate)
-                            </label>
                         </div>
 
                         <div class="row g-3">
@@ -126,9 +98,9 @@
                             </div>
 
                             <div class="col-md-6 mb-4">
-                                <label asp-for="Amount" class="form-label fw-semibold">จำนวนที่ยืม</label>
-                                <input asp-for="Amount" class="form-control" />
-                                <span asp-validation-for="Amount" class="text-danger small"></span>
+                                <label asp-for="ReturnAmount" class="form-label fw-semibold">จำนวนที่คืน</label>
+                                <input asp-for="ReturnAmount" class="form-control" />
+                                <span asp-validation-for="ReturnAmount" class="text-danger small"></span>
                             </div>
                         </div>
 
@@ -138,11 +110,11 @@
                             <a asp-controller="Items"
                                    asp-action="Details"
                                    asp-route-id="@Model.ItemId"
-                                   class="btn btn-secondary px-4>
+                                   class="btn btn-secondary px-4">
                                 <i class="bi bi-arrow-left me-1"></i> ยกเลิก
                             </a>
-                                <button type="submit" class="btn btn-primary px-4">
-                                <i class="bi bi-check-circle me-1"></i> บันทึกการยืม
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-1"></i> บันทึกการคืน
                             </button>
                         </div>
                     </form>

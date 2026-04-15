@@ -241,7 +241,7 @@ namespace KlangIT_V3.Controllers
                 // เก็บ path สำหรับแสดงผลใน View
                 imageUrl = $"/uploads/items/{imgFileName}";
             }
-
+            string itUser = Utility.GetCurrentUserName();
             Item item = new Item
             {
                 IsBulk = itemVM.IsBulk,
@@ -268,8 +268,8 @@ namespace KlangIT_V3.Controllers
                 Remarks = itemVM.Remarks,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
-                CreatedBy = Utility.GetCurrentUserName(),
-                ModifiedBy = Utility.GetCurrentUserName(),
+                CreatedBy = itUser,
+                ModifiedBy = itUser,
                 IsDeleted = false
             };
             _context.Items.Add(item);
@@ -288,7 +288,7 @@ namespace KlangIT_V3.Controllers
                 LogNo = $"ST{logNoLeftPadded}",
                 StockLogType = StockLogTypeEnum.Initial,
                 CreatedDate = DateTime.Now,
-                CreatedBy = Utility.GetCurrentUserName()
+                CreatedBy = itUser
             };
             _context.StockLogs.Add(stockLog);
             await _context.SaveChangesAsync();

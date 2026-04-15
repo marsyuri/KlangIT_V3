@@ -70,11 +70,13 @@ namespace KlangIT_V3.Controllers
                     .Select(x => new { Field = x.Key, Errors = x.Value!.Errors.Select(e => e.ErrorMessage) });
                 return View(deptVM);
             }
+            
+            string itUser = Utility.GetCurrentUserName();
             Department department = new Department
             {
                 Name = deptVM.Name,
-                CreatedBy = Utility.GetCurrentUserName(),
-                ModifiedBy = Utility.GetCurrentUserName(),
+                CreatedBy = itUser,
+                ModifiedBy = itUser,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
                 IsDeleted = false
@@ -120,8 +122,9 @@ namespace KlangIT_V3.Controllers
             {
                 return NotFound();
             }
+            string itUser = Utility.GetCurrentUserName();
             department.Name = deptVM.Name;
-            department.ModifiedBy = Utility.GetCurrentUserName();
+            department.ModifiedBy = itUser;
             department.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -151,10 +154,11 @@ namespace KlangIT_V3.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var department = await _context.Departments.FindAsync(id);
+            string itUser = Utility.GetCurrentUserName();
             if (department != null)
             {
                 department.IsDeleted = true;
-                department.ModifiedBy = Utility.GetCurrentUserName();
+                department.ModifiedBy = itUser;
                 department.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
             }

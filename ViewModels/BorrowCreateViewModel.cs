@@ -1,15 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using KlangIT_V3.Models.Enums;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace KlangIT_V3.ViewModels
 {
-    public class BorrowHistoryCreateViewModel
+    public class BorrowCreateViewModel
     {
         public int Id { get; set; }
 
         public int ItemId { get; set; }
 
-        public string ItemAssetId { get; set; } = string.Empty;
+        public string? ItemHeader { get; set; } = string.Empty;
+
+        public string? ItemAssetId { get; set; } = string.Empty;
+
+        public ItemStatusEnum ItemStatus { get; set; }
 
         public string RequestUser { get; set; } = null!;
 
@@ -24,19 +29,16 @@ namespace KlangIT_V3.ViewModels
 
         public bool IsPermanentBorrow { get; set; }
 
-        [DataType(DataType.Date)]
         public DateTime BorrowDate { get; set; }
 
         public bool HasExpectedReturnDate { get; set; }
 
-        [DataType(DataType.Date)]
         public DateTime? ExpectedReturnDate { get; set; }
 
         public bool IsReturn { get; set; }
 
-        [DataType(DataType.Date)]
         public DateTime? ReturnDate { get; set; }
-
+        
         public int? DurationDays { get; set; }
 
         public string Itstaff { get; set; } = null!;

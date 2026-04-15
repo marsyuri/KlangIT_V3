@@ -1,4 +1,5 @@
-﻿@model KlangIT_V3.Models.Item
+﻿@using KlangIT_V3.Models.Enums
+@model KlangIT_V3.Models.Item
 
 @{
     ViewData["Title"] = "Details";
@@ -33,7 +34,14 @@
         }
 
         <dt class="col-sm-2 mb-4 py2">สถานะของวัสดุ</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemStatus)</dd>
+        @{
+            var statusClass = Model.ItemStatus == ItemStatusEnum.Available
+                ? "text-success"
+                : "text-danger";
+        }
+        <dd class="col-sm-10 mb-4 py2 fw-bold @statusClass">
+            @Html.DisplayFor(model => model.ItemStatus)
+        </dd>
 
         <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ItemDescription)</dt>
         <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemDescription)</dd>
@@ -107,12 +115,17 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
+@{
+    var canBorrow = Model.AvailableAmount > 0;
+}
 <div class="mt-3">
     <a asp-controller="BorrowHistories"
-       asp-action="Create"
-       asp-route-itemId="@Model.Id"
-       class="btn btn-primary">
-        ทำการยืม
+           asp-action="Create"
+           asp-route-itemId="@Model.Id"
+           class="btn btn-primary @(canBorrow ? "" : "disabled")"
+           aria-disabled="@(canBorrow ? "false" : "true")"
+           tabindex="@(canBorrow ? "0" : "-1")">
+        @(canBorrow ? "ทำการยืม" : "ถูกยืมแล้ว")
     </a>
 </div>
 
@@ -128,13 +141,17 @@
                 <th>หน่วยงาน</th>
                 <th>วันที่ยืม</th>
                 <th>ผู้ดำเนินการให้ยืม</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            @{ int count = 0; }
+            @{
+                int count = 0;
+            }
             @foreach (var borrowItem in Model.BorrowHistories)
             {
                 count++;
+                var canReturn = !borrowItem.IsReturn;
                 <tr>
                     <td>@count</td>
                     <td>@Html.DisplayFor(_ => borrowItem.RequestUser)</td>
@@ -142,6 +159,28 @@
                     <td>@Html.DisplayFor(_ => borrowItem.RequestSection.Name)</td>
                     <td>@Html.DisplayFor(_ => borrowItem.BorrowDate)</td>
                     <td>@Html.DisplayFor(_ => borrowItem.Itstaff)</td>
+                    
+                    @* <td>
+                        <a asp-controller="BorrowHistories"
+                               asp-action="Return"
+                               asp-route-id="@borrowItem.Id"
+                               class=" btn btn-primary">
+                            <i class="bi bi-box-arrow-in-left me-1"></i> ทำการคืน
+                        </a>
+                    </td> *@
+
+                    <td>
+                        <a asp-controller="BorrowHistories"
+                               asp-action="Return"
+                               asp-route-id="@borrowItem.Id"
+                               class="btn btn-primary @(!canReturn ? "disabled" : "")"
+                               aria-disabled="@(!canReturn ? "true" : "false")"
+                               tabindex="@(!canReturn ? "-1" : "0")">
+                            <i class="bi bi-box-arrow-in-left me-1"></i>
+                            @(canReturn ? "ทำการคืน" : "คืนแล้ว")
+                        </a>
+                    </td>
+
                 </tr>
             }
         </tbody>

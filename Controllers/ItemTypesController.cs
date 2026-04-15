@@ -64,11 +64,12 @@ namespace KlangIT_V3.Controllers
                     .Select(x => new { Field = x.Key, Errors = x.Value!.Errors.Select(e => e.ErrorMessage) });
                 return View(itVM);
             }
+            string itUser = Utility.GetCurrentUserName();
             ItemType itemType = new ItemType
             {
                 Name = itVM.Name,
-                CreatedBy = Utility.GetCurrentUserName(),
-                ModifiedBy = Utility.GetCurrentUserName(),
+                CreatedBy = itUser,
+                ModifiedBy = itUser,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
                 IsDeleted = false

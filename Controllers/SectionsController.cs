@@ -190,7 +190,8 @@ namespace KlangIT_V3.Controllers
             }
             section.Name = sectionVM.Name;
             section.DepartmentId = sectionVM.SelectedDepartmentId;
-            section.ModifiedBy = Utility.GetCurrentUserName();
+            string itUser = Utility.GetCurrentUserName();
+            section.ModifiedBy = itUser;
             section.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

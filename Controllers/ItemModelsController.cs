@@ -84,14 +84,15 @@ namespace KlangIT_V3.Controllers
         {
             if (ModelState.IsValid)
             {
+                string itUser = Utility.GetCurrentUserName();
                 ItemModel im = new ItemModel
                 {
                     Name = imVM.Name,
                     ItemBrandId = imVM.SelectedItemBrandId,
                     CreatedDate = DateTime.Now,
                     ModifiedDate = DateTime.Now,
-                    CreatedBy = Utility.GetCurrentUserName(),
-                    ModifiedBy = Utility.GetCurrentUserName(),
+                    CreatedBy = itUser,
+                    ModifiedBy = itUser,
                     IsDeleted = false
                 };
                 _context.ItemModels.Add(im);

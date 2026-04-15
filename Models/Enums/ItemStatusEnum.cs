@@ -8,7 +8,7 @@ namespace KlangIT_V3.Models.Enums
         Undefined = 0,
         [Display(Name = "ใช้งานได้")]
         Available = 1,
-        [Display(Name = "ถูกใช้งาน")]
+        [Display(Name = "ถูกยืมใช้งาน")]
         Borrowed = 2,
         [Display(Name = "ชำรุด/เสื่อมสภาพ")]
         Damaged = 3,

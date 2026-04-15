@@ -96,3 +96,12 @@ body {
     .navbar-brand:hover::after {
         width: 100%;
     }
+
+    .btn-custom-blue {
+        background-color: #4A90D9;
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-custom-blue:hover {
+        background-color: #1A6FBF;
+    }
