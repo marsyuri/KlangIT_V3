@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using static System.Collections.Specialized.BitVector32;
 
@@ -25,11 +26,104 @@ namespace KlangIT_V3.Controllers
         }
 
         // GET: Items
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string filterTypeId, string filterBrandId, string filterModelId, string searchBox)
         {
-            var items = _context.Items.Include(i => i.ItemBrand).Include(i => i.ItemModel).Include(i => i.ItemType)
-                .Where(i => !i.IsDeleted);
-            return View(await items.ToListAsync());
+            sortOrder ??= "asset_asc";
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.SortByAssetId = sortOrder == "asset_asc" ? "asset_desc" : "asset_asc";
+            ViewBag.SortByItemType = sortOrder == "type_asc" ? "type_desc" : "type_asc";
+            ViewBag.SortByItemBrand = sortOrder == "brand_asc" ? "brand_desc" : "brand_asc";
+            ViewBag.SortByItemModel = sortOrder == "model_asc" ? "model_desc" : "model_asc";
+            ViewBag.SortByAvlNo = sortOrder == "an_asc" ? "an_desc" : "an_asc";
+            ViewBag.SortByModDate = sortOrder == "moddate_asc" ? "moddate_desc" : "moddate_asc";
+
+            ViewBag.CurrentFilterType = filterTypeId;
+            ViewBag.CurrentFilterBrand = filterBrandId;
+            ViewBag.CurrentFilterModel = filterModelId;
+            ViewBag.CurrentSearch = searchBox;
+
+            // Build cascade maps for 2-way type↔brand and brand→model dropdowns
+            var links = await _context.ItemTypeToBrands.ToListAsync();
+
+            var typeToBrandsMap = links
+                .GroupBy(l => l.ItemTypeId)
+                .ToDictionary(g => g.Key, g => g.Select(l => l.ItemBrandId).ToList());
+
+            var brandToTypesMap = links
+                .GroupBy(l => l.ItemBrandId)
+                .ToDictionary(g => g.Key, g => g.Select(l => l.ItemTypeId).ToList());
+
+            var brandToModelsMap = await _context.ItemModels
+                .Where(m => !m.IsDeleted)
+                .OrderBy(m => m.Name)
+                .GroupBy(m => m.ItemBrandId)
+                .ToDictionaryAsync(g => g.Key, g => g.Select(m => new { Value = m.Id.ToString(), Text = m.Name }).ToList());
+
+            ViewBag.TypeToBrandsMapJson = Newtonsoft.Json.JsonConvert.SerializeObject(typeToBrandsMap);
+            ViewBag.BrandToTypesMapJson = Newtonsoft.Json.JsonConvert.SerializeObject(brandToTypesMap);
+            ViewBag.BrandToModelsMapJson = Newtonsoft.Json.JsonConvert.SerializeObject(brandToModelsMap);
+
+            // Populate filter dropdowns
+            ViewBag.ItemTypes = await _context.ItemTypes
+                .Where(t => !t.IsDeleted).OrderBy(t => t.Name)
+                .Select(t => new SelectListItem { Value = t.Id.ToString(), Text = t.Name, Selected = t.Id.ToString() == filterTypeId })
+                .ToListAsync();
+
+            ViewBag.ItemBrands = await _context.ItemBrands
+                .Where(b => !b.IsDeleted).OrderBy(b => b.Name)
+                .Select(b => new SelectListItem { Value = b.Id.ToString(), Text = b.Name, Selected = b.Id.ToString() == filterBrandId })
+                .ToListAsync();
+
+            ViewBag.ItemModels = await _context.ItemModels
+                .Where(m => !m.IsDeleted).OrderBy(m => m.Name)
+                .Select(m => new SelectListItem { Value = m.Id.ToString(), Text = m.Name, Selected = m.Id.ToString() == filterModelId })
+                .ToListAsync();
+
+            var query = _context.Items
+                .Include(i => i.ItemBrand)
+                .Include(i => i.ItemModel)
+                .Include(i => i.ItemType)
+                .Where(i => !i.IsDeleted)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filterTypeId) && int.TryParse(filterTypeId, out int typeId))
+                query = query.Where(i => i.ItemTypeId == typeId);
+
+            if (!string.IsNullOrWhiteSpace(filterBrandId) && int.TryParse(filterBrandId, out int brandId))
+                query = query.Where(i => i.ItemBrandId == brandId);
+
+            if (!string.IsNullOrWhiteSpace(filterModelId) && int.TryParse(filterModelId, out int modelId))
+                query = query.Where(i => i.ItemModelId == modelId);
+
+            if (!string.IsNullOrWhiteSpace(searchBox))
+            {
+                string pattern = $"%{searchBox}%";
+                query = query.Where(i =>
+                    EF.Functions.Like(i.AssetId ?? "", pattern) ||
+                    EF.Functions.Like(i.SerialNo ?? "", pattern) ||
+                    EF.Functions.Like(i.ItemType.Name, pattern) ||
+                    EF.Functions.Like(i.ItemBrand.Name, pattern) ||
+                    EF.Functions.Like(i.ItemModel.Name, pattern));
+            }
+
+            query = sortOrder switch
+            {
+                "asset_asc" => query.OrderBy(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenBy(s => s.AssetId).ThenBy(s => s.ItemType.Name),
+                "asset_desc" => query.OrderByDescending(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenByDescending(s => s.AssetId).ThenByDescending(s => s.ItemType.Name),
+                "type_asc" => query.OrderBy(s => string.IsNullOrWhiteSpace(s.ItemType.Name) ? 1 : 0).ThenBy(s => s.ItemType.Name).ThenBy(s => s.AssetId),
+                "type_desc" => query.OrderByDescending(s => string.IsNullOrWhiteSpace(s.ItemType.Name) ? 1 : 0).ThenByDescending(s => s.ItemType.Name).ThenByDescending(s => s.AssetId),
+                "brand_asc" => query.OrderBy(s => string.IsNullOrWhiteSpace(s.ItemBrand.Name) ? 1 : 0).ThenBy(s => s.ItemBrand.Name).ThenBy(s => s.ItemModel.Name),
+                "brand_desc" => query.OrderByDescending(s => string.IsNullOrWhiteSpace(s.ItemBrand.Name) ? 1 : 0).ThenByDescending(s => s.ItemBrand.Name).ThenByDescending(s => s.ItemModel.Name),
+                "model_asc" => query.OrderBy(s => string.IsNullOrWhiteSpace(s.ItemModel.Name) ? 1 : 0).ThenBy(s => s.ItemModel.Name).ThenBy(s => s.ItemBrand.Name),
+                "model_desc" => query.OrderByDescending(s => string.IsNullOrWhiteSpace(s.ItemModel.Name) ? 1 : 0).ThenByDescending(s => s.ItemModel.Name).ThenByDescending(s => s.ItemBrand.Name),
+                "an_asc" => query.OrderBy(s => s.AvailableAmount).ThenBy(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenBy(s => s.AssetId),
+                "an_desc" => query.OrderByDescending(s => s.AvailableAmount).ThenByDescending(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenByDescending(s => s.AssetId),
+                "moddate_asc" => query.OrderBy(s => s.ModifiedDate),
+                "moddate_desc" => query.OrderByDescending(s => s.ModifiedDate),
+                _ => query.OrderBy(s => s.AssetId)
+            };
+
+            return View(await query.ToListAsync());
         }
 
         // GET: Items/Details/5
@@ -49,15 +143,60 @@ namespace KlangIT_V3.Controllers
             {
                 return NotFound();
             }
-            else
+            ItemDetailsViewModel viewModel = new ItemDetailsViewModel
             {
-                item.BorrowHistories = await _context.BorrowHistories
-                    .Where(b => b.ItemId == item.Id)
-                    .OrderByDescending(b => b.BorrowDate)
-                    .ToListAsync();
+                Id = item.Id,
+                AssetId = item.AssetId,
+                SerialNo = item.SerialNo,
+                ItemTypeId = item.ItemTypeId,
+                ItemType = item.ItemType,
+                ItemBrandId = item.ItemBrandId,
+                ItemModelId = item.ItemModelId,
+                ItemDescription = item.ItemDescription,
+                ItemImageUrl = item.ItemImageUrl,
+                TotalAmount = item.TotalAmount,
+                ActiveAmount = item.ActiveAmount,
+                AvailableAmount = item.AvailableAmount,
+                BorrowedAmount = item.BorrowedAmount,
+                DamagedAmount = item.DamagedAmount,
+                DisposedAmount = item.DisposedAmount,
+                MinimumAmount = item.MinimumAmount,
+                ItemStatus = item.ItemStatus,
+                AssetId1 = item.AssetId1,
+                AssetId2 = item.AssetId2,
+                AssetId3 = item.AssetId3,
+                AssetId4 = item.AssetId4,
+                OtherAssetId = item.OtherAssetId,
+                Remarks = item.Remarks,
+                CreatedDate = item.CreatedDate,
+                ModifiedDate = item.ModifiedDate,
+                CreatedBy = item.CreatedBy,
+                ModifiedBy = item.ModifiedBy
+            };
+            item.BorrowHistories = await _context.BorrowHistories.Include(b => b.RequestDepartment).Include(b => b.RequestSection)
+                .Where(b => b.ItemId == item.Id)
+                .OrderByDescending(b => b.BorrowDate)
+                .ToListAsync();
+            List<BorrowInItemDetailViewModel> bhDetails = new List<BorrowInItemDetailViewModel>();
+            if (item.BorrowHistories != null && item.BorrowHistories.Count > 0)
+            {
+                foreach (var bh in item.BorrowHistories)
+                {
+                    bhDetails.Add(new BorrowInItemDetailViewModel
+                    {
+                        Id = bh.Id,
+                        RequestUser = bh.RequestUser,
+                        RequestDepartment = bh.RequestDepartment?.Name ?? string.Empty,
+                        RequestSection = bh.RequestSection?.Name ?? string.Empty,
+                        BorrowDate = bh.BorrowDate,
+                        LatestITStaff = bh.Itstaff,
+                        IsReturn = bh.IsReturn
+                    });
+                    var a = JsonSerializer.Serialize(bhDetails);
+                }
+                viewModel.BHinItemDetails = bhDetails;
             }
-
-            return View(item);
+            return View(viewModel);
         }
 
         // GET: Items/Create

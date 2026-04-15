@@ -1,5 +1,5 @@
 ﻿@using KlangIT_V3.Models.Enums
-@model KlangIT_V3.Models.Item
+@model KlangIT_V3.ViewModels.ItemDetailsViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -129,7 +129,7 @@
     </a>
 </div>
 
-@if (Model.BorrowHistories != null && Model.BorrowHistories.Any())
+@if (Model.BHinItemDetails != null && Model.BHinItemDetails.Any())
 {
     <h2 class="mt-4">ประวัติการยืม</h2>
     <table class="table">
@@ -140,7 +140,7 @@
                 <th>ฝ่าย/กลุ่มงาน</th>
                 <th>หน่วยงาน</th>
                 <th>วันที่ยืม</th>
-                <th>ผู้ดำเนินการให้ยืม</th>
+                <th>ผู้ดำเนินการให้ยืม-คืนล่าสุด</th>
                 <th></th>
             </tr>
         </thead>
@@ -148,27 +148,17 @@
             @{
                 int count = 0;
             }
-            @foreach (var borrowItem in Model.BorrowHistories)
+            @foreach (var borrowItem in Model.BHinItemDetails)
             {
                 count++;
                 var canReturn = !borrowItem.IsReturn;
                 <tr>
                     <td>@count</td>
                     <td>@Html.DisplayFor(_ => borrowItem.RequestUser)</td>
-                    <td>@Html.DisplayFor(_ => borrowItem.RequestDepartment.Name)</td>
-                    <td>@Html.DisplayFor(_ => borrowItem.RequestSection.Name)</td>
+                    <td>@Html.DisplayFor(_ => borrowItem.RequestDepartment)</td>
+                    <td>@Html.DisplayFor(_ => borrowItem.RequestSection)</td>
                     <td>@Html.DisplayFor(_ => borrowItem.BorrowDate)</td>
-                    <td>@Html.DisplayFor(_ => borrowItem.Itstaff)</td>
-                    
-                    @* <td>
-                        <a asp-controller="BorrowHistories"
-                               asp-action="Return"
-                               asp-route-id="@borrowItem.Id"
-                               class=" btn btn-primary">
-                            <i class="bi bi-box-arrow-in-left me-1"></i> ทำการคืน
-                        </a>
-                    </td> *@
-
+                    <td>@Html.DisplayFor(_ => borrowItem.LatestITStaff)</td>
                     <td>
                         <a asp-controller="BorrowHistories"
                                asp-action="Return"
