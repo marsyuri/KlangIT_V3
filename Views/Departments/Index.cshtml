@@ -1,14 +1,21 @@
-﻿@model IEnumerable<KlangIT_V3.Models.Department>
+@model IEnumerable<KlangIT_V3.Models.Department>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "รายชื่อฝ่าย/กลุ่มงาน";
 }
 
 <h1>รายชื่อฝ่าย/กลุ่มงาน</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Create" class="btn btn-primary">เพิ่มฝ่าย/กลุ่มงาน</a>
+
+    <form asp-controller="Departments" asp-action="Index" method="get" class="d-flex gap-2">
+        <input type="text" name="searchBox" class="form-control"
+               placeholder="ค้นหา..." value="@ViewBag.CurrentSearch" />
+        <button type="submit" class="btn btn-primary">ค้นหา</button>
+    </form>
+</div>
+
 <table class="table">
     <thead>
         <tr>
@@ -18,16 +25,27 @@
         </tr>
     </thead>
     <tbody>
-        @{
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="100" class="py-4">
+                    <div class="d-flex align-items-center justify-content-center text-danger">
+                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
+                        <span class="px-3 fw-bold">ไม่พบข้อมูล</span>
+                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
+                    </div>
+                </td>
+            </tr>
+        }
+        else
+        {
             int count = 0;
             foreach (var item in Model)
             {
                 count++;
                 <tr>
                     <td>@count</td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Name)
-                    </td>
+                    <td>@Html.DisplayFor(_ => item.Name)</td>
                     <td>
                         <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                         <a asp-action="Details" asp-route-id="@item.Id">Details</a> |

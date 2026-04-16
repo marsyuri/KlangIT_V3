@@ -26,8 +26,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
-    <PackageReference Include="SQLite" Version="3.13.0" />
-    <PackageReference Include="SQLitePCLRaw.core" Version="3.0.2" />
   </ItemGroup>
 
 </Project>

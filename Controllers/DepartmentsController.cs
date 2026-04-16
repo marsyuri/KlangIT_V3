@@ -26,10 +26,20 @@ namespace KlangIT_V3.Controllers
         }
 
         // GET: Departments
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public async Task<IActionResult> Index(string searchBox)
         {
-            var departments = await _context.Departments.Where(d => !d.IsDeleted).OrderBy(d => d.Name).ToListAsync();
-            return View(departments);
+            ViewBag.CurrentSearch = searchBox;
+
+            var query = _context.Departments.Where(d => !d.IsDeleted).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchBox))
+            {
+                string pattern = $"%{searchBox}%";
+                query = query.Where(d => EF.Functions.Like(d.Name, pattern));
+            }
+
+            return View(await query.OrderBy(d => d.Name).ToListAsync());
         }
 
         // GET: Departments/Details/5
