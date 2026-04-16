@@ -149,53 +149,46 @@ namespace KlangIT_V3.Controllers
         // GET: Sections/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
             var section = await _context.Sections.FindAsync(id);
-            if (section == null)
-            {
-                return NotFound();
-            }
-            var viewModel = new SectionViewModel()
-            {
-                Id = section.Id,
-                Name = section.Name,
-                SelectedDepartmentId = section.DepartmentId
-            };
-            PopulateDepartments(viewModel);
-            return View(viewModel);
+            if (section == null) return NotFound();
+            var vm = new SectionEditViewModel { Id = section.Id, Name = section.Name, SelectedDepartmentId = section.DepartmentId };
+            PopulateDepartments(vm);
+            return View(vm);
         }
 
+
         // POST: Sections/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(SectionViewModel sectionVM)
+        public async Task<IActionResult> Edit(SectionEditViewModel vm)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState
-                    .Where(x => x.Value?.Errors.Count > 0)
-                    .Select(x => new { Field = x.Key, Errors = x.Value!.Errors.Select(e => e.ErrorMessage) });
-                return View(sectionVM);
-            }
-            var section = await _context.Sections.FindAsync(sectionVM.Id);
-            if (section == null)
-            {
-                return NotFound();
-            }
-            section.Name = sectionVM.Name;
-            section.DepartmentId = sectionVM.SelectedDepartmentId;
+            if (!ModelState.IsValid) { PopulateDepartments(vm); return View(vm); }
+            var section = await _context.Sections.FindAsync(vm.Id);
+            if (section == null) return NotFound();
             string itUser = Utility.GetCurrentUserName();
+            section.Name = vm.Name;
+            section.DepartmentId = vm.SelectedDepartmentId;
             section.ModifiedBy = itUser;
             section.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        private void PopulateDepartments(SectionEditViewModel vm)
+        {
+            vm.Departments = _context.Departments
+                .Where(d => !d.IsDeleted)
+                .OrderBy(d => d.Name)
+                .Select(d => new SelectListItem
+                {
+                    Value = d.Id.ToString(),
+                    Text = d.Name,
+                    Selected = d.Id == vm.SelectedDepartmentId
+                }).ToList();
+            vm.Departments.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกฝ่าย/กลุ่มงาน --" });
+        }
+
 
         // GET: Sections/Delete/5
         public async Task<IActionResult> Delete(int? id)

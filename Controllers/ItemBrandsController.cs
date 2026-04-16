@@ -21,9 +21,32 @@ namespace KlangIT_V3.Controllers
         }
 
         // GET: ItemBrands
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string searchBox)
         {
-            return View(await _context.ItemBrands.OrderBy(i => i.Name).ToListAsync());
+            sortOrder ??= "name_asc";
+            ViewBag.CurrentSort   = sortOrder;
+            ViewBag.CurrentSearch = searchBox;
+            ViewBag.SortByName    = sortOrder == "name_asc"    ? "name_desc"    : "name_asc";
+            ViewBag.SortByModDate = sortOrder == "moddate_asc" ? "moddate_desc" : "moddate_asc";
+
+            var query = _context.ItemBrands.Where(i => !i.IsDeleted).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchBox))
+            {
+                string pattern = $"%{searchBox}%";
+                query = query.Where(i => EF.Functions.Like(i.Name, pattern));
+            }
+
+            query = sortOrder switch
+            {
+                "name_asc"     => query.OrderBy(i => i.Name),
+                "name_desc"    => query.OrderByDescending(i => i.Name),
+                "moddate_asc"  => query.OrderBy(i => i.ModifiedDate),
+                "moddate_desc" => query.OrderByDescending(i => i.ModifiedDate),
+                _              => query.OrderBy(i => i.Name)
+            };
+
+            return View(await query.ToListAsync());
         }
 
         // GET: ItemBrands/Details/5
@@ -83,52 +106,28 @@ namespace KlangIT_V3.Controllers
         // GET: ItemBrands/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
             var itemBrand = await _context.ItemBrands.FindAsync(id);
-            if (itemBrand == null)
-            {
-                return NotFound();
-            }
-            return View(itemBrand);
+            if (itemBrand == null) return NotFound();
+            var vm = new ItemBrandEditViewModel { Id = itemBrand.Id, Name = itemBrand.Name };
+            return View(vm);
         }
 
         // POST: ItemBrands/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,CreatedDate,ModifiedDate,CreatedBy,ModifiedBy,IsDeleted")] ItemBrand itemBrand)
+        public async Task<IActionResult> Edit(int id, ItemBrandEditViewModel vm)
         {
-            if (id != itemBrand.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(itemBrand);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ItemBrandExists(itemBrand.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(itemBrand);
+            if (id != vm.Id) return NotFound();
+            if (!ModelState.IsValid) return View(vm);
+            var itemBrand = await _context.ItemBrands.FindAsync(id);
+            if (itemBrand == null) return NotFound();
+            string itUser = Utility.GetCurrentUserName();
+            itemBrand.Name = vm.Name;
+            itemBrand.ModifiedBy = itUser;
+            itemBrand.ModifiedDate = DateTime.Now;
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: ItemBrands/Delete/5
@@ -149,7 +148,7 @@ namespace KlangIT_V3.Controllers
             return View(itemBrand);
         }
 
-        // POST: ItemBrands/Delete/5
+        // POST: ItemBrands/Delete/5 — soft delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -157,10 +156,12 @@ namespace KlangIT_V3.Controllers
             var itemBrand = await _context.ItemBrands.FindAsync(id);
             if (itemBrand != null)
             {
-                _context.ItemBrands.Remove(itemBrand);
+                string itUser = Utility.GetCurrentUserName();
+                itemBrand.IsDeleted = true;
+                itemBrand.ModifiedBy = itUser;
+                itemBrand.ModifiedDate = DateTime.Now;
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

@@ -1,40 +1,33 @@
-﻿@model KlangIT_V3.ViewModels.SectionViewModel
+@model KlangIT_V3.ViewModels.SectionEditViewModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "แก้ไขหน่วยงาน";
 }
 
-<h1>Edit</h1>
-
-<h4>Section</h4>
+<h1>แก้ไขหน่วยงาน</h1>
 <hr />
+
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group mb-4">
-                <label asp-for="Name" class="control-label"></label>
+                <label asp-for="SelectedDepartmentId" class="control-label">ฝ่าย/กลุ่มงาน</label>
+                <select asp-for="SelectedDepartmentId" class="form-control" asp-items="Model.Departments"></select>
+                <span asp-validation-for="SelectedDepartmentId" class="text-danger small"></span>
+            </div>
+            <div class="form-group mb-4">
+                <label asp-for="Name" class="control-label">ชื่อหน่วยงาน</label>
                 <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <span asp-validation-for="Name" class="text-danger small"></span>
             </div>
             <div class="form-group mb-4">
-                <label asp-for="SelectedDepartmentId"></label>
-                <select asp-for="SelectedDepartmentId"
-                        asp-items="Model.Departments"
-                        class="form-control">
-                </select>
-                <span asp-validation-for="SelectedDepartmentId" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="บันทึก" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">ยกเลิก</a>
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

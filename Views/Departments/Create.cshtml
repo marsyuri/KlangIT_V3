@@ -1,33 +1,27 @@
-﻿@model KlangIT_V3.ViewModels.DepartmentViewModel
+@model KlangIT_V3.ViewModels.DepartmentViewModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "เพิ่มฝ่าย/กลุ่มงาน";
 }
 
-<h1>เพิ่มข้อมูล</h1>
-
-<h4>ฝ่าย/กลุ่มงาน</h4>
+<h1>เพิ่มฝ่าย/กลุ่มงาน</h1>
 <hr />
 
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             <div class="form-group mb-4">
                 <label asp-for="Name" class="control-label">ชื่อฝ่าย/กลุ่มงาน</label>
                 <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <span asp-validation-for="Name" class="text-danger small"></span>
             </div>
-            
             <div class="form-group mb-4">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="บันทึก" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">ยกเลิก</a>
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

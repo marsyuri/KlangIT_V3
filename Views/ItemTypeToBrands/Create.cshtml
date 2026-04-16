@@ -1,34 +1,32 @@
-﻿@model KlangIT_V3.Models.ItemTypeToBrand
+@model KlangIT_V3.ViewModels.ItemTypeToBrandViewModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "เพิ่มประเภท-ยี่ห้ออุปกรณ์";
 }
 
-<h1>Create</h1>
-
-<h4>ItemTypeToBrand</h4>
+<h1>เพิ่มประเภท-ยี่ห้ออุปกรณ์</h1>
 <hr />
+
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             <div class="form-group mb-4">
-                <label asp-for="ItemTypeId" class="control-label"></label>
-                <select asp-for="ItemTypeId" class="form-control" asp-items="ViewBag.ItemTypeId"></select>
+                <label asp-for="SelectedItemTypeId" class="control-label">ประเภทอุปกรณ์</label>
+                <select asp-for="SelectedItemTypeId" class="form-control" asp-items="Model.ItemTypes"></select>
+                <span asp-validation-for="SelectedItemTypeId" class="text-danger small"></span>
             </div>
             <div class="form-group mb-4">
-                <label asp-for="ItemBrandId" class="control-label"></label>
-                <select asp-for="ItemBrandId" class="form-control" asp-items="ViewBag.ItemBrandId"></select>
+                <label asp-for="SelectedItemBrandId" class="control-label">ยี่ห้อ</label>
+                <select asp-for="SelectedItemBrandId" class="form-control" asp-items="Model.ItemBrands"></select>
+                <span asp-validation-for="SelectedItemBrandId" class="text-danger small"></span>
             </div>
             <div class="form-group mb-4">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="บันทึก" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">ยกเลิก</a>
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

@@ -1,41 +1,73 @@
-﻿@model IEnumerable<KlangIT_V3.Models.ItemTypeToBrand>
+@model IEnumerable<KlangIT_V3.Models.ItemTypeToBrand>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "รายชื่อประเภท-ยี่ห้ออุปกรณ์";
 }
 
-<h1>Index</h1>
+<h1>รายชื่อประเภท-ยี่ห้ออุปกรณ์</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Create" class="btn btn-primary">เพิ่มประเภท-ยี่ห้ออุปกรณ์</a>
+
+    <form asp-controller="ItemTypeToBrands" asp-action="Index" method="get" class="d-flex gap-2">
+        <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
+        <input type="text" name="searchBox" class="form-control"
+               placeholder="ค้นหา..." value="@ViewBag.CurrentSearch" />
+        <button type="submit" class="btn btn-primary">ค้นหา</button>
+    </form>
+</div>
+
 <table class="table">
     <thead>
         <tr>
+            <th>ลำดับ</th>
             <th>
-                @Html.DisplayNameFor(model => model.ItemType)
+                <a asp-action="Index"
+                   asp-route-sortOrder="@ViewBag.SortByType"
+                   asp-route-searchBox="@ViewBag.CurrentSearch">
+                    ประเภทอุปกรณ์
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ItemBrand)
+                <a asp-action="Index"
+                   asp-route-sortOrder="@ViewBag.SortByBrand"
+                   asp-route-searchBox="@ViewBag.CurrentSearch">
+                    ยี่ห้อ
+                </a>
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.ItemType.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ItemBrand.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="100" class="py-4">
+                    <div class="d-flex align-items-center justify-content-center text-danger">
+                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
+                        <span class="px-3 fw-bold">ไม่พบข้อมูล</span>
+                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
+                    </div>
+                </td>
+            </tr>
+        }
+        else
+        {
+            int count = 0;
+            foreach (var item in Model)
+            {
+                count++;
+                <tr>
+                    <td>@count</td>
+                    <td>@Html.DisplayFor(_ => item.ItemType.Name)</td>
+                    <td>@Html.DisplayFor(_ => item.ItemBrand.Name)</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        }
     </tbody>
 </table>

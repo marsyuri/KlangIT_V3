@@ -1,30 +1,30 @@
-﻿@model KlangIT_V3.Models.ItemTypeToBrand
+@model KlangIT_V3.Models.ItemTypeToBrand
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "รายละเอียด ประเภท-ยี่ห้ออุปกรณ์";
 }
 
-<h1>Details</h1>
+<h1>รายละเอียด ประเภท-ยี่ห้ออุปกรณ์</h1>
 
 <div>
-    <h4>ItemTypeToBrand</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ItemType)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ItemType.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ItemBrand)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ItemBrand.Name)
-        </dd>
+        <dt class="col-sm-2 mb-4 py-2">ประเภทอุปกรณ์</dt>
+        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.ItemType.Name)</dd>
+        <dt class="col-sm-2 mb-4 py-2">ยี่ห้อ</dt>
+        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.ItemBrand.Name)</dd>
+        <dt class="col-sm-2 mb-4 py-2">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
+        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.CreatedDate)</dd>
+        <dt class="col-sm-2 mb-4 py-2">@Html.DisplayNameFor(model => model.ModifiedDate)</dt>
+        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.ModifiedDate)</dd>
+        <dt class="col-sm-2 mb-4 py-2">@Html.DisplayNameFor(model => model.CreatedBy)</dt>
+        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.CreatedBy)</dd>
+        <dt class="col-sm-2 mb-4 py-2">@Html.DisplayNameFor(model => model.ModifiedBy)</dt>
+        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.ModifiedBy)</dd>
     </dl>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">แก้ไข</a>
+    <a asp-action="Index" class="btn btn-outline-secondary ms-2">กลับรายการ</a>
 </div>

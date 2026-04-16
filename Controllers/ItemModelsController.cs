@@ -21,31 +21,56 @@ namespace KlangIT_V3.Controllers
         }
 
         // GET: ItemModels
-        public async Task<IActionResult> Index(string sortOrder)
+        public async Task<IActionResult> Index(string sortOrder, string filterBrandId, string searchBox)
         {
-            var itemModel = _context.ItemModels.Where(s => !s.IsDeleted);
-            if (itemModel is null)
-            {
-                return NotFound();
-            }
-            if (sortOrder is null)
-            {
-                sortOrder = "brand_asc";
-            }
+            sortOrder ??= "brand_asc";
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.CurrentFilterBrand = filterBrandId;
+            ViewBag.CurrentSearch = searchBox;
+
             ViewBag.SortByName = sortOrder == "name_asc" ? "name_desc" : "name_asc";
             ViewBag.SortByBrand = sortOrder == "brand_asc" ? "brand_desc" : "brand_asc";
             ViewBag.SortByModDate = sortOrder == "moddate_asc" ? "moddate_desc" : "moddate_asc";
-            itemModel = sortOrder switch
+
+            // Populate brand dropdown
+            ViewBag.ItemBrands = await _context.ItemBrands
+                .Where(b => !b.IsDeleted)
+                .OrderBy(b => b.Name)
+                .Select(b => new SelectListItem
+                {
+                    Value = b.Id.ToString(),
+                    Text = b.Name,
+                    Selected = b.Id.ToString() == filterBrandId
+                }).ToListAsync();
+
+            var query = _context.ItemModels
+                .Include(i => i.ItemBrand)
+                .Where(i => !i.IsDeleted)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filterBrandId) && int.TryParse(filterBrandId, out int brandId))
+                query = query.Where(i => i.ItemBrandId == brandId);
+
+            if (!string.IsNullOrWhiteSpace(searchBox))
             {
-                "name_asc" => itemModel.OrderBy(i => i.Name),
-                "name_desc" => itemModel.OrderByDescending(i => i.Name),
-                "brand_asc" => itemModel.OrderBy(i => i.ItemBrand.Name).ThenBy(i => i.Name),
-                "brand_desc" => itemModel.OrderByDescending(i => i.ItemBrand.Name).ThenByDescending(i => i.Name),
-                "moddate_asc" => itemModel.OrderBy(i => i.ModifiedDate),
-                "moddate_desc" => itemModel.OrderByDescending(i => i.ModifiedDate),
-                _ => itemModel.OrderBy(i => i.ItemBrand.Name)
+                string pattern = $"%{searchBox}%";
+                query = query.Where(i =>
+                    EF.Functions.Like(i.Name, pattern) ||
+                    EF.Functions.Like(i.ItemBrand.Name, pattern));
+            }
+
+            query = sortOrder switch
+            {
+                "name_asc" => query.OrderBy(i => i.Name),
+                "name_desc" => query.OrderByDescending(i => i.Name),
+                "brand_asc" => query.OrderBy(i => i.ItemBrand.Name).ThenBy(i => i.Name),
+                "brand_desc" => query.OrderByDescending(i => i.ItemBrand.Name).ThenByDescending(i => i.Name),
+                "moddate_asc" => query.OrderBy(i => i.ModifiedDate),
+                "moddate_desc" => query.OrderByDescending(i => i.ModifiedDate),
+                _ => query.OrderBy(i => i.ItemBrand.Name)
             };
-            return View(await itemModel.ToListAsync());
+
+            return View(await query.ToListAsync());
         }
 
         // GET: ItemModels/Details/5
@@ -105,54 +130,44 @@ namespace KlangIT_V3.Controllers
         // GET: ItemModels/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
             var itemModel = await _context.ItemModels.FindAsync(id);
-            if (itemModel == null)
-            {
-                return NotFound();
-            }
-            ViewData["ItemBrandId"] = new SelectList(_context.ItemBrands, "Id", "Id", itemModel.ItemBrandId);
-            return View(itemModel);
+            if (itemModel == null) return NotFound();
+            var vm = new ItemModelEditViewModel { Id = itemModel.Id, Name = itemModel.Name, SelectedItemBrandId = itemModel.ItemBrandId };
+            PopulateItemBrandsEdit(vm);
+            return View(vm);
         }
 
         // POST: ItemModels/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,ItemBrandId,CreatedDate,ModifiedDate,CreatedBy,ModifiedBy,IsDeleted")] ItemModel itemModel)
+        public async Task<IActionResult> Edit(int id, ItemModelEditViewModel vm)
         {
-            if (id != itemModel.Id)
-            {
-                return NotFound();
-            }
+            if (id != vm.Id) return NotFound();
+            if (!ModelState.IsValid) { PopulateItemBrandsEdit(vm); return View(vm); }
+            var itemModel = await _context.ItemModels.FindAsync(id);
+            if (itemModel == null) return NotFound();
+            string itUser = Utility.GetCurrentUserName();
+            itemModel.Name = vm.Name;
+            itemModel.ItemBrandId = vm.SelectedItemBrandId;
+            itemModel.ModifiedBy = itUser;
+            itemModel.ModifiedDate = DateTime.Now;
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
 
-            if (ModelState.IsValid)
-            {
-                try
+        private void PopulateItemBrandsEdit(ItemModelEditViewModel vm)
+        {
+            vm.ItemBrands = _context.ItemBrands
+                .Where(d => !d.IsDeleted)
+                .OrderBy(d => d.Name)
+                .Select(d => new SelectListItem
                 {
-                    _context.Update(itemModel);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ItemModelExists(itemModel.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["ItemBrandId"] = new SelectList(_context.ItemBrands, "Id", "Id", itemModel.ItemBrandId);
-            return View(itemModel);
+                    Value = d.Id.ToString(),
+                    Text = d.Name,
+                    Selected = d.Id == vm.SelectedItemBrandId
+                }).ToList();
+            vm.ItemBrands.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกยี่ห้อ --" });
         }
 
         // GET: ItemModels/Delete/5
@@ -174,7 +189,7 @@ namespace KlangIT_V3.Controllers
             return View(itemModel);
         }
 
-        // POST: ItemModels/Delete/5
+        // POST: ItemModels/Delete/5 — soft delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -182,10 +197,12 @@ namespace KlangIT_V3.Controllers
             var itemModel = await _context.ItemModels.FindAsync(id);
             if (itemModel != null)
             {
-                _context.ItemModels.Remove(itemModel);
+                string itUser = Utility.GetCurrentUserName();
+                itemModel.IsDeleted = true;
+                itemModel.ModifiedBy = itUser;
+                itemModel.ModifiedDate = DateTime.Now;
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

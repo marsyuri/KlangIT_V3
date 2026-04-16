@@ -212,6 +212,10 @@ namespace KlangIT_V3.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (bhVM.BorrowDate.Date == DateTime.Now.Date)
+                {
+                    bhVM.BorrowDate = DateTime.Now;
+                }
                 string itUser = Utility.GetCurrentUserName();
                 BorrowHistory bh = new BorrowHistory
                 {

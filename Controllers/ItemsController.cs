@@ -175,12 +175,12 @@ namespace KlangIT_V3.Controllers
             };
             item.BorrowHistories = await _context.BorrowHistories.Include(b => b.RequestDepartment).Include(b => b.RequestSection)
                 .Where(b => b.ItemId == item.Id)
-                .OrderByDescending(b => b.BorrowDate)
                 .ToListAsync();
             List<BorrowInItemDetailViewModel> bhDetails = new List<BorrowInItemDetailViewModel>();
             if (item.BorrowHistories != null && item.BorrowHistories.Count > 0)
             {
-                foreach (var bh in item.BorrowHistories)
+                var bhOrder = item.BorrowHistories.OrderByDescending(b => b.Id).ToList();
+                foreach (var bh in bhOrder)
                 {
                     bhDetails.Add(new BorrowInItemDetailViewModel
                     {
@@ -192,7 +192,6 @@ namespace KlangIT_V3.Controllers
                         LatestITStaff = bh.Itstaff,
                         IsReturn = bh.IsReturn
                     });
-                    var a = JsonSerializer.Serialize(bhDetails);
                 }
                 viewModel.BHinItemDetails = bhDetails;
             }

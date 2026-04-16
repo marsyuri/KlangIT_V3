@@ -26,10 +26,13 @@ namespace KlangIT_V3.Controllers
         }
 
         // GET: Departments
-        [HttpGet]
-        public async Task<IActionResult> Index(string searchBox)
+        public async Task<IActionResult> Index(string sortOrder, string searchBox)
         {
-            ViewBag.CurrentSearch = searchBox;
+            sortOrder ??= "name_asc";
+            ViewBag.CurrentSort    = sortOrder;
+            ViewBag.CurrentSearch  = searchBox;
+            ViewBag.SortByName     = sortOrder == "name_asc"    ? "name_desc"    : "name_asc";
+            ViewBag.SortByModDate  = sortOrder == "moddate_asc" ? "moddate_desc" : "moddate_asc";
 
             var query = _context.Departments.Where(d => !d.IsDeleted).AsQueryable();
 
@@ -39,7 +42,16 @@ namespace KlangIT_V3.Controllers
                 query = query.Where(d => EF.Functions.Like(d.Name, pattern));
             }
 
-            return View(await query.OrderBy(d => d.Name).ToListAsync());
+            query = sortOrder switch
+            {
+                "name_asc"     => query.OrderBy(d => d.Name),
+                "name_desc"    => query.OrderByDescending(d => d.Name),
+                "moddate_asc"  => query.OrderBy(d => d.ModifiedDate),
+                "moddate_desc" => query.OrderByDescending(d => d.ModifiedDate),
+                _              => query.OrderBy(d => d.Name)
+            };
+
+            return View(await query.ToListAsync());
         }
 
         // GET: Departments/Details/5
@@ -99,41 +111,23 @@ namespace KlangIT_V3.Controllers
         // GET: Departments/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
             var department = await _context.Departments.FindAsync(id);
-            if (department == null)
-            {
-                return NotFound();
-            }
-            DepartmentViewModel deptVM = new DepartmentViewModel
-            {
-                Name = department.Name
-            };
-            return View(deptVM);
+            if (department == null) return NotFound();
+            var vm = new DepartmentEditViewModel { Id = department.Id, Name = department.Name };
+            return View(vm);
         }
 
         // POST: Departments/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(DepartmentViewModel deptVM)
+        public async Task<IActionResult> Edit(DepartmentEditViewModel vm)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState
-                    .Where(x => x.Value?.Errors.Count > 0)
-                    .Select(x => new { Field = x.Key, Errors = x.Value!.Errors.Select(e => e.ErrorMessage) });
-                return View(deptVM);
-            }
-            var department = await _context.Departments.FindAsync(deptVM.Id);
-            if (department == null)
-            {
-                return NotFound();
-            }
+            if (!ModelState.IsValid) return View(vm);
+            var department = await _context.Departments.FindAsync(vm.Id);
+            if (department == null) return NotFound();
             string itUser = Utility.GetCurrentUserName();
-            department.Name = deptVM.Name;
+            department.Name = vm.Name;
             department.ModifiedBy = itUser;
             department.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();

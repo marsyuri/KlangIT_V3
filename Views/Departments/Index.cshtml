@@ -10,6 +10,7 @@
     <a asp-action="Create" class="btn btn-primary">เพิ่มฝ่าย/กลุ่มงาน</a>
 
     <form asp-controller="Departments" asp-action="Index" method="get" class="d-flex gap-2">
+        <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
         <input type="text" name="searchBox" class="form-control"
                placeholder="ค้นหา..." value="@ViewBag.CurrentSearch" />
         <button type="submit" class="btn btn-primary">ค้นหา</button>
@@ -20,7 +21,20 @@
     <thead>
         <tr>
             <th>ลำดับ</th>
-            <th>ชื่อ</th>
+            <th>
+                <a asp-action="Index"
+                   asp-route-sortOrder="@ViewBag.SortByName"
+                   asp-route-searchBox="@ViewBag.CurrentSearch">
+                    ชื่อ
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index"
+                   asp-route-sortOrder="@ViewBag.SortByModDate"
+                   asp-route-searchBox="@ViewBag.CurrentSearch">
+                    เวลาแก้ไขล่าสุด
+                </a>
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -46,6 +60,7 @@
                 <tr>
                     <td>@count</td>
                     <td>@Html.DisplayFor(_ => item.Name)</td>
+                    <td>@Html.DisplayFor(_ => item.ModifiedDate)</td>
                     <td>
                         <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                         <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
