@@ -1,129 +1,79 @@
-﻿@model KlangIT_V3.Models.BorrowHistory
-
+@model KlangIT_V3.ViewModels.BorrowHistoryDeleteViewModel
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "ลบประวัติการยืม";
 }
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
-<h1>Delete</h1>
+<h1 class="ds-page-title">ลบประวัติการยืม</h1>
+<p class="ds-page-sub">กรุณาตรวจสอบรายละเอียดก่อนดำเนินการลบ</p>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>BorrowHistory</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RequestUser)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RequestUser)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsPermanentBorrow)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsPermanentBorrow)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BorrowDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.BorrowDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.HasExpectedReturnDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.HasExpectedReturnDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ExpectedReturnDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ExpectedReturnDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsReturn)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsReturn)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ReturnDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ReturnDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DurationDays)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DurationDays)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Itstaff)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Itstaff)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Amount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Amount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ModifiedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ModifiedDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedBy)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ModifiedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ModifiedBy)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsDeleted)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsDeleted)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Item)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Item.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RequestDepartment)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RequestDepartment.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RequestSection)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RequestSection.Id)
-        </dd>
-    </dl>
-    
+<div style="max-width:560px">
+    <span class="ds-section-lbl">ข้อมูลการยืม</span>
+    <div class="ds-card">
+        <div class="ds-field-grid">
+            <span class="ds-field-label">อุปกรณ์</span>
+            <span class="ds-field-value">@Model.ItemHeader</span>
+
+            <span class="ds-field-label">เลขทะเบียน</span>
+            <span class="ds-field-value" style="font-family:monospace;font-size:12px">@Model.ItemAssetId</span>
+
+            <span class="ds-field-label">ผู้ยืม</span>
+            <span class="ds-field-value">@Model.RequestUser</span>
+
+            <span class="ds-field-label">ฝ่าย / หน่วยงาน</span>
+            <span class="ds-field-value">@Model.DepartmentName / @Model.SectionName</span>
+
+            <span class="ds-field-label">วันที่ยืม</span>
+            <span class="ds-field-value">@Model.BorrowDate.ToString("dd MMM yyyy HH:mm")</span>
+
+            <span class="ds-field-label">สถานะ</span>
+            <span class="ds-field-value">
+                @if (Model.IsReturn)
+                {
+        @:คืนแล้ว
+    }
+                else
+                {
+        @:กำลังยืม
+    }
+            </span>
+        </div>
+    </div>
+
+    @if (!Model.IsReturn)
+    {
+        <div class="ds-warn-box">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M9 2L16.5 15H1.5L9 2Z" stroke="#854F0B" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M9 7V10" stroke="#854F0B" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="9" cy="13" r=".75" fill="#854F0B"/>
+            </svg>
+            <div>
+                <p class="ds-warn-title">รายการนี้ยังไม่ได้คืน</p>
+                <p class="ds-warn-desc">การลบจะทำให้ระบบจำนวนพร้อมใช้งานผิดพลาด ควรบันทึกคืนก่อนลบ</p>
+            </div>
+        </div>
+    }
+
+    <div class="ds-danger-box">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 2L16.5 15H1.5L9 2Z" stroke="#A32D2D" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M9 7V10" stroke="#A32D2D" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="9" cy="13" r=".75" fill="#A32D2D"/>
+        </svg>
+        <div>
+            <p class="ds-danger-title">การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
+            <p class="ds-danger-desc">ประวัติการยืมนี้จะถูกลบออกจากระบบอย่างถาวร</p>
+        </div>
+    </div>
+
     <form asp-action="Delete">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id"/>
+        <div class="ds-actions">
+            <button type="submit" class="ds-btn-danger">ยืนยันการลบ</button>
+            <a asp-controller="Items" asp-action="Details" asp-route-id="@Model.ItemId"
+               class="ds-btn-ghost">ยกเลิก / กลับรายการ</a>
+        </div>
     </form>
 </div>

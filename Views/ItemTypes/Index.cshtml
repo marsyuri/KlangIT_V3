@@ -1,73 +1,36 @@
 @model IEnumerable<KlangIT_V3.Models.ItemType>
+@{ ViewData["Title"] = "รายชื่อประเภทอุปกรณ์"; }
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
-@{
-    ViewData["Title"] = "รายชื่อประเภทอุปกรณ์";
-}
-
-<h1>รายชื่อประเภทอุปกรณ์</h1>
-
-<div class="d-flex align-items-center gap-3 mb-4">
-    <a asp-action="Create" class="btn btn-primary">เพิ่มประเภทอุปกรณ์</a>
-
-    <form asp-controller="ItemTypes" asp-action="Index" method="get" class="d-flex gap-2">
-        <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
-        <input type="text" name="searchBox" class="form-control"
-               placeholder="ค้นหา..." value="@ViewBag.CurrentSearch" />
-        <button type="submit" class="btn btn-primary">ค้นหา</button>
-    </form>
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem">
+    <h1 class="ds-page-title" style="margin:0">รายชื่อประเภทอุปกรณ์</h1>
+    <a asp-action="Create" class="ds-btn-primary">+ เพิ่มประเภทอุปกรณ์</a>
 </div>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>ลำดับ</th>
-            <th>
-                <a asp-action="Index"
-                   asp-route-sortOrder="@ViewBag.SortByName"
-                   asp-route-searchBox="@ViewBag.CurrentSearch">
-                    ชื่อ
-                </a>
-            </th>
-            <th>
-                <a asp-action="Index"
-                   asp-route-sortOrder="@ViewBag.SortByModDate"
-                   asp-route-searchBox="@ViewBag.CurrentSearch">
-                    เวลาแก้ไขล่าสุด
-                </a>
-            </th>
-            <th></th>
-        </tr>
-    </thead>
+<form asp-action="Index" method="get" class="ds-filter-bar">
+    <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort"/>
+    <input type="text" name="searchBox" class="ds-input" style="width:220px" placeholder="ค้นหา..." value="@ViewBag.CurrentSearch"/>
+    <button type="submit" class="ds-btn-primary">ค้นหา</button>
+</form>
+<div class="ds-table-wrap"><table class="ds-table">
+    <thead><tr>
+        <th style="width:48px">#</th>
+        <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByName" asp-route-searchBox="@ViewBag.CurrentSearch">ประเภท ↕</a></th>
+        <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByModDate" asp-route-searchBox="@ViewBag.CurrentSearch">แก้ไขล่าสุด ↕</a></th>
+        <th></th>
+    </tr></thead>
     <tbody>
-        @if (!Model.Any())
-        {
+        @if (!Model.Any()) { <tr><td colspan="4" class="ds-table-empty">ไม่พบข้อมูล</td></tr> }
+        else { int row=0; foreach(var item in Model) { row++;
             <tr>
-                <td colspan="100" class="py-4">
-                    <div class="d-flex align-items-center justify-content-center text-danger">
-                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
-                        <span class="px-3 fw-bold">ไม่พบข้อมูล</span>
-                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
-                    </div>
-                </td>
+                <td style="color:var(--ds-text3)">@row</td>
+                <td style="font-weight:500">@item.Name</td>
+                <td style="color:var(--ds-text2)">@item.ModifiedDate.ToString("dd MMM yyyy")</td>
+                <td><div class="ds-tbl-actions">
+                    <a asp-action="Edit"    asp-route-id="@item.Id" class="ds-btn-ghost ds-tbl-btn">แก้ไข</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="ds-btn-ghost ds-tbl-btn">รายละเอียด</a>
+                    <a asp-action="Delete"  asp-route-id="@item.Id" class="ds-btn-del-ghost ds-tbl-btn">ลบ</a>
+                </div></td>
             </tr>
-        }
-        else
-        {
-            int count = 0;
-            foreach (var item in Model)
-            {
-                count++;
-                <tr>
-                    <td>@count</td>
-                    <td>@Html.DisplayFor(_ => item.Name)</td>
-                    <td>@Html.DisplayFor(_ => item.ModifiedDate)</td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    </td>
-                </tr>
-            }
-        }
+        } }
     </tbody>
-</table>
+</table></div>

@@ -1,139 +1,185 @@
-﻿@model KlangIT_V3.Models.Item
-
+@model KlangIT_V3.ViewModels.ItemEditViewModel
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "แก้ไขวัสดุ";
 }
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
-<h1>Edit</h1>
+<h1 class="ds-page-title">แก้ไขวัสดุ</h1>
 
-<h4>Item</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group mb-4">
-                <label asp-for="AssetId" class="control-label"></label>
-                <input asp-for="AssetId" class="form-control" />
-                <span asp-validation-for="AssetId" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="SerialNo" class="control-label"></label>
-                <input asp-for="SerialNo" class="form-control" />
-                <span asp-validation-for="SerialNo" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="ItemTypeId" class="control-label"></label>
-                <select asp-for="ItemTypeId" class="form-control" asp-items="ViewBag.ItemTypeId"></select>
-                <span asp-validation-for="ItemTypeId" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="ItemBrandId" class="control-label"></label>
-                <select asp-for="ItemBrandId" class="form-control" asp-items="ViewBag.ItemBrandId"></select>
-                <span asp-validation-for="ItemBrandId" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="ItemModelId" class="control-label"></label>
-                <select asp-for="ItemModelId" class="form-control" asp-items="ViewBag.ItemModelId"></select>
-                <span asp-validation-for="ItemModelId" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="ItemDescription" class="control-label"></label>
-                <input asp-for="ItemDescription" class="form-control" />
-                <span asp-validation-for="ItemDescription" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="ItemImageUrl" class="control-label"></label>
-                <input asp-for="ItemImageUrl" class="form-control" />
-                <span asp-validation-for="ItemImageUrl" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="TotalAmount" class="control-label"></label>
-                <input asp-for="TotalAmount" class="form-control" />
-                <span asp-validation-for="TotalAmount" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="AvailableAmount" class="control-label"></label>
-                <input asp-for="AvailableAmount" class="form-control" />
-                <span asp-validation-for="AvailableAmount" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="BorrowedAmount" class="control-label"></label>
-                <input asp-for="BorrowedAmount" class="form-control" />
-                <span asp-validation-for="BorrowedAmount" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="MinimumAmount" class="control-label"></label>
-                <input asp-for="MinimumAmount" class="form-control" />
-                <span asp-validation-for="MinimumAmount" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="ItemStatus" class="control-label"></label>
-                <select asp-for="ItemStatus" class="form-control" asp-items="ViewBag.ItemStatusId"></select>
-                <span asp-validation-for="ItemStatus" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="AssetId1" class="control-label"></label>
-                <input asp-for="AssetId1" class="form-control" />
-                <span asp-validation-for="AssetId1" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="AssetId2" class="control-label"></label>
-                <input asp-for="AssetId2" class="form-control" />
-                <span asp-validation-for="AssetId2" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="AssetId3" class="control-label"></label>
-                <input asp-for="AssetId3" class="form-control" />
-                <span asp-validation-for="AssetId3" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="AssetId4" class="control-label"></label>
-                <input asp-for="AssetId4" class="form-control" />
-                <span asp-validation-for="AssetId4" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="Remarks" class="control-label"></label>
-                <input asp-for="Remarks" class="form-control" />
-                <span asp-validation-for="Remarks" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="CreatedDate" class="control-label"></label>
-                <input asp-for="CreatedDate" class="form-control" />
-                <span asp-validation-for="CreatedDate" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="ModifiedDate" class="control-label"></label>
-                <input asp-for="ModifiedDate" class="form-control" />
-                <span asp-validation-for="ModifiedDate" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="CreatedBy" class="control-label"></label>
-                <input asp-for="CreatedBy" class="form-control" />
-                <span asp-validation-for="CreatedBy" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="ModifiedBy" class="control-label"></label>
-                <input asp-for="ModifiedBy" class="form-control" />
-                <span asp-validation-for="ModifiedBy" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsDeleted" /> @Html.DisplayNameFor(model => model.IsDeleted)
-                </label>
-            </div>
-            <div class="form-group mb-4">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+<div class="ds-card" style="max-width:560px">
+    <form asp-action="Edit">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+        <input type="hidden" asp-for="Id"/>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+        @* ── ข้อมูลทะเบียน ── *@
+        <span class="ds-section-lbl">ข้อมูลทะเบียน</span>
+
+        <div class="ds-row">
+            <span class="ds-lbl">เลขครุภัณฑ์</span>
+            <div class="ds-asset-row">
+                <div style="display:flex;flex-direction:column;width:72px">
+                    <input asp-for="AssetId1" class="ds-input" maxlength="4"/>
+                    <span asp-validation-for="AssetId1" class="text-danger small"></span>
+                </div>
+                <div class="ds-asset-sep">-</div>
+                <div style="display:flex;flex-direction:column;flex:1">
+                    <input asp-for="AssetId2" class="ds-input"/>
+                    <span asp-validation-for="AssetId2" class="text-danger small"></span>
+                </div>
+                <div class="ds-asset-sep">-</div>
+                <div style="display:flex;flex-direction:column;flex:1">
+                    <input asp-for="AssetId3" class="ds-input"/>
+                    <span asp-validation-for="AssetId3" class="text-danger small"></span>
+                </div>
+                <div class="ds-asset-sep">-</div>
+                <div style="display:flex;flex-direction:column;width:82px">
+                    <input asp-for="AssetId4" class="ds-input"/>
+                    <span asp-validation-for="AssetId4" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ds-row">
+            <label asp-for="OtherAssetId" class="ds-lbl">เลขทะเบียนทรัพย์สินแบบอื่น</label>
+            <input asp-for="OtherAssetId" class="ds-input"/>
+        </div>
+
+        <div class="ds-row">
+            <label asp-for="SerialNo" class="ds-lbl">Serial Number</label>
+            <input asp-for="SerialNo" class="ds-input"/>
+        </div>
+
+        <hr class="ds-divider"/>
+        <span class="ds-section-lbl">ประเภท / ยี่ห้อ / รุ่น</span>
+
+        <div class="ds-2col">
+            <div class="ds-row">
+                <label asp-for="SelectedItemTypeId" class="ds-lbl">ประเภทอุปกรณ์</label>
+                <select asp-for="SelectedItemTypeId" class="ds-select" asp-items="Model.ItemTypes"></select>
+                <span asp-validation-for="SelectedItemTypeId" class="text-danger small"></span>
+            </div>
+            <div class="ds-row">
+                <label asp-for="SelectedItemBrandId" class="ds-lbl">ยี่ห้อ</label>
+                <select asp-for="SelectedItemBrandId" class="ds-select" asp-items="Model.ItemBrands"></select>
+                <span asp-validation-for="SelectedItemBrandId" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="ds-row">
+            <label asp-for="SelectedItemModelId" class="ds-lbl">รุ่น</label>
+            <select asp-for="SelectedItemModelId" class="ds-select" asp-items="Model.ItemModels"></select>
+            <span asp-validation-for="SelectedItemModelId" class="text-danger small"></span>
+        </div>
+
+        <div class="ds-row">
+            <label asp-for="ItemDescription" class="ds-lbl">คำอธิบาย</label>
+            <input asp-for="ItemDescription" class="ds-input"/>
+        </div>
+
+        <div class="ds-row">
+            <label asp-for="ItemImageUrl" class="ds-lbl">URL รูปภาพ</label>
+            <input asp-for="ItemImageUrl" class="ds-input"/>
+        </div>
+
+        <hr class="ds-divider"/>
+        <span class="ds-section-lbl">จำนวนและสถานะ</span>
+
+        <div class="ds-3col">
+            <div class="ds-row">
+                <label asp-for="TotalAmount" class="ds-lbl">จำนวนทั้งหมด</label>
+                <input asp-for="TotalAmount" class="ds-input" type="number" min="1"/>
+                <span asp-validation-for="TotalAmount" class="text-danger small"></span>
+            </div>
+            <div class="ds-row">
+                <label asp-for="AvailableAmount" class="ds-lbl">พร้อมใช้งาน</label>
+                <input asp-for="AvailableAmount" class="ds-input ds-input-ro" readonly/>
+            </div>
+            <div class="ds-row">
+                <label asp-for="BorrowedAmount" class="ds-lbl">กำลังยืม</label>
+                <input asp-for="BorrowedAmount" class="ds-input ds-input-ro" readonly/>
+            </div>
+        </div>
+
+        <div class="ds-row" style="max-width:160px">
+            <label asp-for="MinimumAmount" class="ds-lbl">จำนวนขั้นต่ำ</label>
+            <input asp-for="MinimumAmount" class="ds-input" type="number" min="0"/>
+            <span asp-validation-for="MinimumAmount" class="text-danger small"></span>
+        </div>
+
+        <div class="ds-row">
+            <label asp-for="SelectedItemStatus" class="ds-lbl">สถานะของวัสดุ/ครุภัณฑ์</label>
+            <div style="display:flex;align-items:center;gap:10px">
+                <select asp-for="SelectedItemStatus" class="ds-select" style="width:auto;min-width:170px"
+                        asp-items="Model.ItemStatuses" id="statusSelect"></select>
+                <span class="ds-badge" id="statusBadge"></span>
+            </div>
+            <span asp-validation-for="SelectedItemStatus" class="text-danger small"></span>
+        </div>
+
+        <div class="ds-row">
+            <label asp-for="Remarks" class="ds-lbl">หมายเหตุ</label>
+            <input asp-for="Remarks" class="ds-input"/>
+        </div>
+
+        <hr class="ds-divider"/>
+        <span class="ds-section-lbl">ข้อมูลระบบ</span>
+
+        <div class="ds-2col">
+            <div class="ds-row">
+                <label asp-for="CreatedDate" class="ds-lbl">วันที่สร้าง</label>
+                <input asp-for="CreatedDate" class="ds-input ds-input-ro" readonly/>
+            </div>
+            <div class="ds-row">
+                <label asp-for="CreatedBy" class="ds-lbl">สร้างโดย</label>
+                <input asp-for="CreatedBy" class="ds-input ds-input-ro" readonly/>
+            </div>
+        </div>
+        <div class="ds-2col">
+            <div class="ds-row">
+                <label asp-for="ModifiedDate" class="ds-lbl">แก้ไขล่าสุด</label>
+                <input asp-for="ModifiedDate" class="ds-input ds-input-ro" readonly/>
+            </div>
+            <div class="ds-row">
+                <label asp-for="ModifiedBy" class="ds-lbl">แก้ไขโดย</label>
+                <input asp-for="ModifiedBy" class="ds-input ds-input-ro" readonly/>
+            </div>
+        </div>
+
+        @* IsDeleted toggle *@
+        <div class="ds-toggle-row">
+            <label class="ds-switch">
+                <input type="checkbox" asp-for="IsDeleted" id="isDeletedChk" onchange="toggleDeleted(this.checked)"/>
+                <span class="ds-slider"></span>
+            </label>
+            <span style="font-size:13px;font-weight:500">IsDeleted</span>
+            <span id="deletedHint" style="font-size:12px;color:var(--ds-text3);margin-left:auto">ปกติ</span>
+        </div>
+
+        <div class="ds-actions-sb">
+            <div style="display:flex;gap:8px">
+                <button type="submit" class="ds-btn-primary">บันทึก</button>
+                <a asp-action="Index" class="ds-btn-ghost">ยกเลิก</a>
+            </div>
+            <a asp-action="Delete" asp-route-id="@Model.Id" id="deleteBtn"
+               class="ds-btn-del-ghost" style="display:none">ลบถาวร</a>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+<script>
+(function () {
+    window.toggleDeleted = function (on) {
+        const hint = document.getElementById('deletedHint');
+        const btn  = document.getElementById('deleteBtn');
+        hint.textContent = on ? 'ทำเครื่องหมายว่าถูกลบ' : 'ปกติ';
+        hint.style.color = on ? '#A32D2D' : 'var(--ds-text3)';
+        btn.style.display = on ? 'inline-flex' : 'none';
+    };
+    const chk = document.getElementById('isDeletedChk');
+    if (chk) toggleDeleted(chk.checked);
+})();
+</script>
 }

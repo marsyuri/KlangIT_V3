@@ -1,35 +1,27 @@
 @model KlangIT_V3.ViewModels.ItemTypeToBrandEditViewModel
+@{ ViewData["Title"] = "แก้ไขการจับคู่ประเภท-ยี่ห้อ"; }
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
-@{
-    ViewData["Title"] = "แก้ไขประเภท-ยี่ห้ออุปกรณ์";
-}
-
-<h1>แก้ไขประเภท-ยี่ห้ออุปกรณ์</h1>
-<hr />
-
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group mb-4">
-                <label asp-for="SelectedItemTypeId" class="control-label">ประเภทอุปกรณ์</label>
-                <select asp-for="SelectedItemTypeId" class="form-control" asp-items="Model.ItemTypes"></select>
-                <span asp-validation-for="SelectedItemTypeId" class="text-danger small"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="SelectedItemBrandId" class="control-label">ยี่ห้อ</label>
-                <select asp-for="SelectedItemBrandId" class="form-control" asp-items="Model.ItemBrands"></select>
-                <span asp-validation-for="SelectedItemBrandId" class="text-danger small"></span>
-            </div>
-            <div class="form-group mb-4">
-                <input type="submit" value="บันทึก" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-outline-secondary ms-2">ยกเลิก</a>
-            </div>
-        </form>
-    </div>
+<h1 class="ds-page-title">แก้ไขการจับคู่ประเภท-ยี่ห้อ</h1>
+<div class="ds-card" style="max-width:400px">
+    <form asp-action="Edit">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+        <input type="hidden" asp-for="Id"/>
+        <div class="ds-row">
+            <label asp-for="SelectedItemTypeId" class="ds-lbl">ประเภทอุปกรณ์</label>
+            <select asp-for="SelectedItemTypeId" class="ds-select" asp-items="Model.ItemTypes"></select>
+            <span asp-validation-for="SelectedItemTypeId" class="text-danger small"></span>
+        </div>
+        <div class="ds-row">
+            <label asp-for="SelectedItemBrandId" class="ds-lbl">ยี่ห้อ</label>
+            <select asp-for="SelectedItemBrandId" class="ds-select" asp-items="Model.ItemBrands"></select>
+            <span asp-validation-for="SelectedItemBrandId" class="text-danger small"></span>
+        </div>
+        <div class="ds-actions">
+            <button type="submit" class="ds-btn-primary">บันทึก</button>
+            <a asp-action="Index" class="ds-btn-ghost">ยกเลิก</a>
+        </div>
+    </form>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

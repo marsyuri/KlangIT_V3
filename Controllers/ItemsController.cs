@@ -1,16 +1,10 @@
-﻿using KlangIT_V3.Helpers;
+using KlangIT_V3.Helpers;
 using KlangIT_V3.Models;
 using KlangIT_V3.Models.Enums;
 using KlangIT_V3.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using static System.Collections.Specialized.BitVector32;
 
 namespace KlangIT_V3.Controllers
 {
@@ -25,7 +19,7 @@ namespace KlangIT_V3.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: Items
+        // ── GET: Items ────────────────────────────────────────────────────────────
         public async Task<IActionResult> Index(string sortOrder, string filterTypeId, string filterBrandId, string filterModelId, string searchBox)
         {
             sortOrder ??= "asset_asc";
@@ -34,28 +28,16 @@ namespace KlangIT_V3.Controllers
             ViewBag.SortByItemType = sortOrder == "type_asc" ? "type_desc" : "type_asc";
             ViewBag.SortByItemBrand = sortOrder == "brand_asc" ? "brand_desc" : "brand_asc";
             ViewBag.SortByItemModel = sortOrder == "model_asc" ? "model_desc" : "model_asc";
-            ViewBag.SortByAvlNo = sortOrder == "an_asc" ? "an_desc" : "an_asc";
+            ViewBag.SortByAvlNo = sortOrder == "avl_asc" ? "avl_desc" : "avl_asc";
             ViewBag.SortByModDate = sortOrder == "moddate_asc" ? "moddate_desc" : "moddate_asc";
-
-            ViewBag.CurrentFilterType = filterTypeId;
-            ViewBag.CurrentFilterBrand = filterBrandId;
-            ViewBag.CurrentFilterModel = filterModelId;
             ViewBag.CurrentSearch = searchBox;
 
-            // Build cascade maps for 2-way type↔brand and brand→model dropdowns
+            // Cascade maps for dropdowns
             var links = await _context.ItemTypeToBrands.ToListAsync();
-
-            var typeToBrandsMap = links
-                .GroupBy(l => l.ItemTypeId)
-                .ToDictionary(g => g.Key, g => g.Select(l => l.ItemBrandId).ToList());
-
-            var brandToTypesMap = links
-                .GroupBy(l => l.ItemBrandId)
-                .ToDictionary(g => g.Key, g => g.Select(l => l.ItemTypeId).ToList());
-
+            var typeToBrandsMap = links.GroupBy(l => l.ItemTypeId).ToDictionary(g => g.Key, g => g.Select(l => l.ItemBrandId).ToList());
+            var brandToTypesMap = links.GroupBy(l => l.ItemBrandId).ToDictionary(g => g.Key, g => g.Select(l => l.ItemTypeId).ToList());
             var brandToModelsMap = await _context.ItemModels
-                .Where(m => !m.IsDeleted)
-                .OrderBy(m => m.Name)
+                .Where(m => !m.IsDeleted).OrderBy(m => m.Name)
                 .GroupBy(m => m.ItemBrandId)
                 .ToDictionaryAsync(g => g.Key, g => g.Select(m => new { Value = m.Id.ToString(), Text = m.Name }).ToList());
 
@@ -63,7 +45,6 @@ namespace KlangIT_V3.Controllers
             ViewBag.BrandToTypesMapJson = Newtonsoft.Json.JsonConvert.SerializeObject(brandToTypesMap);
             ViewBag.BrandToModelsMapJson = Newtonsoft.Json.JsonConvert.SerializeObject(brandToModelsMap);
 
-            // Populate filter dropdowns
             ViewBag.ItemTypes = await _context.ItemTypes
                 .Where(t => !t.IsDeleted).OrderBy(t => t.Name)
                 .Select(t => new SelectListItem { Value = t.Id.ToString(), Text = t.Name, Selected = t.Id.ToString() == filterTypeId })
@@ -80,21 +61,16 @@ namespace KlangIT_V3.Controllers
                 .ToListAsync();
 
             var query = _context.Items
-                .Include(i => i.ItemBrand)
-                .Include(i => i.ItemModel)
-                .Include(i => i.ItemType)
+                .Include(i => i.ItemBrand).Include(i => i.ItemModel).Include(i => i.ItemType)
                 .Where(i => !i.IsDeleted)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(filterTypeId) && int.TryParse(filterTypeId, out int typeId))
                 query = query.Where(i => i.ItemTypeId == typeId);
-
             if (!string.IsNullOrWhiteSpace(filterBrandId) && int.TryParse(filterBrandId, out int brandId))
                 query = query.Where(i => i.ItemBrandId == brandId);
-
             if (!string.IsNullOrWhiteSpace(filterModelId) && int.TryParse(filterModelId, out int modelId))
                 query = query.Where(i => i.ItemModelId == modelId);
-
             if (!string.IsNullOrWhiteSpace(searchBox))
             {
                 string pattern = $"%{searchBox}%";
@@ -108,16 +84,16 @@ namespace KlangIT_V3.Controllers
 
             query = sortOrder switch
             {
-                "asset_asc" => query.OrderBy(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenBy(s => s.AssetId).ThenBy(s => s.ItemType.Name),
-                "asset_desc" => query.OrderByDescending(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenByDescending(s => s.AssetId).ThenByDescending(s => s.ItemType.Name),
-                "type_asc" => query.OrderBy(s => string.IsNullOrWhiteSpace(s.ItemType.Name) ? 1 : 0).ThenBy(s => s.ItemType.Name).ThenBy(s => s.AssetId),
-                "type_desc" => query.OrderByDescending(s => string.IsNullOrWhiteSpace(s.ItemType.Name) ? 1 : 0).ThenByDescending(s => s.ItemType.Name).ThenByDescending(s => s.AssetId),
-                "brand_asc" => query.OrderBy(s => string.IsNullOrWhiteSpace(s.ItemBrand.Name) ? 1 : 0).ThenBy(s => s.ItemBrand.Name).ThenBy(s => s.ItemModel.Name),
-                "brand_desc" => query.OrderByDescending(s => string.IsNullOrWhiteSpace(s.ItemBrand.Name) ? 1 : 0).ThenByDescending(s => s.ItemBrand.Name).ThenByDescending(s => s.ItemModel.Name),
-                "model_asc" => query.OrderBy(s => string.IsNullOrWhiteSpace(s.ItemModel.Name) ? 1 : 0).ThenBy(s => s.ItemModel.Name).ThenBy(s => s.ItemBrand.Name),
-                "model_desc" => query.OrderByDescending(s => string.IsNullOrWhiteSpace(s.ItemModel.Name) ? 1 : 0).ThenByDescending(s => s.ItemModel.Name).ThenByDescending(s => s.ItemBrand.Name),
-                "an_asc" => query.OrderBy(s => s.AvailableAmount).ThenBy(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenBy(s => s.AssetId),
-                "an_desc" => query.OrderByDescending(s => s.AvailableAmount).ThenByDescending(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenByDescending(s => s.AssetId),
+                "asset_asc" => query.OrderBy(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenBy(s => s.AssetId),
+                "asset_desc" => query.OrderByDescending(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenByDescending(s => s.AssetId),
+                "type_asc" => query.OrderBy(s => s.ItemType.Name).ThenBy(s => s.AssetId),
+                "type_desc" => query.OrderByDescending(s => s.ItemType.Name).ThenByDescending(s => s.AssetId),
+                "brand_asc" => query.OrderBy(s => s.ItemBrand.Name).ThenBy(s => s.ItemModel.Name),
+                "brand_desc" => query.OrderByDescending(s => s.ItemBrand.Name).ThenByDescending(s => s.ItemModel.Name),
+                "model_asc" => query.OrderBy(s => s.ItemModel.Name).ThenBy(s => s.ItemBrand.Name),
+                "model_desc" => query.OrderByDescending(s => s.ItemModel.Name).ThenByDescending(s => s.ItemBrand.Name),
+                "avl_asc" => query.OrderBy(s => s.AvailableAmount),
+                "avl_desc" => query.OrderByDescending(s => s.AvailableAmount),
                 "moddate_asc" => query.OrderBy(s => s.ModifiedDate),
                 "moddate_desc" => query.OrderByDescending(s => s.ModifiedDate),
                 _ => query.OrderBy(s => s.AssetId)
@@ -126,24 +102,22 @@ namespace KlangIT_V3.Controllers
             return View(await query.ToListAsync());
         }
 
-        // GET: Items/Details/5
+        // ── GET: Items/Details/5 ──────────────────────────────────────────────────
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var item = await _context.Items
-                .Include(i => i.ItemBrand)
-                .Include(i => i.ItemModel)
-                .Include(i => i.ItemType)
+                .Include(i => i.ItemBrand).Include(i => i.ItemModel).Include(i => i.ItemType)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-            ItemDetailsViewModel viewModel = new ItemDetailsViewModel
+            if (item == null) return NotFound();
+
+            item.BorrowHistories = await _context.BorrowHistories
+                .Include(b => b.RequestDepartment).Include(b => b.RequestSection)
+                .Where(b => b.ItemId == item.Id && !b.IsDeleted)
+                .ToListAsync();
+
+            var vm = new ItemDetailsViewModel
             {
                 Id = item.Id,
                 AssetId = item.AssetId,
@@ -151,7 +125,9 @@ namespace KlangIT_V3.Controllers
                 ItemTypeId = item.ItemTypeId,
                 ItemType = item.ItemType,
                 ItemBrandId = item.ItemBrandId,
+                ItemBrand = item.ItemBrand,
                 ItemModelId = item.ItemModelId,
+                ItemModel = item.ItemModel,
                 ItemDescription = item.ItemDescription,
                 ItemImageUrl = item.ItemImageUrl,
                 TotalAmount = item.TotalAmount,
@@ -171,150 +147,38 @@ namespace KlangIT_V3.Controllers
                 CreatedDate = item.CreatedDate,
                 ModifiedDate = item.ModifiedDate,
                 CreatedBy = item.CreatedBy,
-                ModifiedBy = item.ModifiedBy
-            };
-            item.BorrowHistories = await _context.BorrowHistories.Include(b => b.RequestDepartment).Include(b => b.RequestSection)
-                .Where(b => b.ItemId == item.Id)
-                .ToListAsync();
-            List<BorrowInItemDetailViewModel> bhDetails = new List<BorrowInItemDetailViewModel>();
-            if (item.BorrowHistories != null && item.BorrowHistories.Count > 0)
-            {
-                var bhOrder = item.BorrowHistories.OrderByDescending(b => b.Id).ToList();
-                foreach (var bh in bhOrder)
+                ModifiedBy = item.ModifiedBy,
+                BHinItemDetails = item.BorrowHistories.OrderByDescending(b => b.Id).Select(bh => new BorrowInItemDetailViewModel
                 {
-                    bhDetails.Add(new BorrowInItemDetailViewModel
-                    {
-                        Id = bh.Id,
-                        RequestUser = bh.RequestUser,
-                        RequestDepartment = bh.RequestDepartment?.Name ?? string.Empty,
-                        RequestSection = bh.RequestSection?.Name ?? string.Empty,
-                        BorrowDate = bh.BorrowDate,
-                        LatestITStaff = bh.Itstaff,
-                        IsReturn = bh.IsReturn
-                    });
-                }
-                viewModel.BHinItemDetails = bhDetails;
-            }
-            return View(viewModel);
+                    Id = bh.Id,
+                    RequestUser = bh.RequestUser,
+                    RequestDepartment = bh.RequestDepartment?.Name ?? string.Empty,
+                    RequestSection = bh.RequestSection?.Name ?? string.Empty,
+                    BorrowDate = bh.BorrowDate,
+                    LatestITStaff = bh.Itstaff,
+                    IsReturn = bh.IsReturn
+                }).ToList()
+            };
+
+            return View(vm);
         }
 
-        // GET: Items/Create
+        // ── GET: Items/Create ─────────────────────────────────────────────────────
         [HttpGet]
         public IActionResult Create()
         {
-            var viewModel = new ItemCreateViewModel();
-            PopulateItemTypes(viewModel);
-            PopulateItemBrands(viewModel);
-            PopulateItemModels(viewModel);
-            PopulateItemStatuses(viewModel);
-            PopulateCascadeMaps(viewModel);
-            viewModel.SelectedItemStatus = ItemStatusEnum.Available;
-            viewModel.TotalAmount = 1;
-            return View(viewModel);
+            var vm = new ItemCreateViewModel();
+            PopulateItemTypes(vm);
+            PopulateItemBrands(vm);
+            PopulateItemModels(vm);
+            PopulateItemStatuses(vm);
+            PopulateCascadeMaps(vm);
+            vm.SelectedItemStatus = ItemStatusEnum.Available;
+            vm.TotalAmount = 1;
+            return View(vm);
         }
 
-        // ── Private helpers ────────────────────────────────────────────────────────
-
-        private void PopulateItemTypes(ItemCreateViewModel vm)
-        {
-            vm.ItemTypes = _context.ItemTypes
-                .Where(i => !i.IsDeleted)
-                .OrderBy(i => i.Name)
-                .Select(i => new SelectListItem
-                {
-                    Value = i.Id.ToString(),
-                    Text = i.Name,
-                    Selected = i.Id == vm.SelectedItemTypeId
-                }).ToList();
-
-            vm.ItemTypes.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกประเภทอุปกรณ์ --" });
-        }
-        private void PopulateItemBrands(ItemCreateViewModel vm)
-        {
-            vm.ItemBrands = _context.ItemBrands
-                .Where(i => !i.IsDeleted)
-                .OrderBy(i => i.Name)
-                .Select(i => new SelectListItem
-                {
-                    Value = i.Id.ToString(),
-                    Text = i.Name,
-                    Selected = i.Id == vm.SelectedItemBrandId
-                }).ToList();
-
-            vm.ItemBrands.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกยี่ห้อ --" });
-        }
-
-        private void PopulateItemModels(ItemCreateViewModel vm)
-        {
-            vm.ItemModels = _context.ItemModels
-                .Where(i => !i.IsDeleted)
-                .OrderBy(i => i.Name)
-                .Select(i => new SelectListItem
-                {
-                    Value = i.Id.ToString(),
-                    Text = i.Name,
-                    Selected = i.Id == vm.SelectedItemModelId
-                }).ToList();
-
-            vm.ItemModels.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกรุ่น --" });
-        }
-
-        private void PopulateItemStatuses(ItemCreateViewModel vm)
-        {
-            vm.ItemStatuses = Enum.GetValues(typeof(ItemStatusEnum))
-                .Cast<ItemStatusEnum>()
-                .Select(e => new SelectListItem
-                {
-                    Value = ((int)e).ToString(),
-                    Text = e.GetDisplayName(),
-                    Selected = (ItemStatusEnum)e == vm.SelectedItemStatus
-                }).ToList();
-
-            vm.ItemStatuses.Insert(0,
-                new SelectListItem { Value = "", Text = "-- เลือกสถานะ --" });
-        }
-
-        /// <summary>
-        /// Builds three cascade maps from the database and puts them on the ViewModel.
-        /// All data is fetched ONCE; no AJAX calls needed at runtime.
-        /// </summary>
-        private void PopulateCascadeMaps(ItemCreateViewModel vm)
-        {
-            // ── 1. Many-to-many: ItemType ↔ ItemBrand via ItemTypeToBrand ──
-            var links = _context.ItemTypeToBrands.ToList();   // small lookup table
-
-            vm.TypeToBrandsMap = links
-                .GroupBy(l => l.ItemTypeId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(l => l.ItemBrandId).ToList()
-                );
-
-            vm.BrandToTypesMap = links
-                .GroupBy(l => l.ItemBrandId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(l => l.ItemTypeId).ToList()
-                );
-
-            // ── 2. One-to-many: ItemBrand → ItemModels ──
-            vm.BrandToModelsMap = _context.ItemModels
-                .Where(m => !m.IsDeleted)
-                .OrderBy(m => m.Name)
-                .GroupBy(m => m.ItemBrandId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(m => new SelectListItem
-                    {
-                        Value = m.Id.ToString(),
-                        Text = m.Name
-                    }).ToList()
-                );
-        }
-
-        // POST: Items/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // ── POST: Items/Create ────────────────────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ItemCreateViewModel itemVM)
@@ -329,58 +193,11 @@ namespace KlangIT_V3.Controllers
                 return View(itemVM);
             }
 
-            string assetId = string.Empty;
-            if (!string.IsNullOrWhiteSpace(itemVM.AssetId1) && !string.IsNullOrWhiteSpace(itemVM.AssetId2)
-                && !string.IsNullOrWhiteSpace(itemVM.AssetId3) && !string.IsNullOrWhiteSpace(itemVM.AssetId4))
-            {
-                assetId = string.Format("{0}-{1}-{2}-{3}", itemVM.AssetId1, itemVM.AssetId2, itemVM.AssetId3, itemVM.AssetId4);
-            }
-            else if (!string.IsNullOrWhiteSpace(itemVM.OtherAssetId))
-            {
-                assetId = itemVM.OtherAssetId;
-            }
-            else
-            {
-                assetId = string.Empty;
-            }
+            string assetId = BuildAssetId(itemVM);
+            string? imageUrl = await SaveImageAsync(itemVM);
 
-            DateTime now = DateTime.Now;
-            string nowText = now.ToString("yyyyMMddHHmm");
-            int itemsCount = await _context.Items.CountAsync();
-            int imgRunNo = itemsCount + 1;
-            string imgRunNoLeftPadded = imgRunNo.ToString().PadLeft(5, '0');
-            string imgFileName = $"IT{nowText}_{imgRunNoLeftPadded}.jpg";
-            string? imageUrl = null;
-            if (itemVM.ItemImageFile != null && itemVM.ItemImageFile.Length > 0)
-            {
-                // ตรวจสอบนามสกุลไฟล์
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-                var extension = Path.GetExtension(itemVM.ItemImageFile.FileName).ToLower();
-                if (!allowedExtensions.Contains(extension))
-                {
-                    ModelState.AddModelError("ItemImageFile", "อนุญาตเฉพาะไฟล์รูปภาพ (.jpg, .png, .gif, .webp)");
-                    return View(itemVM);
-                }
-                // ตรวจสอบขนาดไฟล์ (จำกัด 2MB)
-                if (itemVM.ItemImageFile.Length > 2 * 1024 * 1024)
-                {
-                    ModelState.AddModelError("ItemImageFile", "ขนาดไฟล์ต้องไม่เกิน 2MB");
-                    return View(itemVM);
-                }
-                // สร้างชื่อไฟล์ unique เพื่อป้องกันชนกัน
-                var uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "items");
-                // สร้างโฟลเดอร์ถ้ายังไม่มี
-                Directory.CreateDirectory(uploadDir);
-                var filePath = Path.Combine(uploadDir, imgFileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await itemVM.ItemImageFile.CopyToAsync(stream);
-                }
-                // เก็บ path สำหรับแสดงผลใน View
-                imageUrl = $"/uploads/items/{imgFileName}";
-            }
             string itUser = Utility.GetCurrentUserName();
-            Item item = new Item
+            var item = new Item
             {
                 IsBulk = itemVM.IsBulk,
                 AssetId = assetId,
@@ -412,130 +229,250 @@ namespace KlangIT_V3.Controllers
             };
             _context.Items.Add(item);
             await _context.SaveChangesAsync();
-
-            int runNo = 1;
-            string logNoLeftPadded = runNo.ToString().PadLeft(5, '0');
-            StockLog stockLog = new StockLog
-            {
-                ItemId = item.Id,
-                OldStock = 0,
-                NumberOfChange = item.TotalAmount,
-                NewStock = item.TotalAmount,
-                Remarks = StockLogTypeEnum.Initial.GetDisplayName(),
-                RunningNo = runNo,
-                LogNo = $"ST{logNoLeftPadded}",
-                StockLogType = StockLogTypeEnum.Initial,
-                CreatedDate = DateTime.Now,
-                CreatedBy = itUser
-            };
-            _context.StockLogs.Add(stockLog);
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Items/Edit/5
+        // ── GET: Items/Edit/5 ─────────────────────────────────────────────────────
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            if (id == null) return NotFound();
+
+            var item = await _context.Items
+                .Include(i => i.ItemType).Include(i => i.ItemBrand).Include(i => i.ItemModel)
+                .FirstOrDefaultAsync(i => i.Id == id);
+            if (item == null) return NotFound();
+
+            var vm = new ItemEditViewModel
             {
-                return NotFound();
+                Id = item.Id,
+                AssetId1 = item.AssetId1,
+                AssetId2 = item.AssetId2,
+                AssetId3 = item.AssetId3,
+                AssetId4 = item.AssetId4,
+                OtherAssetId = item.OtherAssetId,
+                SerialNo = item.SerialNo,
+                SelectedItemTypeId = item.ItemTypeId ?? 0,
+                SelectedItemBrandId = item.ItemBrandId ?? 0,
+                SelectedItemModelId = item.ItemModelId ?? 0,
+                ItemDescription = item.ItemDescription,
+                ItemImageUrl = item.ItemImageUrl,
+                TotalAmount = item.TotalAmount,
+                AvailableAmount = item.AvailableAmount,
+                BorrowedAmount = item.BorrowedAmount,
+                DamagedAmount = item.DamagedAmount,
+                DisposedAmount = item.DisposedAmount,
+                MinimumAmount = item.MinimumAmount,
+                SelectedItemStatus = item.ItemStatus,
+                Remarks = item.Remarks,
+                CreatedDate = item.CreatedDate,
+                ModifiedDate = item.ModifiedDate,
+                CreatedBy = item.CreatedBy,
+                ModifiedBy = item.ModifiedBy,
+                IsDeleted = item.IsDeleted
+            };
+            PopulateEditDropdowns(vm);
+            return View(vm);
+        }
+
+        // ── POST: Items/Edit/5 ────────────────────────────────────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, ItemEditViewModel vm)
+        {
+            if (id != vm.Id) return NotFound();
+
+            if (!ModelState.IsValid)
+            {
+                PopulateEditDropdowns(vm);
+                return View(vm);
             }
 
             var item = await _context.Items.FindAsync(id);
-            if (item == null)
+            if (item == null) return NotFound();
+
+            string itUser = Utility.GetCurrentUserName();
+            item.AssetId1 = vm.AssetId1;
+            item.AssetId2 = vm.AssetId2;
+            item.AssetId3 = vm.AssetId3;
+            item.AssetId4 = vm.AssetId4;
+            item.OtherAssetId = vm.OtherAssetId;
+            item.AssetId = BuildAssetIdFromParts(vm.AssetId1, vm.AssetId2, vm.AssetId3, vm.AssetId4, vm.OtherAssetId);
+            item.SerialNo = vm.SerialNo;
+            item.ItemTypeId = vm.SelectedItemTypeId == 0 ? null : vm.SelectedItemTypeId;
+            item.ItemBrandId = vm.SelectedItemBrandId == 0 ? null : vm.SelectedItemBrandId;
+            item.ItemModelId = vm.SelectedItemModelId == 0 ? null : vm.SelectedItemModelId;
+            item.ItemDescription = vm.ItemDescription;
+            item.ItemImageUrl = vm.ItemImageUrl;
+            item.TotalAmount = vm.TotalAmount;
+            item.MinimumAmount = vm.MinimumAmount;
+            item.ItemStatus = vm.SelectedItemStatus;
+            item.Remarks = vm.Remarks;
+            item.IsDeleted = vm.IsDeleted;
+            item.ModifiedBy = itUser;
+            item.ModifiedDate = DateTime.Now;
+
+            try
             {
-                return NotFound();
+                _context.Update(item);
+                await _context.SaveChangesAsync();
             }
-            ViewData["ItemBrandId"] = new SelectList(_context.ItemBrands, "Id", "Id", item.ItemBrandId);
-            ViewData["ItemModelId"] = new SelectList(_context.ItemModels, "Id", "Id", item.ItemModelId);
-            //ViewData["ItemStatusId"] = new SelectList(_context.ItemStatuses, "Id", "Id", item.ItemStatusId);
-            ViewData["ItemTypeId"] = new SelectList(_context.ItemTypes, "Id", "Id", item.ItemTypeId);
-            return View(item);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ItemExists(item.Id)) return NotFound();
+                throw;
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // POST: Items/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,AssetId,SerialNo,ItemTypeId,ItemBrandId,ItemModelId,ItemDescription,ItemImageUrl,TotalAmount,AvailableAmount,BorrowedAmount,MinimumAmount,ItemStatusId,AssetId1,AssetId2,AssetId3,AssetId4,Remarks,CreatedDate,ModifiedDate,CreatedBy,ModifiedBy,IsDeleted")] Item item)
-        {
-            if (id != item.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(item);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ItemExists(item.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["ItemBrandId"] = new SelectList(_context.ItemBrands, "Id", "Id", item.ItemBrandId);
-            ViewData["ItemModelId"] = new SelectList(_context.ItemModels, "Id", "Id", item.ItemModelId);
-            //ViewData["ItemStatusId"] = new SelectList(_context.ItemStatuses, "Id", "Id", item.ItemStatusId);
-            ViewData["ItemTypeId"] = new SelectList(_context.ItemTypes, "Id", "Id", item.ItemTypeId);
-            return View(item);
-        }
-
-        // GET: Items/Delete/5
+        // ── GET: Items/Delete/5 ───────────────────────────────────────────────────
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var item = await _context.Items
-                .Include(i => i.ItemBrand)
-                .Include(i => i.ItemModel)
-                .Include(i => i.ItemType)
+                .Include(i => i.ItemBrand).Include(i => i.ItemModel).Include(i => i.ItemType)
+                .Include(i => i.BorrowHistories)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (item == null)
-            {
-                return NotFound();
-            }
+            if (item == null) return NotFound();
 
-            return View(item);
+            var activeBorrows = item.BorrowHistories.Where(b => !b.IsDeleted).ToList();
+
+            var vm = new ItemDeleteViewModel
+            {
+                Id = item.Id,
+                AssetId = item.AssetId ?? string.Empty,
+                ItemTypeName = item.ItemType?.Name ?? string.Empty,
+                ItemBrandName = item.ItemBrand?.Name ?? string.Empty,
+                ItemModelName = item.ItemModel?.Name ?? string.Empty,
+                AvailableAmount = item.AvailableAmount,
+                ItemStatus = item.ItemStatus,
+                BorrowHistoryCount = activeBorrows.Count,
+                HasActiveBorrow = activeBorrows.Any(b => !b.IsReturn)
+            };
+
+            return View(vm);
         }
 
-        // POST: Items/Delete/5
+        // ── POST: Items/Delete/5 ──────────────────────────────────────────────────
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var item = await _context.Items.FindAsync(id);
-            if (item != null)
-            {
-                _context.Items.Remove(item);
-            }
+            var item = await _context.Items
+                .Include(i => i.BorrowHistories)
+                .FirstOrDefaultAsync(i => i.Id == id);
+            if (item == null) return NotFound();
 
+            // ตรวจสอบ dependency อีกครั้งฝั่ง server
+            if (item.BorrowHistories.Any(b => !b.IsDeleted))
+                return RedirectToAction(nameof(Delete), new { id });
+
+            _context.Items.Remove(item);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ItemExists(int id)
+        // ── ItemStates ────────────────────────────────────────────────────────────
+        public IActionResult ItemStates() => View();
+
+        // ── Private helpers ───────────────────────────────────────────────────────
+
+        private static string BuildAssetId(ItemCreateViewModel vm)
+            => BuildAssetIdFromParts(vm.AssetId1, vm.AssetId2, vm.AssetId3, vm.AssetId4, vm.OtherAssetId);
+
+        private static string BuildAssetIdFromParts(string? p1, string? p2, string? p3, string? p4, string? other)
         {
-            return _context.Items.Any(e => e.Id == id);
+            if (!string.IsNullOrWhiteSpace(p1) && !string.IsNullOrWhiteSpace(p2) &&
+                !string.IsNullOrWhiteSpace(p3) && !string.IsNullOrWhiteSpace(p4))
+                return $"{p1}-{p2}-{p3}-{p4}";
+            return !string.IsNullOrWhiteSpace(other) ? other : string.Empty;
         }
 
-        public async Task<IActionResult> ItemStates()
+        private async Task<string?> SaveImageAsync(ItemCreateViewModel vm)
         {
-            return View();
+            if (vm.ItemImageFile == null || vm.ItemImageFile.Length == 0) return null;
+
+            var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var ext = Path.GetExtension(vm.ItemImageFile.FileName).ToLower();
+            if (!allowed.Contains(ext))
+            {
+                ModelState.AddModelError("ItemImageFile", "อนุญาตเฉพาะไฟล์รูปภาพ (.jpg .png .gif .webp)");
+                return null;
+            }
+            if (vm.ItemImageFile.Length > 2 * 1024 * 1024)
+            {
+                ModelState.AddModelError("ItemImageFile", "ขนาดไฟล์ต้องไม่เกิน 2MB");
+                return null;
+            }
+
+            int count = await _context.Items.CountAsync();
+            string fileName = $"IT{DateTime.Now:yyyyMMddHHmm}_{(count + 1).ToString().PadLeft(5, '0')}.jpg";
+            string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "items");
+            Directory.CreateDirectory(uploadDir);
+
+            using var stream = new FileStream(Path.Combine(uploadDir, fileName), FileMode.Create);
+            await vm.ItemImageFile.CopyToAsync(stream);
+
+            return $"/uploads/items/{fileName}";
         }
+
+        private void PopulateItemTypes(ItemCreateViewModel vm)
+        {
+            vm.ItemTypes = _context.ItemTypes.Where(i => !i.IsDeleted).OrderBy(i => i.Name)
+                .Select(i => new SelectListItem { Value = i.Id.ToString(), Text = i.Name, Selected = i.Id == vm.SelectedItemTypeId }).ToList();
+            vm.ItemTypes.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกประเภทอุปกรณ์ --" });
+        }
+
+        private void PopulateItemBrands(ItemCreateViewModel vm)
+        {
+            vm.ItemBrands = _context.ItemBrands.Where(i => !i.IsDeleted).OrderBy(i => i.Name)
+                .Select(i => new SelectListItem { Value = i.Id.ToString(), Text = i.Name, Selected = i.Id == vm.SelectedItemBrandId }).ToList();
+            vm.ItemBrands.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกยี่ห้อ --" });
+        }
+
+        private void PopulateItemModels(ItemCreateViewModel vm)
+        {
+            vm.ItemModels = _context.ItemModels.Where(i => !i.IsDeleted).OrderBy(i => i.Name)
+                .Select(i => new SelectListItem { Value = i.Id.ToString(), Text = i.Name, Selected = i.Id == vm.SelectedItemModelId }).ToList();
+            vm.ItemModels.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกรุ่น --" });
+        }
+
+        private void PopulateItemStatuses(ItemCreateViewModel vm)
+        {
+            vm.ItemStatuses = Enum.GetValues(typeof(ItemStatusEnum)).Cast<ItemStatusEnum>()
+                .Select(e => new SelectListItem { Value = ((int)e).ToString(), Text = e.GetDisplayName(), Selected = e == vm.SelectedItemStatus }).ToList();
+            vm.ItemStatuses.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกสถานะ --" });
+        }
+
+        private void PopulateCascadeMaps(ItemCreateViewModel vm)
+        {
+            var links = _context.ItemTypeToBrands.ToList();
+            vm.TypeToBrandsMap = links.GroupBy(l => l.ItemTypeId).ToDictionary(g => g.Key, g => g.Select(l => l.ItemBrandId).ToList());
+            vm.BrandToTypesMap = links.GroupBy(l => l.ItemBrandId).ToDictionary(g => g.Key, g => g.Select(l => l.ItemTypeId).ToList());
+            vm.BrandToModelsMap = _context.ItemModels.Where(m => !m.IsDeleted).OrderBy(m => m.Name)
+                .GroupBy(m => m.ItemBrandId)
+                .ToDictionary(g => g.Key, g => g.Select(m => new SelectListItem { Value = m.Id.ToString(), Text = m.Name }).ToList());
+        }
+
+        private void PopulateEditDropdowns(ItemEditViewModel vm)
+        {
+            vm.ItemTypes = _context.ItemTypes.Where(i => !i.IsDeleted).OrderBy(i => i.Name)
+                .Select(i => new SelectListItem { Value = i.Id.ToString(), Text = i.Name, Selected = i.Id == vm.SelectedItemTypeId }).ToList();
+            vm.ItemTypes.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกประเภทอุปกรณ์ --" });
+
+            vm.ItemBrands = _context.ItemBrands.Where(i => !i.IsDeleted).OrderBy(i => i.Name)
+                .Select(i => new SelectListItem { Value = i.Id.ToString(), Text = i.Name, Selected = i.Id == vm.SelectedItemBrandId }).ToList();
+            vm.ItemBrands.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกยี่ห้อ --" });
+
+            vm.ItemModels = _context.ItemModels.Where(i => !i.IsDeleted).OrderBy(i => i.Name)
+                .Select(i => new SelectListItem { Value = i.Id.ToString(), Text = i.Name, Selected = i.Id == vm.SelectedItemModelId }).ToList();
+            vm.ItemModels.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกรุ่น --" });
+
+            vm.ItemStatuses = Enum.GetValues(typeof(ItemStatusEnum)).Cast<ItemStatusEnum>()
+                .Select(e => new SelectListItem { Value = ((int)e).ToString(), Text = e.GetDisplayName(), Selected = e == vm.SelectedItemStatus }).ToList();
+        }
+
+        private bool ItemExists(int id) => _context.Items.Any(e => e.Id == id);
     }
 }

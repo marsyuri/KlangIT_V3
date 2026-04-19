@@ -1,89 +1,43 @@
-﻿@model IEnumerable<KlangIT_V3.Models.Section>
+@model IEnumerable<KlangIT_V3.Models.Section>
+@{ ViewData["Title"] = "รายชื่อหน่วยงาน"; }
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
-@{
-    ViewData["Title"] = "รายชื่อหน่วยงาน";
-}
-
-<h1>รายชื่อหน่วยงาน</h1>
-
-<div class="d-flex align-items-center gap-3 mb-4">
-    <a asp-action="Create" class="btn btn-primary">เพิ่มหน่วยงาน</a>
-
-    <form asp-controller="Sections" asp-action="Index" method="get" class="d-flex gap-2">
-        @* Preserve current sort when submitting a new search *@
-        <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
-        <select name="searchCondition" class="form-select" asp-items="ViewBag.SearchConditions" style="width: auto;">
-            <option value="">-- เลือกฝ่าย/กลุ่มงาน --</option>
-        </select>
-        <input type="text" name="searchBox" class="form-control"
-               placeholder="ค้นหา..." value="@ViewBag.CurrentSearch" />
-        <button type="submit" class="btn btn-primary">ค้นหา</button>
-    </form>
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem">
+    <h1 class="ds-page-title" style="margin:0">รายชื่อหน่วยงาน</h1>
+    <a asp-action="Create" class="ds-btn-primary">+ เพิ่มหน่วยงาน</a>
 </div>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>ลำดับ</th>
-            <th>
-                @* All sort links now carry the current search state *@
-                <a asp-action="Index"
-                       asp-route-sortOrder="@ViewBag.SortByDept"
-                       asp-route-searchCondition="@ViewBag.CurrentCondition"
-                       asp-route-searchBox="@ViewBag.CurrentSearch">
-                    ฝ่าย/กลุ่มงาน
-                </a>
-            </th>
-            <th>
-                <a asp-action="Index"
-                       asp-route-sortOrder="@ViewBag.SortByName"
-                       asp-route-searchCondition="@ViewBag.CurrentCondition"
-                       asp-route-searchBox="@ViewBag.CurrentSearch">
-                    หน่วยงาน
-                </a>
-            </th>
-            <th>
-                <a asp-action="Index"
-                       asp-route-sortOrder="@ViewBag.SortByModDate"
-                       asp-route-searchCondition="@ViewBag.CurrentCondition"
-                       asp-route-searchBox="@ViewBag.CurrentSearch">
-                    เวลาแก้ไขล่าสุด
-                </a>
-            </th>
-            <th></th>
-        </tr>
-    </thead>
+<form asp-action="Index" method="get" class="ds-filter-bar">
+    <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort"/>
+    <select name="searchCondition" class="ds-select" style="width:auto">
+        <option value="">ทุกฝ่าย</option>
+        @foreach (var d in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.SearchConditions)
+        { <option value="@d.Value" selected="@d.Selected">@d.Text</option> }
+    </select>
+    <input type="text" name="searchBox" class="ds-input" style="width:200px" placeholder="ค้นหา..." value="@ViewBag.CurrentSearch"/>
+    <button type="submit" class="ds-btn-primary">ค้นหา</button>
+</form>
+<div class="ds-table-wrap"><table class="ds-table">
+    <thead><tr>
+        <th style="width:48px">#</th>
+        <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByDept" asp-route-searchBox="@ViewBag.CurrentSearch">ฝ่าย/กลุ่มงาน ↕</a></th>
+        <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByName" asp-route-searchBox="@ViewBag.CurrentSearch">หน่วยงาน ↕</a></th>
+        <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByModDate" asp-route-searchBox="@ViewBag.CurrentSearch">แก้ไขล่าสุด ↕</a></th>
+        <th></th>
+    </tr></thead>
     <tbody>
-        @if (!Model.Any())
-        {
+        @if (!Model.Any()) { <tr><td colspan="5" class="ds-table-empty">ไม่พบข้อมูล</td></tr> }
+        else { int row=0; foreach(var s in Model) { row++;
             <tr>
-                <td colspan="100" class="py-4">
-                    <div class="d-flex align-items-center justify-content-center text-danger">
-                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
-                        <span class="px-3 fw-bold">ไม่พบข้อมูล</span>
-                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
-                    </div>
-                </td>
+                <td style="color:var(--ds-text3)">@row</td>
+                <td style="color:var(--ds-text2)">@s.Department?.Name</td>
+                <td style="font-weight:500">@s.Name</td>
+                <td style="color:var(--ds-text2)">@s.ModifiedDate.ToString("dd MMM yyyy")</td>
+                <td><div class="ds-tbl-actions">
+                    <a asp-action="Edit"    asp-route-id="@s.Id" class="ds-btn-ghost ds-tbl-btn">แก้ไข</a>
+                    <a asp-action="Details" asp-route-id="@s.Id" class="ds-btn-ghost ds-tbl-btn">รายละเอียด</a>
+                    <a asp-action="Delete"  asp-route-id="@s.Id" class="ds-btn-del-ghost ds-tbl-btn">ลบ</a>
+                </div></td>
             </tr>
-        }
-        else
-        {
-            int count = 0;
-            foreach (var item in Model)
-            {
-                count++;
-                <tr>
-                    <td>@count</td>
-                    <td>@Html.DisplayFor(_ => item.Department.Name)</td>
-                    <td>@Html.DisplayFor(_ => item.Name)</td>
-                    <td>@Html.DisplayFor(_ => item.ModifiedDate)</td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    </td>
-                </tr>
-            }
-        }
+        } }
     </tbody>
-</table>
+</table></div>

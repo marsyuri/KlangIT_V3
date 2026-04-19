@@ -1,225 +1,140 @@
-﻿@model IEnumerable<KlangIT_V3.Models.Item>
-
+@model IEnumerable<KlangIT_V3.Models.Item>
 @{
     ViewData["Title"] = "รายชื่ออุปกรณ์";
 }
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
-@* Serialize cascade maps for JS *@
 <script>
-    const typeToBrandsMap = @Html.Raw(ViewBag.TypeToBrandsMapJson ?? "{}");
-    const brandToTypesMap = @Html.Raw(ViewBag.BrandToTypesMapJson ?? "{}");
+    const typeToBrandsMap  = @Html.Raw(ViewBag.TypeToBrandsMapJson  ?? "{}");
+    const brandToTypesMap  = @Html.Raw(ViewBag.BrandToTypesMapJson  ?? "{}");
     const brandToModelsMap = @Html.Raw(ViewBag.BrandToModelsMapJson ?? "{}");
 </script>
 
-<h1>รายชื่ออุปกรณ์</h1>
-
-<div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
-    <a asp-action="Create" class="btn btn-primary">เพิ่มอุปกรณ์</a>
-
-    <form asp-controller="Items" asp-action="Index" method="get" class="d-flex gap-2 flex-wrap align-items-center">
-        <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
-        <select name="filterTypeId" id="ddlFilterType" class="form-select" style="width: auto;">
-            <option value="">-- ทุกประเภท --</option>
-            @foreach (var t in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.ItemTypes)
-            {
-                <option value="@t.Value" selected="@t.Selected">@t.Text</option>
-            }
-        </select>
-
-        <select name="filterBrandId" id="ddlFilterBrand" class="form-select" style="width: auto;">
-            <option value="">-- ทุกยี่ห้อ --</option>
-            @foreach (var b in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.ItemBrands)
-            {
-                <option value="@b.Value" selected="@b.Selected">@b.Text</option>
-            }
-        </select>
-
-        <select name="filterModelId" id="ddlFilterModel" class="form-select" style="width: auto;">
-            <option value="">-- ทุกรุ่น --</option>
-            @foreach (var m in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.ItemModels)
-            {
-                <option value="@m.Value" selected="@m.Selected">@m.Text</option>
-            }
-        </select>
-
-        <input type="text" name="searchBox" class="form-control" style="width: 200px;"
-               placeholder="ค้นหา..." value="@ViewBag.CurrentSearch" />
-        <button type="submit" class="btn btn-primary">ค้นหา</button>
-    </form>
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem">
+    <h1 class="ds-page-title" style="margin:0">รายชื่ออุปกรณ์</h1>
+    <a asp-action="Create" class="ds-btn-primary">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        เพิ่มอุปกรณ์
+    </a>
 </div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>ลำดับ</th>
-            <th>
-                <a asp-action="Index"
-                       asp-route-sortOrder="@ViewBag.SortByAssetId"
-                       asp-route-searchCondition="@ViewBag.CurrentCondition"
-                       asp-route-searchBox="@ViewBag.CurrentSearch">
-                    เลขทะเบียนทรัพย์สิน
-                </a>
-            </th>
-            <th>
-                <a asp-action="Index"
-                       asp-route-sortOrder="@ViewBag.SortByItemType"
-                       asp-route-searchCondition="@ViewBag.CurrentCondition"
-                       asp-route-searchBox="@ViewBag.CurrentSearch">
-                    ประเภทอุปกรณ์
-                </a>
-            </th>
-            <th>
-                <a asp-action="Index"
-                       asp-route-sortOrder="@ViewBag.SortByItemBrand"
-                       asp-route-searchCondition="@ViewBag.CurrentCondition"
-                       asp-route-searchBox="@ViewBag.CurrentSearch">
-                    ยี่ห้อ
-                </a>
-            </th>
-            <th>
-                <a asp-action="Index"
-                       asp-route-sortOrder="@ViewBag.SortByItemModel"
-                       asp-route-searchCondition="@ViewBag.CurrentCondition"
-                       asp-route-searchBox="@ViewBag.CurrentSearch">
-                    รุ่น
-                </a>
-            </th>
-            <th>
-                <a asp-action="Index"
-                       asp-route-sortOrder="@ViewBag.SortByAvlNo"
-                       asp-route-searchCondition="@ViewBag.CurrentCondition"
-                       asp-route-searchBox="@ViewBag.CurrentSearch">
-                    จำนวที่พร้อมใช้งาน
-                </a>
-            </th>
-            <th>
-                <a asp-action="Index"
-                       asp-route-sortOrder="@ViewBag.SortByModDate"
-                       asp-route-searchCondition="@ViewBag.CurrentCondition"
-                       asp-route-searchBox="@ViewBag.CurrentSearch">
-                    เวลาแก้ไขล่าสุด
-                </a>
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (!Model.Any())
+<form asp-controller="Items" asp-action="Index" method="get" class="ds-filter-bar">
+    <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort"/>
+    <select name="filterTypeId" id="ddlFilterType" class="ds-select" style="width:auto">
+        <option value="">ทุกประเภท</option>
+        @foreach (var t in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.ItemTypes)
         {
+            <option value="@t.Value" selected="@t.Selected">@t.Text</option>
+        }
+    </select>
+    <select name="filterBrandId" id="ddlFilterBrand" class="ds-select" style="width:auto">
+        <option value="">ทุกยี่ห้อ</option>
+        @foreach (var b in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.ItemBrands)
+        {
+            <option value="@b.Value" selected="@b.Selected">@b.Text</option>
+        }
+    </select>
+    <select name="filterModelId" id="ddlFilterModel" class="ds-select" style="width:auto">
+        <option value="">ทุกรุ่น</option>
+        @foreach (var m in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.ItemModels)
+        {
+            <option value="@m.Value" selected="@m.Selected">@m.Text</option>
+        }
+    </select>
+    <input type="text" name="searchBox" class="ds-input" style="width:200px"
+           placeholder="ค้นหา..." value="@ViewBag.CurrentSearch"/>
+    <button type="submit" class="ds-btn-primary">ค้นหา</button>
+</form>
+
+<div class="ds-table-wrap">
+    <table class="ds-table">
+        <thead>
             <tr>
-                <td colspan="100" class="py-4">
-                    <div class="d-flex align-items-center justify-content-center text-danger">
-                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
-                        <span class="px-3 fw-bold">ไม่พบข้อมูล</span>
-                        <div class="flex-grow-1" style="border-bottom: 1px dashed #dc3545;"></div>
-                    </div>
-                </td>
+                <th style="width:48px">#</th>
+                <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByAssetId" asp-route-searchBox="@ViewBag.CurrentSearch">เลขทะเบียน ↕</a></th>
+                <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByItemType" asp-route-searchBox="@ViewBag.CurrentSearch">ประเภท ↕</a></th>
+                <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByItemBrand" asp-route-searchBox="@ViewBag.CurrentSearch">ยี่ห้อ ↕</a></th>
+                <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByItemModel" asp-route-searchBox="@ViewBag.CurrentSearch">รุ่น ↕</a></th>
+                <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByAvlNo" asp-route-searchBox="@ViewBag.CurrentSearch">พร้อมใช้ ↕</a></th>
+                <th><a asp-action="Index" asp-route-sortOrder="@ViewBag.SortByModDate" asp-route-searchBox="@ViewBag.CurrentSearch">แก้ไขล่าสุด ↕</a></th>
+                <th></th>
             </tr>
-        }
-        else
-        {
-            int count = 0;
-            foreach (var item in Model)
+        </thead>
+        <tbody>
+            @if (!Model.Any())
             {
-                count++;
-                <tr>
-                    <td>@count</td>
-                    <td>@Html.DisplayFor(_ => item.AssetId)</td>
-                    <td>@Html.DisplayFor(_ => item.ItemType.Name)</td>
-                    <td>@Html.DisplayFor(_ => item.ItemBrand.Name)</td>
-                    <td>@Html.DisplayFor(_ => item.ItemModel.Name)</td>
-                    <td>@Html.DisplayFor(_ => item.AvailableAmount)</td>
-                    <td>@Html.DisplayFor(_ => item.ModifiedDate)</td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    </td>
-                </tr>
+                <tr><td colspan="8" class="ds-table-empty">ไม่พบข้อมูล</td></tr>
             }
-        }
-    </tbody>
-</table>
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const ddlType  = document.getElementById('ddlFilterType');
-            const ddlBrand = document.getElementById('ddlFilterBrand');
-            const ddlModel = document.getElementById('ddlFilterModel');
-
-            // Snapshot all original options before any filtering
-            const allTypeOptions  = snapshotOptions(ddlType);
-            const allBrandOptions = snapshotOptions(ddlBrand);
-            const allModelOptions = snapshotOptions(ddlModel);
-
-            function snapshotOptions(select) {
-                return Array.from(select.options).map(o => ({ value: o.value, text: o.text }));
-            }
-
-            function rebuildOptions(select, allOptions, allowedValues, placeholderText) {
-                const current = select.value;
-                select.innerHTML = '';
-
-                const placeholder = document.createElement('option');
-                placeholder.value = '';
-                placeholder.text  = placeholderText;
-                select.appendChild(placeholder);
-
-                allOptions.forEach(o => {
-                    if (o.value === '') return;
-                    if (allowedValues === null || allowedValues.includes(String(o.value))) {
-                        const opt   = document.createElement('option');
-                        opt.value   = o.value;
-                        opt.text    = o.text;
-                        select.appendChild(opt);
-                    }
-                });
-
-                // Restore selection if still valid
-                if ([...select.options].some(o => o.value === current)) {
-                    select.value = current;
-                } else {
-                    select.value = '';
+            else
+            {
+                int row = 0;
+                foreach (var item in Model)
+                {
+                    row++;
+                    <tr>
+                        <td style="color:var(--ds-text3)">@row</td>
+                        <td style="font-family:monospace;font-size:12px;font-weight:500">@item.AssetId</td>
+                        <td>@item.ItemType?.Name</td>
+                        <td>@item.ItemBrand?.Name</td>
+                        <td>@item.ItemModel?.Name</td>
+                        <td>@item.AvailableAmount</td>
+                        <td style="color:var(--ds-text2)">@item.ModifiedDate.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>
+                            <div class="ds-tbl-actions">
+                                <a asp-action="Edit"    asp-route-id="@item.Id" class="ds-btn-ghost ds-tbl-btn">แก้ไข</a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="ds-btn-ghost ds-tbl-btn">รายละเอียด</a>
+                                <a asp-action="Delete"  asp-route-id="@item.Id" class="ds-btn-del-ghost ds-tbl-btn">ลบ</a>
+                            </div>
+                        </td>
+                    </tr>
                 }
             }
+        </tbody>
+    </table>
+</div>
 
-            let isCascading = false;
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const ddlType  = document.getElementById('ddlFilterType');
+    const ddlBrand = document.getElementById('ddlFilterBrand');
+    const ddlModel = document.getElementById('ddlFilterModel');
+    const allType  = snapshot(ddlType);
+    const allBrand = snapshot(ddlBrand);
+    const allModel = snapshot(ddlModel);
 
-            // Type changed → filter Brands; then cascade to Model via Brand
-            ddlType.addEventListener('change', function () {
-                if (isCascading) return;
-                isCascading = true;
+    function snapshot(sel) { return Array.from(sel.options).map(o => ({ value: o.value, text: o.text })); }
 
-                const typeId  = this.value;
-                const allowedBrands = typeId ? (typeToBrandsMap[typeId] || []).map(String) : null;
-                rebuildOptions(ddlBrand, allBrandOptions, allowedBrands, '-- ทุกยี่ห้อ --');
-
-                isCascading = false;
-                ddlBrand.dispatchEvent(new Event('change'));
-            });
-
-            // Brand changed → filter Models AND reverse-filter Types
-            ddlBrand.addEventListener('change', function () {
-                if (isCascading) return;
-                isCascading = true;
-
-                const brandId = this.value;
-
-                // Filter Models based on brand
-                const allowedModels = brandId
-                    ? (brandToModelsMap[brandId] || []).map(m => String(m.Value ?? m.value))
-                    : null;
-                rebuildOptions(ddlModel, allModelOptions, allowedModels, '-- ทุกรุ่น --');
-
-                // Reverse-filter Types based on brand
-                const allowedTypes = brandId
-                    ? (brandToTypesMap[brandId] || []).map(String)
-                    : null;
-                rebuildOptions(ddlType, allTypeOptions, allowedTypes, '-- ทุกประเภท --');
-
-                isCascading = false;
-            });
+    function rebuild(sel, all, allowed, ph) {
+        const cur = sel.value;
+        sel.innerHTML = '';
+        const p = document.createElement('option');
+        p.value = ''; p.text = ph;
+        sel.appendChild(p);
+        all.forEach(o => {
+            if (!o.value) return;
+            if (!allowed || allowed.includes(String(o.value))) {
+                const opt = document.createElement('option');
+                opt.value = o.value; opt.text = o.text;
+                sel.appendChild(opt);
+            }
         });
-    </script>
+        sel.value = [...sel.options].some(o => o.value === cur) ? cur : '';
+    }
+
+    let busy = false;
+    ddlType.addEventListener('change', function () {
+        if (busy) return; busy = true;
+        rebuild(ddlBrand, allBrand, this.value ? (typeToBrandsMap[this.value] || []).map(String) : null, 'ทุกยี่ห้อ');
+        busy = false;
+        ddlBrand.dispatchEvent(new Event('change'));
+    });
+    ddlBrand.addEventListener('change', function () {
+        if (busy) return; busy = true;
+        rebuild(ddlModel, allModel, this.value ? (brandToModelsMap[this.value] || []).map(m => String(m.Value ?? m.value)) : null, 'ทุกรุ่น');
+        rebuild(ddlType,  allType,  this.value ? (brandToTypesMap[this.value]  || []).map(String) : null, 'ทุกประเภท');
+        busy = false;
+    });
+});
+</script>
 }

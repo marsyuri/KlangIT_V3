@@ -1,34 +1,26 @@
 @model KlangIT_V3.ViewModels.SectionViewModel
+@{ ViewData["Title"] = "เพิ่มหน่วยงาน"; }
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
-@{
-    ViewData["Title"] = "เพิ่มหน่วยงาน";
-}
-
-<h1>เพิ่มหน่วยงาน</h1>
-<hr />
-
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-            <div class="form-group mb-4">
-                <label asp-for="SelectedDepartmentId" class="control-label">ฝ่าย/กลุ่มงาน</label>
-                <select asp-for="SelectedDepartmentId" class="form-control" asp-items="Model.Departments"></select>
-                <span asp-validation-for="SelectedDepartmentId" class="text-danger small"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="Name" class="control-label">ชื่อหน่วยงาน</label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger small"></span>
-            </div>
-            <div class="form-group mb-4">
-                <input type="submit" value="บันทึก" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-outline-secondary ms-2">ยกเลิก</a>
-            </div>
-        </form>
-    </div>
+<h1 class="ds-page-title">เพิ่มหน่วยงาน</h1>
+<div class="ds-card" style="max-width:400px">
+    <form asp-action="Create">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+        <div class="ds-row">
+            <label asp-for="SelectedDepartmentId" class="ds-lbl">ฝ่าย/กลุ่มงาน</label>
+            <select asp-for="SelectedDepartmentId" class="ds-select" asp-items="Model.Departments"></select>
+            <span asp-validation-for="SelectedDepartmentId" class="text-danger small"></span>
+        </div>
+        <div class="ds-row">
+            <label asp-for="Name" class="ds-lbl">ชื่อหน่วยงาน</label>
+            <input asp-for="Name" class="ds-input"/>
+            <span asp-validation-for="Name" class="text-danger small"></span>
+        </div>
+        <div class="ds-actions">
+            <button type="submit" class="ds-btn-primary">บันทึก</button>
+            <a asp-action="Index" class="ds-btn-ghost">ยกเลิก</a>
+        </div>
+    </form>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

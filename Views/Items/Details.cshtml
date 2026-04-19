@@ -1,117 +1,61 @@
-﻿@using KlangIT_V3.Models.Enums
 @model KlangIT_V3.ViewModels.ItemDetailsViewModel
-
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "รายละเอียดอุปกรณ์";
 }
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
-<h1>รายละเอียดวัสดุ/ครุภัณฑ์</h1>
+<h1 class="ds-page-title">รายละเอียดอุปกรณ์</h1>
+<p class="ds-page-sub">ข้อมูลอุปกรณ์และประวัติการยืม-คืน</p>
 
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.AssetId)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.AssetId)</dd>
+<span class="ds-section-lbl">ข้อมูลอุปกรณ์</span>
+<div class="ds-card" style="max-width:640px;margin-bottom:1.5rem">
+    <div class="ds-field-grid">
+        <span class="ds-field-label">เลขทะเบียน</span>
+        <span class="ds-field-value" style="font-family:monospace;font-size:12px">@Model.AssetId</span>
 
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.SerialNo)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.SerialNo)</dd>
+        <span class="ds-field-label">ประเภท</span>
+        <span class="ds-field-value">@Model.ItemType?.Name</span>
 
-        @if (Model.ItemType != null)
-        {
-            <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ItemType)</dt>
-            <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemType.Name)</dd>
-        }
-        @if (Model.ItemBrand != null)
-        {
-            <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ItemBrand)</dt>
-            <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemBrand.Name)</dd>
-        }
-        @if (Model.ItemModel != null)
-        {
-            <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ItemModel)</dt>
-            <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemModel.Name)</dd>
-        }
+        <span class="ds-field-label">ยี่ห้อ</span>
+        <span class="ds-field-value">@Model.ItemBrand?.Name</span>
 
-        <dt class="col-sm-2 mb-4 py2">สถานะของวัสดุ</dt>
-        @{
-            var statusClass = Model.ItemStatus == ItemStatusEnum.Available
-                ? "text-success"
-                : "text-danger";
-        }
-        <dd class="col-sm-10 mb-4 py2 fw-bold @statusClass">
-            @Html.DisplayFor(model => model.ItemStatus)
-        </dd>
+        <span class="ds-field-label">รุ่น</span>
+        <span class="ds-field-value">@Model.ItemModel?.Name</span>
 
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ItemDescription)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ItemDescription)</dd>
+        <span class="ds-field-label">Serial Number</span>
+        <span class="ds-field-value">@Model.SerialNo</span>
 
-        <dt class="col-sm-2 mb-4 py2">รูปภาพ</dt>
-        <dd class="col-sm-10 mb-4 py2">
-            @if (!string.IsNullOrEmpty(Model.ItemImageUrl))
-            {
-                <!-- Thumbnail — คลิกเพื่อขยาย -->
-                <img src="@Model.ItemImageUrl"
-                     alt="รูปอุปกรณ์"
-                     data-bs-toggle="modal"
-                     data-bs-target="#imgModal"
-                     style="max-width:200px; max-height:200px; object-fit:contain;
-                cursor:zoom-in;" />
+        <span class="ds-field-label">จำนวนทั้งหมด</span>
+        <span class="ds-field-value">@Model.TotalAmount</span>
+
+        <span class="ds-field-label">พร้อมใช้งาน</span>
+        <span class="ds-field-value">
+            @{
+                string avlBadge = Model.AvailableAmount == 0 ? "ds-badge ds-badge-red"
+                                : Model.AvailableAmount <= 2  ? "ds-badge ds-badge-amber"
+                                : "ds-badge ds-badge-teal";
             }
-            else
-            {
-                <span class="text-muted">ไม่มีรูปภาพ</span>
-            }
-        </dd>
+            <span class="@avlBadge">@Model.AvailableAmount เครื่อง</span>
+        </span>
 
-        <!-- Modal -->
-        <div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content bg-transparent border-0">
-                    <div class="modal-body text-center p-0">
-                        <img id="imgModalPicture"
-                             src="@Model.ItemImageUrl"
-                             alt="รูปอุปกรณ์"
-                             style="max-width:100%; max-height:80vh;
-                        object-fit:contain; cursor:zoom-out;" />
-                    </div>
-                </div>
-            </div>
-        </div>
+        <span class="ds-field-label">กำลังยืม</span>
+        <span class="ds-field-value">@Model.BorrowedAmount เครื่อง</span>
 
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.TotalAmount)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.TotalAmount)</dd>
+        <span class="ds-field-label">ชำรุด</span>
+        <span class="ds-field-value">@Model.DamagedAmount เครื่อง</span>
 
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.AvailableAmount)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.AvailableAmount)</dd>
+        <span class="ds-field-label">สถานะ</span>
+        <span class="ds-field-value">@Html.DisplayFor(m => m.ItemStatus)</span>
 
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.BorrowedAmount)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.BorrowedAmount)</dd>
+        <span class="ds-field-label">หมายเหตุ</span>
+        <span class="ds-field-value" style="font-weight:400">@Model.Remarks</span>
 
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.MinimumAmount)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.MinimumAmount)</dd>
+        <span class="ds-field-label">แก้ไขล่าสุด</span>
+        <span class="ds-field-value" style="font-weight:400;color:var(--ds-text2)">@Model.ModifiedDate.ToString("dd MMM yyyy HH:mm")</span>
 
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.Remarks)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.Remarks)</dd>
-
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.CreatedDate)</dd>
-
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ModifiedDate)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ModifiedDate)</dd>
-
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.CreatedBy)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.CreatedBy)</dd>
-
-        <dt class="col-sm-2 mb-4 py2">@Html.DisplayNameFor(model => model.ModifiedBy)</dt>
-        <dd class="col-sm-10 mb-4 py2">@Html.DisplayFor(model => model.ModifiedBy)</dd>
-
-        
-    </dl>
-</div>
-
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+        <span class="ds-field-label">แก้ไขโดย</span>
+        <span class="ds-field-value" style="font-weight:400;color:var(--ds-text2)">@Model.ModifiedBy</span>
+    </div>
 </div>
 
 @{
@@ -121,63 +65,69 @@
     <a asp-controller="BorrowHistories"
            asp-action="Create"
            asp-route-itemId="@Model.Id"
-           class="btn btn-primary @(canBorrow ? "" : "disabled")"
+           class="ds-btn-ghost @(canBorrow ? "" : "disabled")"
            aria-disabled="@(canBorrow ? "false" : "true")"
            tabindex="@(canBorrow ? "0" : "-1")">
         @(canBorrow ? "ทำการยืม" : "ถูกยืมแล้ว")
     </a>
 </div>
 
-@if (Model.BHinItemDetails != null && Model.BHinItemDetails.Any())
-{
-    <h2 class="mt-4">ประวัติการยืม</h2>
-    <table class="table">
+<span class="ds-section-lbl">ประวัติการยืม-คืน</span>
+<div class="ds-table-wrap" style="margin-bottom:1.5rem">
+    <table class="ds-table">
         <thead>
             <tr>
-                <th>ลำดับ</th>
-                <th>ชื่อผู้ยืม</th>
-                <th>ฝ่าย/กลุ่มงาน</th>
-                <th>หน่วยงาน</th>
+                <th>#</th>
+                <th>ผู้ยืม</th>
+                <th>ฝ่าย / หน่วยงาน</th>
                 <th>วันที่ยืม</th>
-                <th>ผู้ดำเนินการให้ยืม-คืนล่าสุด</th>
+                <th>เจ้าหน้าที่ IT</th>
+                <th>สถานะ</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            @{
-                int count = 0;
-            }
-            @foreach (var borrowItem in Model.BHinItemDetails)
+            @if (Model.BHinItemDetails == null || !Model.BHinItemDetails.Any())
             {
-                count++;
-                var canReturn = !borrowItem.IsReturn;
-                <tr>
-                    <td>@count</td>
-                    <td>@Html.DisplayFor(_ => borrowItem.RequestUser)</td>
-                    <td>@Html.DisplayFor(_ => borrowItem.RequestDepartment)</td>
-                    <td>@Html.DisplayFor(_ => borrowItem.RequestSection)</td>
-                    <td>@Html.DisplayFor(_ => borrowItem.BorrowDate)</td>
-                    <td>@Html.DisplayFor(_ => borrowItem.LatestITStaff)</td>
-                    <td>
-                        <a asp-controller="BorrowHistories"
-                               asp-action="Return"
-                               asp-route-id="@borrowItem.Id"
-                               class="btn btn-primary @(!canReturn ? "disabled" : "")"
-                               aria-disabled="@(!canReturn ? "true" : "false")"
-                               tabindex="@(!canReturn ? "-1" : "0")">
-                            <i class="bi bi-box-arrow-in-left me-1"></i>
-                            @(canReturn ? "ทำการคืน" : "คืนแล้ว")
-                        </a>
-                    </td>
-
-                </tr>
+                <tr><td colspan="7" class="ds-table-empty">ไม่มีประวัติการยืม-คืน</td></tr>
+            }
+            else
+            {
+                int i = 0;
+                foreach (var bh in Model.BHinItemDetails)
+                {
+                    i++;
+                    string badge = bh.IsReturn ? "ds-badge ds-badge-teal" : "ds-badge ds-badge-amber";
+                    string label = bh.IsReturn ? "คืนแล้ว" : "กำลังยืม";
+                    <tr>
+                        <td style="color:var(--ds-text3)">@i</td>
+                        <td>@bh.RequestUser</td>
+                        <td style="color:var(--ds-text2)">@bh.RequestDepartment / @bh.RequestSection</td>
+                        <td style="color:var(--ds-text2)">@bh.BorrowDate.ToString("dd MMM yyyy")</td>
+                        <td style="color:var(--ds-text2)">@bh.LatestITStaff</td>
+                        <td><span class="@badge">@label</span></td>
+                        <td>
+                            <div class="ds-tbl-actions">
+                                @if (!bh.IsReturn)
+                                {
+                                    <a asp-controller="BorrowHistories" asp-action="Return"
+                                       asp-route-id="@bh.Id" class="ds-btn-primary" style="font-size:12px;height:30px;padding:0 12px">
+                                        บันทึกคืน
+                                    </a>
+                                }
+                                <a asp-controller="BorrowHistories" asp-action="Delete"
+                                   asp-route-id="@bh.Id" class="ds-btn-del-ghost" style="height:30px;padding:0 10px">ลบ</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
     </table>
-}
+</div>
 
-<script>
-    document.getElementById('imgModalPicture').addEventListener('click', function () {
-        bootstrap.Modal.getInstance(document.getElementById('imgModal')).hide();
-    });
-</script>
+<div class="ds-actions">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="ds-btn-primary">แก้ไข</a>
+    <a asp-action="Delete" asp-route-id="@Model.Id" class="ds-btn-del-ghost">ลบ</a>
+    <a asp-action="Index" class="ds-btn-ghost">กลับรายการ</a>
+</div>

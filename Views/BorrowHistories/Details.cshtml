@@ -1,126 +1,66 @@
-﻿@model KlangIT_V3.Models.BorrowHistory
-
+@model KlangIT_V3.Models.BorrowHistory
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "รายละเอียดการยืม";
 }
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
-<h1>Details</h1>
+<h1 class="ds-page-title">รายละเอียดการยืม</h1>
 
-<div>
-    <h4>BorrowHistory</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RequestUser)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RequestUser)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsPermanentBorrow)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsPermanentBorrow)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BorrowDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.BorrowDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.HasExpectedReturnDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.HasExpectedReturnDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ExpectedReturnDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ExpectedReturnDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsReturn)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsReturn)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ReturnDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ReturnDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DurationDays)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DurationDays)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Itstaff)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Itstaff)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Amount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Amount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ModifiedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ModifiedDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedBy)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ModifiedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ModifiedBy)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsDeleted)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsDeleted)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Item)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Item.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RequestDepartment)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RequestDepartment.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RequestSection)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RequestSection.Id)
-        </dd>
-    </dl>
+<div class="ds-card" style="max-width:580px;margin-bottom:1.25rem">
+    <div class="ds-field-grid">
+        <span class="ds-field-label">อุปกรณ์</span>
+        <span class="ds-field-value">@Model.Item?.ItemType?.Name @Model.Item?.ItemBrand?.Name @Model.Item?.ItemModel?.Name</span>
+
+        <span class="ds-field-label">เลขทะเบียน</span>
+        <span class="ds-field-value" style="font-family:monospace;font-size:12px">@Model.Item?.AssetId</span>
+
+        <span class="ds-field-label">ผู้ยืม</span>
+        <span class="ds-field-value">@Model.RequestUser</span>
+
+        <span class="ds-field-label">ฝ่าย/กลุ่มงาน</span>
+        <span class="ds-field-value">@Model.RequestDepartment?.Name</span>
+
+        <span class="ds-field-label">หน่วยงาน</span>
+        <span class="ds-field-value">@Model.RequestSection?.Name</span>
+
+        <span class="ds-field-label">ยืมถาวร</span>
+        <span class="ds-field-value">@(Model.IsPermanentBorrow ? "ใช่" : "ไม่ใช่")</span>
+
+        <span class="ds-field-label">วันที่ยืม</span>
+        <span class="ds-field-value">@Model.BorrowDate.ToString("dd MMM yyyy HH:mm")</span>
+
+        <span class="ds-field-label">กำหนดคืน</span>
+        <span class="ds-field-value">@Model.ExpectedReturnDate?.ToString("dd MMM yyyy")</span>
+
+        <span class="ds-field-label">สถานะ</span>
+        <span class="ds-field-value">
+            @if (Model.IsReturn)
+            {
+        @:คืนแล้ว
+    }
+            else
+            {
+        @:กำลังยืม
+    }
+        </span>
+
+        <span class="ds-field-label">วันที่คืน</span>
+        <span class="ds-field-value" style="font-weight:400;color:var(--ds-text2)">@(Model.ReturnDate?.ToString("dd MMM yyyy HH:mm") ?? "—")</span>
+
+        <span class="ds-field-label">จำนวน</span>
+        <span class="ds-field-value">@Model.Amount</span>
+
+        <span class="ds-field-label">ผู้ดำเนินการ</span>
+        <span class="ds-field-value">@Model.Itstaff</span>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="ds-actions">
+    @if (!Model.IsReturn)
+    {
+        <a asp-action="Return" asp-route-id="@Model.Id" class="ds-btn-primary">บันทึกคืน</a>
+    }
+    <a asp-action="Edit"   asp-route-id="@Model.Id" class="ds-btn-ghost">แก้ไข</a>
+    <a asp-action="Delete" asp-route-id="@Model.Id" class="ds-btn-del-ghost">ลบ</a>
+    <a asp-action="Index"  class="ds-btn-ghost">กลับรายการ</a>
 </div>

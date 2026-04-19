@@ -71,6 +71,4 @@ public partial class Item
     public virtual ItemModel? ItemModel { get; set; }
 
     public virtual ItemType? ItemType { get; set; }
-
-    public virtual ICollection<StockLog> StockLogs { get; set; } = new List<StockLog>();
 }

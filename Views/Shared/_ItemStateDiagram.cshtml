@@ -1,0 +1,21 @@
+@* _ItemStateDiagram.cshtml — Zoom overlay + JS. Include once per page. *@
+<div class="ds-overlay" id="dsZoomOverlay" onclick="dsCloseZoom()">
+    <div class="ds-overlay-inner" onclick="event.stopPropagation()">
+        <div id="dsZoomContent"></div>
+        <p class="ds-overlay-hint">คลิกพื้นหลังหรือรูปเพื่อย่อกลับ</p>
+    </div>
+</div>
+
+<script>
+function dsOpenZoom(which) {
+    var src = document.getElementById('ds-svg-' + which);
+    var dest = document.getElementById('dsZoomContent');
+    dest.innerHTML = src ? src.outerHTML : '';
+    var svg = dest.querySelector('svg');
+    if (svg) { svg.style.cursor = 'zoom-out'; svg.onclick = dsCloseZoom; }
+    document.getElementById('dsZoomOverlay').classList.add('open');
+}
+function dsCloseZoom() {
+    document.getElementById('dsZoomOverlay').classList.remove('open');
+}
+</script>

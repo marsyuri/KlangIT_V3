@@ -31,8 +31,6 @@ public partial class ItLptWarehouseContext : DbContext
 
     public virtual DbSet<Section> Sections { get; set; }
 
-    public virtual DbSet<StockLog> StockLogs { get; set; }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=NATTLWATTF086\\SQLEXPRESS;Database=IT_LPT_Warehouse;Trusted_Connection=True;TrustServerCertificate=True;");
@@ -242,23 +240,6 @@ public partial class ItLptWarehouseContext : DbContext
                 .HasForeignKey(d => d.DepartmentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Section_Department");
-        });
-
-        modelBuilder.Entity<StockLog>(entity =>
-        {
-            entity.ToTable("StockLog");
-
-            entity.Property(e => e.CreatedBy)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
-            entity.Property(e => e.LogNo).HasMaxLength(50);
-            entity.Property(e => e.Remarks).HasMaxLength(1000);
-
-            entity.HasOne(d => d.Item).WithMany(p => p.StockLogs)
-                .HasForeignKey(d => d.ItemId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_StockLog_Item");
         });
 
         OnModelCreatingPartial(modelBuilder);

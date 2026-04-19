@@ -1,173 +1,91 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using KlangIT_V3.Helpers;
 using KlangIT_V3.Models;
 using KlangIT_V3.ViewModels;
-using KlangIT_V3.Helpers;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace KlangIT_V3.Controllers
 {
     public class ItemBrandsController : Controller
     {
         private readonly ItLptWarehouseContext _context;
+        public ItemBrandsController(ItLptWarehouseContext context) => _context = context;
 
-        public ItemBrandsController(ItLptWarehouseContext context)
-        {
-            _context = context;
-        }
-
-        // GET: ItemBrands
         public async Task<IActionResult> Index(string sortOrder, string searchBox)
         {
             sortOrder ??= "name_asc";
-            ViewBag.CurrentSort   = sortOrder;
-            ViewBag.CurrentSearch = searchBox;
+            ViewBag.CurrentSort = sortOrder; ViewBag.CurrentSearch = searchBox;
             ViewBag.SortByName    = sortOrder == "name_asc"    ? "name_desc"    : "name_asc";
             ViewBag.SortByModDate = sortOrder == "moddate_asc" ? "moddate_desc" : "moddate_asc";
-
-            var query = _context.ItemBrands.Where(i => !i.IsDeleted).AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(searchBox))
-            {
-                string pattern = $"%{searchBox}%";
-                query = query.Where(i => EF.Functions.Like(i.Name, pattern));
-            }
-
-            query = sortOrder switch
-            {
-                "name_asc"     => query.OrderBy(i => i.Name),
-                "name_desc"    => query.OrderByDescending(i => i.Name),
-                "moddate_asc"  => query.OrderBy(i => i.ModifiedDate),
-                "moddate_desc" => query.OrderByDescending(i => i.ModifiedDate),
-                _              => query.OrderBy(i => i.Name)
-            };
-
-            return View(await query.ToListAsync());
+            var q = _context.ItemBrands.Where(i => !i.IsDeleted).AsQueryable();
+            if (!string.IsNullOrWhiteSpace(searchBox)) { string p = $"%{searchBox}%"; q = q.Where(i => EF.Functions.Like(i.Name, p)); }
+            q = sortOrder switch { "name_desc" => q.OrderByDescending(i => i.Name), "moddate_asc" => q.OrderBy(i => i.ModifiedDate), "moddate_desc" => q.OrderByDescending(i => i.ModifiedDate), _ => q.OrderBy(i => i.Name) };
+            return View(await q.ToListAsync());
         }
 
-        // GET: ItemBrands/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var itemBrand = await _context.ItemBrands
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (itemBrand == null)
-            {
-                return NotFound();
-            }
-
-            return View(itemBrand);
+            if (id == null) return NotFound();
+            var b = await _context.ItemBrands.FirstOrDefaultAsync(m => m.Id == id);
+            return b == null ? NotFound() : View(b);
         }
 
-        // GET: ItemBrands/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View(new ItemBrandViewModel());
 
-        // POST: ItemBrands/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ItemBrandViewModel ibVM)
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(ItemBrandViewModel vm)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState
-                    .Where(x => x.Value?.Errors.Count > 0)
-                    .Select(x => new { Field = x.Key, Errors = x.Value!.Errors.Select(e => e.ErrorMessage) });
-                return View(ibVM);
-            }
-            
-            string itUser = Utility.GetCurrentUserName();
-            ItemBrand itemBrand = new ItemBrand
-            {
-                Name = ibVM.Name,
-                CreatedBy = itUser,
-                ModifiedBy = itUser,
-                CreatedDate = DateTime.Now,
-                ModifiedDate = DateTime.Now,
-                IsDeleted = false
-            };
-            _context.ItemBrands.Add(itemBrand);
+            if (!ModelState.IsValid) return View(vm);
+            string u = Utility.GetCurrentUserName();
+            _context.ItemBrands.Add(new ItemBrand { Name = vm.Name, CreatedBy = u, ModifiedBy = u, CreatedDate = DateTime.Now, ModifiedDate = DateTime.Now, IsDeleted = false });
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: ItemBrands/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
-            var itemBrand = await _context.ItemBrands.FindAsync(id);
-            if (itemBrand == null) return NotFound();
-            var vm = new ItemBrandEditViewModel { Id = itemBrand.Id, Name = itemBrand.Name };
-            return View(vm);
+            var b = await _context.ItemBrands.FindAsync(id);
+            return b == null ? NotFound() : View(new ItemBrandEditViewModel { Id = b.Id, Name = b.Name });
         }
 
-        // POST: ItemBrands/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ItemBrandEditViewModel vm)
         {
             if (id != vm.Id) return NotFound();
             if (!ModelState.IsValid) return View(vm);
-            var itemBrand = await _context.ItemBrands.FindAsync(id);
-            if (itemBrand == null) return NotFound();
-            string itUser = Utility.GetCurrentUserName();
-            itemBrand.Name = vm.Name;
-            itemBrand.ModifiedBy = itUser;
-            itemBrand.ModifiedDate = DateTime.Now;
+            var b = await _context.ItemBrands.FindAsync(id);
+            if (b == null) return NotFound();
+            string u = Utility.GetCurrentUserName();
+            b.Name = vm.Name; b.ModifiedBy = u; b.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: ItemBrands/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
+            if (id == null) return NotFound();
+            var b = await _context.ItemBrands.Include(x => x.ItemModels).Include(x => x.Items).FirstOrDefaultAsync(m => m.Id == id);
+            if (b == null) return NotFound();
+            var vm = new ItemBrandDeleteViewModel
             {
-                return NotFound();
-            }
-
-            var itemBrand = await _context.ItemBrands
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (itemBrand == null)
-            {
-                return NotFound();
-            }
-
-            return View(itemBrand);
+                Id = b.Id, Name = b.Name, ModifiedDate = b.ModifiedDate,
+                ItemModelCount = b.ItemModels.Count(m => !m.IsDeleted),
+                ItemCount      = b.Items.Count(i => !i.IsDeleted)
+            };
+            return View(vm);
         }
 
-        // POST: ItemBrands/Delete/5 — soft delete
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ActionName("Delete"), ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var itemBrand = await _context.ItemBrands.FindAsync(id);
-            if (itemBrand != null)
-            {
-                string itUser = Utility.GetCurrentUserName();
-                itemBrand.IsDeleted = true;
-                itemBrand.ModifiedBy = itUser;
-                itemBrand.ModifiedDate = DateTime.Now;
-                await _context.SaveChangesAsync();
-            }
+            var b = await _context.ItemBrands.Include(x => x.ItemModels).Include(x => x.Items).FirstOrDefaultAsync(i => i.Id == id);
+            if (b == null) return NotFound();
+            if (b.ItemModels.Any(m => !m.IsDeleted) || b.Items.Any(i => !i.IsDeleted)) return RedirectToAction(nameof(Delete), new { id });
+            string u = Utility.GetCurrentUserName();
+            b.IsDeleted = true; b.ModifiedBy = u; b.ModifiedDate = DateTime.Now;
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ItemBrandExists(int id)
-        {
-            return _context.ItemBrands.Any(e => e.Id == id);
         }
     }
 }

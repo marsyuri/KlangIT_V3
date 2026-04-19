@@ -1,0 +1,68 @@
+@model IEnumerable<KlangIT_V3.Models.BorrowHistory>
+@{
+    ViewData["Title"] = "ประวัติการยืม-คืน";
+}
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
+
+<h1 class="ds-page-title">ประวัติการยืม-คืน</h1>
+
+<div class="ds-table-wrap">
+    <table class="ds-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>อุปกรณ์</th>
+                <th>เลขทะเบียน</th>
+                <th>ผู้ยืม</th>
+                <th>ฝ่าย / หน่วยงาน</th>
+                <th>วันที่ยืม</th>
+                <th>กำหนดคืน</th>
+                <th>สถานะ</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="9" class="ds-table-empty">ไม่พบข้อมูล</td></tr>
+            }
+            else
+            {
+                int row = 0;
+                foreach (var bh in Model)
+                {
+                    row++;
+                    bool isOverdue = !bh.IsReturn && bh.ExpectedReturnDate.HasValue && bh.ExpectedReturnDate < DateTime.Now;
+                    string badge = bh.IsReturn ? "ds-badge ds-badge-teal"
+                                 : isOverdue   ? "ds-badge ds-badge-red"
+                                 : "ds-badge ds-badge-amber";
+                    string label = bh.IsReturn ? "คืนแล้ว"
+                                 : isOverdue   ? "เกินกำหนด"
+                                 : "กำลังยืม";
+                    <tr>
+                        <td style="color:var(--ds-text3)">@row</td>
+                        <td>@bh.Item?.ItemType?.Name @bh.Item?.ItemBrand?.Name</td>
+                        <td style="font-family:monospace;font-size:12px">@bh.Item?.AssetId</td>
+                        <td>@bh.RequestUser</td>
+                        <td style="color:var(--ds-text2)">@bh.RequestDepartment?.Name / @bh.RequestSection?.Name</td>
+                        <td style="color:var(--ds-text2)">@bh.BorrowDate.ToString("dd MMM yyyy")</td>
+                        <td style="color:var(--ds-text2)">@bh.ExpectedReturnDate?.ToString("dd MMM yyyy")</td>
+                        <td><span class="@badge">@label</span></td>
+                        <td>
+                            <div class="ds-tbl-actions">
+                                @if (!bh.IsReturn)
+                                {
+                                    <a asp-action="Return" asp-route-id="@bh.Id"
+                                       class="ds-btn-primary" style="font-size:12px;height:30px;padding:0 12px">บันทึกคืน</a>
+                                }
+                                <a asp-action="Edit"    asp-route-id="@bh.Id" class="ds-btn-ghost ds-tbl-btn">แก้ไข</a>
+                                <a asp-action="Details" asp-route-id="@bh.Id" class="ds-btn-ghost ds-tbl-btn">รายละเอียด</a>
+                                <a asp-action="Delete"  asp-route-id="@bh.Id" class="ds-btn-del-ghost ds-tbl-btn">ลบ</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

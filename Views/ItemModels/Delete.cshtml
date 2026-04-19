@@ -1,36 +1,49 @@
-@model KlangIT_V3.Models.ItemModel
+@model KlangIT_V3.ViewModels.ItemModelDeleteViewModel
+@{ ViewData["Title"] = "ลบรุ่นอุปกรณ์"; }
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
-@{
-    ViewData["Title"] = "ลบรุ่นอุปกรณ์";
-}
-
-<h1>ลบรุ่นอุปกรณ์</h1>
-
-<div class="alert alert-warning d-flex align-items-center mt-3" role="alert">
-    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-    <span>คุณต้องการลบรายการนี้ใช่หรือไม่? การดำเนินการนี้ไม่สามารถเรียกคืนได้</span>
-</div>
-
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2 mb-4 py-2">ยี่ห้อ</dt>
-        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.ItemBrand.Name)</dd>
-        <dt class="col-sm-2 mb-4 py-2">@Html.DisplayNameFor(model => model.Name)</dt>
-        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.Name)</dd>
-        <dt class="col-sm-2 mb-4 py-2">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
-        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.CreatedDate)</dd>
-        <dt class="col-sm-2 mb-4 py-2">@Html.DisplayNameFor(model => model.ModifiedDate)</dt>
-        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.ModifiedDate)</dd>
-        <dt class="col-sm-2 mb-4 py-2">@Html.DisplayNameFor(model => model.CreatedBy)</dt>
-        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.CreatedBy)</dd>
-        <dt class="col-sm-2 mb-4 py-2">@Html.DisplayNameFor(model => model.ModifiedBy)</dt>
-        <dd class="col-sm-10 mb-4 py-2">@Html.DisplayFor(model => model.ModifiedBy)</dd>
-    </dl>
-
-    <form asp-action="Delete" method="post">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="ยืนยันการลบ" class="btn btn-danger" />
-        <a asp-action="Index" class="btn btn-outline-secondary ms-2">ยกเลิก</a>
-    </form>
+<h1 class="ds-page-title">ลบรุ่นอุปกรณ์</h1>
+<p class="ds-page-sub">กรุณาตรวจสอบรายละเอียดก่อนดำเนินการลบ</p>
+<div style="max-width:480px">
+    <span class="ds-section-lbl">ข้อมูลรุ่นอุปกรณ์</span>
+    <div class="ds-card">
+        <div class="ds-field-grid">
+            <span class="ds-field-label">ยี่ห้อ</span>      <span class="ds-field-value">@Model.BrandName</span>
+            <span class="ds-field-label">รุ่น</span>         <span class="ds-field-value">@Model.Name</span>
+            <span class="ds-field-label">แก้ไขล่าสุด</span> <span class="ds-field-value" style="font-weight:400;color:var(--ds-text2)">@Model.ModifiedDate.ToString("dd MMM yyyy")</span>
+            <span class="ds-field-label">แก้ไขโดย</span>    <span class="ds-field-value" style="font-weight:400;color:var(--ds-text2)">@Model.ModifiedBy</span>
+        </div>
+    </div>
+    @if (!Model.CanDelete)
+    {
+        <div class="ds-blocked-box">
+            <div class="ds-blocked-title">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#A32D2D" stroke-width="1.5"/><path d="M5 5L11 11M11 5L5 11" stroke="#A32D2D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                ไม่สามารถลบได้ — มีอุปกรณ์ที่ใช้รุ่นนี้อยู่ @Model.ItemCount รายการ
+            </div>
+            <p class="ds-blocked-note">กรุณาแก้ไขหรือลบอุปกรณ์ที่ใช้รุ่นนี้ก่อน</p>
+        </div>
+        <div class="ds-actions">
+            <button class="ds-btn-danger" disabled>ยืนยันการลบ</button>
+            <a asp-action="Index" class="ds-btn-ghost">ยกเลิก</a>
+        </div>
+    }
+    else
+    {
+        <div class="ds-danger-box">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2L16.5 15H1.5L9 2Z" stroke="#A32D2D" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 7V10" stroke="#A32D2D" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="13" r=".75" fill="#A32D2D"/></svg>
+            <div>
+                <p class="ds-danger-title">การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
+                <p class="ds-danger-desc">รุ่นอุปกรณ์นี้จะถูกลบออกจากระบบ (soft delete)</p>
+            </div>
+        </div>
+        <form asp-action="Delete">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id"/>
+            <div class="ds-actions">
+                <button type="submit" class="ds-btn-danger">ยืนยันการลบ</button>
+                <a asp-action="Index" class="ds-btn-ghost">ยกเลิก</a>
+            </div>
+        </form>
+    }
 </div>
