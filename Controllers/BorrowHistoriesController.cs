@@ -108,15 +108,24 @@ namespace KlangIT_V3.Controllers
                 IsDeleted            = false
             };
             _context.BorrowHistories.Add(bh);
+            await _context.SaveChangesAsync();
 
             var item = await _context.Items.FindAsync(bhVM.ItemId);
             if (item == null) return NotFound();
-            item.ItemStatus      = (int)ItemStatusEnum.Borrowed;
-            item.AvailableAmount -= bhVM.Amount;
-            item.BorrowedAmount  += bhVM.Amount;
-            item.ModifiedBy      = itUser;
-            item.ModifiedDate    = DateTime.Now;
-            await _context.SaveChangesAsync();
+            item.ItemStatus = (int)ItemStatusEnum.Borrowed;
+
+            await StockHelper.ApplyStockChangeAsync(
+                _context,
+                bhVM.ItemId,
+                (int)StockLogTypeEnum.Borrow,
+                deltaAvailable: -bhVM.Amount,
+                deltaBorrowed:  +bhVM.Amount,
+                deltaDamaged:   0,
+                deltaDisposed:  0,
+                createdBy:      itUser,
+                referenceNo:    $"BH-{bh.Id}",
+                remarks:        "ยืม");
+
             return RedirectToAction(nameof(ItemsController.Details), "Items", new { id = bhVM.ItemId });
         }
 
@@ -184,12 +193,20 @@ namespace KlangIT_V3.Controllers
 
             var item = await _context.Items.FindAsync(bhVM.ItemId);
             if (item == null) return NotFound();
-            item.ItemStatus      = (int)ItemStatusEnum.Available;
-            item.AvailableAmount += bhVM.ReturnAmount;
-            item.BorrowedAmount  -= bhVM.ReturnAmount;
-            item.ModifiedBy      = itUser;
-            item.ModifiedDate    = DateTime.Now;
-            await _context.SaveChangesAsync();
+            item.ItemStatus = (int)ItemStatusEnum.Available;
+
+            await StockHelper.ApplyStockChangeAsync(
+                _context,
+                bhVM.ItemId,
+                (int)StockLogTypeEnum.Return,
+                deltaAvailable: +bhVM.ReturnAmount,
+                deltaBorrowed:  -bhVM.ReturnAmount,
+                deltaDamaged:   0,
+                deltaDisposed:  0,
+                createdBy:      itUser,
+                referenceNo:    $"BH-{bh.Id}",
+                remarks:        fullyReturned ? "คืนทั้งหมด" : "คืนบางส่วน");
+
             return RedirectToAction(nameof(ItemsController.Details), "Items", new { id = bhVM.ItemId });
         }
 
