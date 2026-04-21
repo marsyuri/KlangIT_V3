@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KlangIT_V3.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
