@@ -32,25 +32,26 @@
                 foreach (var bh in Model)
                 {
                     row++;
-                    bool isOverdue = !bh.IsReturn && bh.ExpectedReturnDate.HasValue && bh.ExpectedReturnDate < DateTime.Now;
-                    string badge = bh.IsReturn ? "ds-badge ds-badge-teal"
-                                 : isOverdue   ? "ds-badge ds-badge-red"
+                    bool isReturned = bh.ReturnDate.HasValue;
+                    bool isOverdue = !isReturned && bh.DueDate.HasValue && bh.DueDate < DateTime.Now;
+                    string badge = isReturned ? "ds-badge ds-badge-teal"
+                                 : isOverdue  ? "ds-badge ds-badge-red"
                                  : "ds-badge ds-badge-amber";
-                    string label = bh.IsReturn ? "คืนแล้ว"
-                                 : isOverdue   ? "เกินกำหนด"
+                    string label = isReturned ? "คืนแล้ว"
+                                 : isOverdue  ? "เกินกำหนด"
                                  : "กำลังยืม";
                     <tr>
                         <td style="color:var(--ds-text3)">@row</td>
                         <td>@bh.Item?.ItemType?.Name @bh.Item?.ItemBrand?.Name</td>
                         <td style="font-family:monospace;font-size:12px">@bh.Item?.AssetId</td>
-                        <td>@bh.RequestUser</td>
-                        <td style="color:var(--ds-text2)">@bh.RequestDepartment?.Name / @bh.RequestSection?.Name</td>
+                        <td>@bh.BorrowerUser</td>
+                        <td style="color:var(--ds-text2)">@bh.BorrowerDepartment?.Name / @bh.BorrowerSection?.Name</td>
                         <td style="color:var(--ds-text2)">@bh.BorrowDate.ToString("dd MMM yyyy")</td>
-                        <td style="color:var(--ds-text2)">@bh.ExpectedReturnDate?.ToString("dd MMM yyyy")</td>
+                        <td style="color:var(--ds-text2)">@bh.DueDate?.ToString("dd MMM yyyy")</td>
                         <td><span class="@badge">@label</span></td>
                         <td>
                             <div class="ds-tbl-actions">
-                                @if (!bh.IsReturn)
+                                @if (!isReturned)
                                 {
                                     <a asp-action="Return" asp-route-id="@bh.Id"
                                        class="ds-btn-primary" style="font-size:12px;height:30px;padding:0 12px">บันทึกคืน</a>

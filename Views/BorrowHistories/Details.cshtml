@@ -15,13 +15,13 @@
         <span class="ds-field-value" style="font-family:monospace;font-size:12px">@Model.Item?.AssetId</span>
 
         <span class="ds-field-label">ผู้ยืม</span>
-        <span class="ds-field-value">@Model.RequestUser</span>
+        <span class="ds-field-value">@Model.BorrowerUser</span>
 
         <span class="ds-field-label">ฝ่าย/กลุ่มงาน</span>
-        <span class="ds-field-value">@Model.RequestDepartment?.Name</span>
+        <span class="ds-field-value">@Model.BorrowerDepartment?.Name</span>
 
         <span class="ds-field-label">หน่วยงาน</span>
-        <span class="ds-field-value">@Model.RequestSection?.Name</span>
+        <span class="ds-field-value">@Model.BorrowerSection?.Name</span>
 
         <span class="ds-field-label">ยืมถาวร</span>
         <span class="ds-field-value">@(Model.IsPermanentBorrow ? "ใช่" : "ไม่ใช่")</span>
@@ -30,11 +30,11 @@
         <span class="ds-field-value">@Model.BorrowDate.ToString("dd MMM yyyy HH:mm")</span>
 
         <span class="ds-field-label">กำหนดคืน</span>
-        <span class="ds-field-value">@Model.ExpectedReturnDate?.ToString("dd MMM yyyy")</span>
+        <span class="ds-field-value">@Model.DueDate?.ToString("dd MMM yyyy")</span>
 
         <span class="ds-field-label">สถานะ</span>
         <span class="ds-field-value">
-            @if (Model.IsReturn)
+            @if (Model.ReturnDate.HasValue)
             {
         @:คืนแล้ว
     }
@@ -51,12 +51,12 @@
         <span class="ds-field-value">@Model.Amount</span>
 
         <span class="ds-field-label">ผู้ดำเนินการ</span>
-        <span class="ds-field-value">@Model.Itstaff</span>
+        <span class="ds-field-value">@(Model.ReturnDate.HasValue ? Model.ReturnItname : Model.BorrowItname)</span>
     </div>
 </div>
 
 <div class="ds-actions">
-    @if (!Model.IsReturn)
+    @if (!Model.ReturnDate.HasValue)
     {
         <a asp-action="Return" asp-route-id="@Model.Id" class="ds-btn-primary">บันทึกคืน</a>
     }

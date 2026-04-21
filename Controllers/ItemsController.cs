@@ -79,7 +79,7 @@ namespace KlangIT_V3.Controllers
                     EF.Functions.Like(i.SerialNo ?? "", pattern) ||
                     EF.Functions.Like(i.ItemType.Name, pattern) ||
                     EF.Functions.Like(i.ItemBrand.Name, pattern) ||
-                    EF.Functions.Like(i.ItemModel.Name, pattern));
+                    EF.Functions.Like(i.ItemModel!.Name, pattern));
             }
 
             query = sortOrder switch
@@ -88,10 +88,10 @@ namespace KlangIT_V3.Controllers
                 "asset_desc" => query.OrderByDescending(s => string.IsNullOrWhiteSpace(s.AssetId) ? 1 : 0).ThenByDescending(s => s.AssetId),
                 "type_asc" => query.OrderBy(s => s.ItemType.Name).ThenBy(s => s.AssetId),
                 "type_desc" => query.OrderByDescending(s => s.ItemType.Name).ThenByDescending(s => s.AssetId),
-                "brand_asc" => query.OrderBy(s => s.ItemBrand.Name).ThenBy(s => s.ItemModel.Name),
-                "brand_desc" => query.OrderByDescending(s => s.ItemBrand.Name).ThenByDescending(s => s.ItemModel.Name),
-                "model_asc" => query.OrderBy(s => s.ItemModel.Name).ThenBy(s => s.ItemBrand.Name),
-                "model_desc" => query.OrderByDescending(s => s.ItemModel.Name).ThenByDescending(s => s.ItemBrand.Name),
+                "brand_asc" => query.OrderBy(s => s.ItemBrand.Name).ThenBy(s => s.ItemModel!.Name),
+                "brand_desc" => query.OrderByDescending(s => s.ItemBrand.Name).ThenByDescending(s => s.ItemModel!.Name),
+                "model_asc" => query.OrderBy(s => s.ItemModel!.Name).ThenBy(s => s.ItemBrand.Name),
+                "model_desc" => query.OrderByDescending(s => s.ItemModel!.Name).ThenByDescending(s => s.ItemBrand.Name),
                 "avl_asc" => query.OrderBy(s => s.AvailableAmount),
                 "avl_desc" => query.OrderByDescending(s => s.AvailableAmount),
                 "moddate_asc" => query.OrderBy(s => s.ModifiedDate),
@@ -113,7 +113,7 @@ namespace KlangIT_V3.Controllers
             if (item == null) return NotFound();
 
             item.BorrowHistories = await _context.BorrowHistories
-                .Include(b => b.RequestDepartment).Include(b => b.RequestSection)
+                .Include(b => b.BorrowerDepartment).Include(b => b.BorrowerSection)
                 .Where(b => b.ItemId == item.Id && !b.IsDeleted)
                 .ToListAsync();
 
@@ -137,7 +137,7 @@ namespace KlangIT_V3.Controllers
                 DamagedAmount = item.DamagedAmount,
                 DisposedAmount = item.DisposedAmount,
                 MinimumAmount = item.MinimumAmount,
-                ItemStatus = item.ItemStatus,
+                ItemStatus = (ItemStatusEnum)item.ItemStatus,
                 AssetId1 = item.AssetId1,
                 AssetId2 = item.AssetId2,
                 AssetId3 = item.AssetId3,
@@ -151,12 +151,12 @@ namespace KlangIT_V3.Controllers
                 BHinItemDetails = item.BorrowHistories.OrderByDescending(b => b.Id).Select(bh => new BorrowInItemDetailViewModel
                 {
                     Id = bh.Id,
-                    RequestUser = bh.RequestUser,
-                    RequestDepartment = bh.RequestDepartment?.Name ?? string.Empty,
-                    RequestSection = bh.RequestSection?.Name ?? string.Empty,
+                    RequestUser = bh.BorrowerUser,
+                    RequestDepartment = bh.BorrowerDepartment?.Name ?? string.Empty,
+                    RequestSection = bh.BorrowerSection?.Name ?? string.Empty,
                     BorrowDate = bh.BorrowDate,
-                    LatestITStaff = bh.Itstaff,
-                    IsReturn = bh.IsReturn
+                    LatestITStaff = bh.ReturnDate.HasValue ? bh.ReturnItname : bh.BorrowItname,
+                    IsReturn = bh.ReturnDate.HasValue
                 }).ToList()
             };
 
@@ -197,6 +197,8 @@ namespace KlangIT_V3.Controllers
             string? imageUrl = await SaveImageAsync(itemVM);
 
             string itUser = Utility.GetCurrentUserName();
+            int initialAmount = itemVM.IsBulk ? itemVM.TotalAmount : 1;
+
             var item = new Item
             {
                 IsBulk = itemVM.IsBulk,
@@ -207,19 +209,19 @@ namespace KlangIT_V3.Controllers
                 AssetId4 = itemVM.AssetId4,
                 OtherAssetId = itemVM.OtherAssetId,
                 SerialNo = itemVM.SerialNo,
-                ItemTypeId = itemVM.SelectedItemTypeId,
-                ItemBrandId = itemVM.SelectedItemBrandId,
+                ItemTypeId = itemVM.SelectedItemTypeId ?? 0,
+                ItemBrandId = itemVM.SelectedItemBrandId ?? 0,
                 ItemModelId = itemVM.SelectedItemModelId,
                 ItemDescription = itemVM.ItemDescription,
                 ItemImageUrl = imageUrl,
-                TotalAmount = itemVM.IsBulk ? itemVM.TotalAmount : 1,
-                ActiveAmount = itemVM.TotalAmount,
-                AvailableAmount = itemVM.TotalAmount,
+                TotalAmount = 0,
+                ActiveAmount = 0,
+                AvailableAmount = 0,
                 BorrowedAmount = 0,
                 DamagedAmount = 0,
                 DisposedAmount = 0,
                 MinimumAmount = itemVM.MinimumAmount,
-                ItemStatus = ItemStatusEnum.Available,
+                ItemStatus = (int)ItemStatusEnum.Available,
                 Remarks = itemVM.Remarks,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
@@ -229,6 +231,18 @@ namespace KlangIT_V3.Controllers
             };
             _context.Items.Add(item);
             await _context.SaveChangesAsync();
+
+            await StockHelper.ApplyStockChangeAsync(
+                _context,
+                item.Id,
+                (int)StockLogTypeEnum.InitialAvailable,
+                deltaAvailable: initialAmount,
+                deltaBorrowed: 0,
+                deltaDamaged: 0,
+                deltaDisposed: 0,
+                createdBy: itUser,
+                remarks: "รับเข้าเริ่มต้น (Create Item)");
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -251,8 +265,8 @@ namespace KlangIT_V3.Controllers
                 AssetId4 = item.AssetId4,
                 OtherAssetId = item.OtherAssetId,
                 SerialNo = item.SerialNo,
-                SelectedItemTypeId = item.ItemTypeId ?? 0,
-                SelectedItemBrandId = item.ItemBrandId ?? 0,
+                SelectedItemTypeId = item.ItemTypeId,
+                SelectedItemBrandId = item.ItemBrandId,
                 SelectedItemModelId = item.ItemModelId ?? 0,
                 ItemDescription = item.ItemDescription,
                 ItemImageUrl = item.ItemImageUrl,
@@ -262,7 +276,7 @@ namespace KlangIT_V3.Controllers
                 DamagedAmount = item.DamagedAmount,
                 DisposedAmount = item.DisposedAmount,
                 MinimumAmount = item.MinimumAmount,
-                SelectedItemStatus = item.ItemStatus,
+                SelectedItemStatus = (ItemStatusEnum)item.ItemStatus,
                 Remarks = item.Remarks,
                 CreatedDate = item.CreatedDate,
                 ModifiedDate = item.ModifiedDate,
@@ -298,14 +312,14 @@ namespace KlangIT_V3.Controllers
             item.OtherAssetId = vm.OtherAssetId;
             item.AssetId = BuildAssetIdFromParts(vm.AssetId1, vm.AssetId2, vm.AssetId3, vm.AssetId4, vm.OtherAssetId);
             item.SerialNo = vm.SerialNo;
-            item.ItemTypeId = vm.SelectedItemTypeId == 0 ? null : vm.SelectedItemTypeId;
-            item.ItemBrandId = vm.SelectedItemBrandId == 0 ? null : vm.SelectedItemBrandId;
+            item.ItemTypeId = vm.SelectedItemTypeId;
+            item.ItemBrandId = vm.SelectedItemBrandId;
             item.ItemModelId = vm.SelectedItemModelId == 0 ? null : vm.SelectedItemModelId;
             item.ItemDescription = vm.ItemDescription;
             item.ItemImageUrl = vm.ItemImageUrl;
             item.TotalAmount = vm.TotalAmount;
             item.MinimumAmount = vm.MinimumAmount;
-            item.ItemStatus = vm.SelectedItemStatus;
+            item.ItemStatus = (int)vm.SelectedItemStatus;
             item.Remarks = vm.Remarks;
             item.IsDeleted = vm.IsDeleted;
             item.ModifiedBy = itUser;
@@ -346,9 +360,9 @@ namespace KlangIT_V3.Controllers
                 ItemBrandName = item.ItemBrand?.Name ?? string.Empty,
                 ItemModelName = item.ItemModel?.Name ?? string.Empty,
                 AvailableAmount = item.AvailableAmount,
-                ItemStatus = item.ItemStatus,
+                ItemStatus = (ItemStatusEnum)item.ItemStatus,
                 BorrowHistoryCount = activeBorrows.Count,
-                HasActiveBorrow = activeBorrows.Any(b => !b.IsReturn)
+                HasActiveBorrow = activeBorrows.Any(b => !b.ReturnDate.HasValue)
             };
 
             return View(vm);

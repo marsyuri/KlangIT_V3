@@ -23,8 +23,8 @@ namespace KlangIT_V3.Controllers
             var list = await _context.BorrowHistories
                 .Include(b => b.Item).ThenInclude(i => i!.ItemType)
                 .Include(b => b.Item).ThenInclude(i => i!.ItemBrand)
-                .Include(b => b.RequestDepartment)
-                .Include(b => b.RequestSection)
+                .Include(b => b.BorrowerDepartment)
+                .Include(b => b.BorrowerSection)
                 .Where(b => !b.IsDeleted)
                 .OrderByDescending(b => b.BorrowDate)
                 .ToListAsync();
@@ -40,8 +40,8 @@ namespace KlangIT_V3.Controllers
                 .Include(b => b.Item).ThenInclude(i => i!.ItemType)
                 .Include(b => b.Item).ThenInclude(i => i!.ItemBrand)
                 .Include(b => b.Item).ThenInclude(i => i!.ItemModel)
-                .Include(b => b.RequestDepartment)
-                .Include(b => b.RequestSection)
+                .Include(b => b.BorrowerDepartment)
+                .Include(b => b.BorrowerSection)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (bh == null) return NotFound();
 
@@ -63,7 +63,7 @@ namespace KlangIT_V3.Controllers
                 ItemId         = item.Id,
                 ItemHeader     = $"{item.ItemType?.Name} {item.ItemBrand?.Name} {item.ItemModel?.Name}".Trim(),
                 ItemAssetId    = item.AssetId ?? string.Empty,
-                ItemStatus     = item.ItemStatus,
+                ItemStatus     = (ItemStatusEnum)item.ItemStatus,
                 BorrowDate     = DateTime.Now,
                 ExpectedReturnDate = DateTime.Now
             };
@@ -91,14 +91,15 @@ namespace KlangIT_V3.Controllers
             var bh = new BorrowHistory
             {
                 ItemId               = bhVM.ItemId,
-                RequestUser          = bhVM.RequestUser,
-                RequestSectionId     = bhVM.SelectedSectionId == 0 ? null : bhVM.SelectedSectionId,
-                RequestDepartmentId  = bhVM.SelectedDepartmentId,
+                BorrowerUser         = bhVM.RequestUser,
+                BorrowerSectionId    = bhVM.SelectedSectionId == 0 ? null : bhVM.SelectedSectionId,
+                BorrowerDepartmentId = bhVM.SelectedDepartmentId,
                 IsPermanentBorrow    = bhVM.IsPermanentBorrow,
+                IsInitial            = false,
                 BorrowDate           = bhVM.BorrowDate,
-                HasExpectedReturnDate= bhVM.HasExpectedReturnDate,
-                ExpectedReturnDate   = bhVM.ExpectedReturnDate,
-                Itstaff              = bhVM.Itstaff,
+                DueDate              = bhVM.HasExpectedReturnDate ? bhVM.ExpectedReturnDate : null,
+                BorrowItname         = bhVM.Itstaff,
+                ReturnItname         = string.Empty,
                 Amount               = bhVM.Amount,
                 CreatedDate          = DateTime.Now,
                 ModifiedDate         = DateTime.Now,
@@ -110,7 +111,7 @@ namespace KlangIT_V3.Controllers
 
             var item = await _context.Items.FindAsync(bhVM.ItemId);
             if (item == null) return NotFound();
-            item.ItemStatus      = ItemStatusEnum.Borrowed;
+            item.ItemStatus      = (int)ItemStatusEnum.Borrowed;
             item.AvailableAmount -= bhVM.Amount;
             item.BorrowedAmount  += bhVM.Amount;
             item.ModifiedBy      = itUser;
@@ -126,7 +127,7 @@ namespace KlangIT_V3.Controllers
             if (id == null) return NotFound();
 
             var bh = await _context.BorrowHistories
-                .Where(b => b.Id == id && !b.IsDeleted && !b.IsReturn)
+                .Where(b => b.Id == id && !b.IsDeleted && !b.ReturnDate.HasValue)
                 .SingleOrDefaultAsync();
             if (bh == null) return NotFound();
 
@@ -141,10 +142,10 @@ namespace KlangIT_V3.Controllers
                 ItemId              = item.Id,
                 ItemHeader          = $"{item.ItemType?.Name} {item.ItemBrand?.Name} {item.ItemModel?.Name}".Trim(),
                 ItemAssetId         = item.AssetId ?? string.Empty,
-                ItemStatus          = item.ItemStatus,
-                RequestUser         = bh.RequestUser,
-                SelectedDepartmentId= bh.RequestDepartmentId,
-                SelectedSectionId   = bh.RequestSectionId ?? 0,
+                ItemStatus          = (ItemStatusEnum)item.ItemStatus,
+                RequestUser         = bh.BorrowerUser,
+                SelectedDepartmentId= bh.BorrowerDepartmentId,
+                SelectedSectionId   = bh.BorrowerSectionId ?? 0,
                 BorrowDate          = bh.BorrowDate
             };
             PopulateDepartments(vm);
@@ -165,23 +166,25 @@ namespace KlangIT_V3.Controllers
             }
 
             var bh = await _context.BorrowHistories
-                .Where(b => b.Id == bhVM.Id && !b.IsDeleted && !b.IsReturn)
+                .Where(b => b.Id == bhVM.Id && !b.IsDeleted && !b.ReturnDate.HasValue)
                 .SingleOrDefaultAsync();
             if (bh == null) return NotFound();
 
             string itUser = Utility.GetCurrentUserName();
+            bool fullyReturned   = bh.Amount == bhVM.ReturnAmount;
             bh.IsPermanentBorrow = false;
-            bh.IsReturn          = bh.Amount == bhVM.ReturnAmount;
-            bh.ReturnDate        = DateTime.Now;
-            bh.DurationDays      = (bh.ReturnDate.Value - bh.BorrowDate).Days;
-            bh.Itstaff           = bhVM.Itstaff;
+            if (fullyReturned)
+            {
+                bh.ReturnDate   = DateTime.Now;
+                bh.ReturnItname = bhVM.Itstaff;
+            }
             bh.Amount           -= bhVM.ReturnAmount;
             bh.ModifiedBy        = itUser;
             bh.ModifiedDate      = DateTime.Now;
 
             var item = await _context.Items.FindAsync(bhVM.ItemId);
             if (item == null) return NotFound();
-            item.ItemStatus      = ItemStatusEnum.Available;
+            item.ItemStatus      = (int)ItemStatusEnum.Available;
             item.AvailableAmount += bhVM.ReturnAmount;
             item.BorrowedAmount  -= bhVM.ReturnAmount;
             item.ModifiedBy      = itUser;
@@ -201,16 +204,16 @@ namespace KlangIT_V3.Controllers
             var vm = new BorrowHistoryEditViewModel
             {
                 Id                   = bh.Id,
-                RequestUser          = bh.RequestUser,
-                SelectedDepartmentId = bh.RequestDepartmentId,
-                SelectedSectionId    = bh.RequestSectionId ?? 0,
+                RequestUser          = bh.BorrowerUser,
+                SelectedDepartmentId = bh.BorrowerDepartmentId,
+                SelectedSectionId    = bh.BorrowerSectionId ?? 0,
                 IsPermanentBorrow    = bh.IsPermanentBorrow,
                 BorrowDate           = bh.BorrowDate,
-                HasExpectedReturnDate= bh.HasExpectedReturnDate,
-                ExpectedReturnDate   = bh.ExpectedReturnDate,
-                IsReturn             = bh.IsReturn,
+                HasExpectedReturnDate= bh.DueDate.HasValue,
+                ExpectedReturnDate   = bh.DueDate,
+                IsReturn             = bh.ReturnDate.HasValue,
                 ReturnDate           = bh.ReturnDate,
-                Itstaff              = bh.Itstaff,
+                Itstaff              = bh.ReturnDate.HasValue ? bh.ReturnItname : bh.BorrowItname,
                 Amount               = bh.Amount
             };
             PopulateDepartmentsEdit(vm);
@@ -236,16 +239,15 @@ namespace KlangIT_V3.Controllers
             if (bh == null) return NotFound();
 
             string itUser = Utility.GetCurrentUserName();
-            bh.RequestUser           = vm.RequestUser;
-            bh.RequestDepartmentId   = vm.SelectedDepartmentId;
-            bh.RequestSectionId      = vm.SelectedSectionId == 0 ? null : vm.SelectedSectionId;
+            bh.BorrowerUser          = vm.RequestUser;
+            bh.BorrowerDepartmentId  = vm.SelectedDepartmentId;
+            bh.BorrowerSectionId     = vm.SelectedSectionId == 0 ? null : vm.SelectedSectionId;
             bh.IsPermanentBorrow     = vm.IsPermanentBorrow;
             bh.BorrowDate            = vm.BorrowDate;
-            bh.HasExpectedReturnDate = vm.HasExpectedReturnDate;
-            bh.ExpectedReturnDate    = vm.ExpectedReturnDate;
-            bh.IsReturn              = vm.IsReturn;
-            bh.ReturnDate            = vm.ReturnDate;
-            bh.Itstaff               = vm.Itstaff;
+            bh.DueDate               = vm.HasExpectedReturnDate ? vm.ExpectedReturnDate : null;
+            bh.ReturnDate            = vm.IsReturn ? (vm.ReturnDate ?? DateTime.Now) : null;
+            if (vm.IsReturn) bh.ReturnItname = vm.Itstaff;
+            else             bh.BorrowItname = vm.Itstaff;
             bh.Amount                = vm.Amount;
             bh.ModifiedBy            = itUser;
             bh.ModifiedDate          = DateTime.Now;
@@ -273,8 +275,8 @@ namespace KlangIT_V3.Controllers
                 .Include(b => b.Item).ThenInclude(i => i!.ItemType)
                 .Include(b => b.Item).ThenInclude(i => i!.ItemBrand)
                 .Include(b => b.Item).ThenInclude(i => i!.ItemModel)
-                .Include(b => b.RequestDepartment)
-                .Include(b => b.RequestSection)
+                .Include(b => b.BorrowerDepartment)
+                .Include(b => b.BorrowerSection)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (bh == null) return NotFound();
 
@@ -284,11 +286,11 @@ namespace KlangIT_V3.Controllers
                 ItemId         = bh.ItemId,
                 ItemHeader     = $"{bh.Item?.ItemType?.Name} {bh.Item?.ItemBrand?.Name} {bh.Item?.ItemModel?.Name}".Trim(),
                 ItemAssetId    = bh.Item?.AssetId  ?? string.Empty,
-                RequestUser    = bh.RequestUser,
-                DepartmentName = bh.RequestDepartment?.Name ?? string.Empty,
-                SectionName    = bh.RequestSection?.Name    ?? string.Empty,
+                RequestUser    = bh.BorrowerUser,
+                DepartmentName = bh.BorrowerDepartment?.Name ?? string.Empty,
+                SectionName    = bh.BorrowerSection?.Name    ?? string.Empty,
                 BorrowDate     = bh.BorrowDate,
-                IsReturn       = bh.IsReturn
+                IsReturn       = bh.ReturnDate.HasValue
             };
 
             return View(vm);
