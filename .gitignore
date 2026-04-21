@@ -361,3 +361,27 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# ───── Project-specific ─────
+
+# macOS
+.DS_Store
+
+# VS Code workspace (user-specific)
+.vscode/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Environment / secrets
+.env
+.env.*
+secrets.json
+appsettings.*.Local.json
+
+# Use .slnx (slim format) as canonical — ignore legacy .sln
+KlangIT_V3.sln
+
+# User-uploaded content (runtime-generated, not source)
+wwwroot/uploads/
