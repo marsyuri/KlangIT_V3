@@ -1,7 +1,7 @@
 @* _ItemStateDiagramSvgVertical.cshtml
    แนวตั้ง — วาดกล่องทุกกล่องก่อน แล้วค่อยวาดเส้นทีหลัง
    เพื่อให้เส้นอยู่บน z-order สูงสุด ไม่ถูกกล่องทับ
-   Model: "borrow" | "return" | else = full
+   Model: "borrow" | "return" | "damage" | "repair" | else = full
 *@
 @model string
 @{
@@ -20,8 +20,19 @@
     int returnFS = mode == "return" ? 18 : 12;
     int returnY = mode == "return" ? 170 : 163;
 
-    double availSW = mode == "borrow" ? 2.0 : 1.5;
+    double damageSW = mode == "damage" ? 2.5 : 1.5;
+    string damageLbl = mode == "damage" ? "เสียหาย ★" : "เสียหาย";
+    string damageFW = mode == "damage" ? "bold" : "normal";
+    int damageFS = mode == "damage" ? 18 : 12;
+
+    double repairSW = mode == "repair" ? 2.5 : 1.5;
+    string repairLbl = mode == "repair" ? "ซ่อมแล้ว ★" : "ซ่อมแซม";
+    string repairFW = mode == "repair" ? "bold" : "normal";
+    int repairFS = mode == "repair" ? 18 : 12;
+
+    double availSW = (mode == "borrow" || mode == "damage") ? 2.0 : 1.5;
     double bwdSW = mode == "return" ? 2.0 : 1.5;
+    double damagedBoxSW = mode == "repair" ? 2.0 : 1.5;
 }
 
 <svg id="@svgId" width="100%" viewBox="0 0 560 600"
@@ -60,7 +71,7 @@
 
     @* ชำรุด (coral) *@
     <rect x="140" y="250" width="130" height="60" rx="8"
-          fill="#FAECE7" stroke="#F0997B" stroke-width="1.5" />
+          fill="#FAECE7" stroke="#F0997B" stroke-width="@damagedBoxSW" />
     <text x="205" y="283" text-anchor="middle" dominant-baseline="central"
           font-size="15" font-weight="500" fill="#712B13" font-family="sans-serif">ชำรุด</text>
 
@@ -95,15 +106,15 @@
 
     @* เสียหาย: เส้นขวา x=220 (center+15), text ห่าง 15px *@
     <path d="M 220 160 L 220 248"
-          fill="none" stroke="#0F6E56" stroke-width="1.5" marker-end="@m" />
-    <text x="225" y="208" font-size="12"
-          fill="#0F6E56" font-family="sans-serif">เสียหาย</text>
+          fill="none" stroke="#0F6E56" stroke-width="@damageSW" marker-end="@m" />
+    <text x="225" y="208" font-size="@damageFS"
+          fill="#0F6E56" font-weight="@damageFW" font-family="sans-serif">@damageLbl</text>
 
-    @* ซ่อมแซม: เส้นซ้าย x=190 (center-15), text ห่าง 15px *@
+    @* ซ่อมแซม/ซ่อมแล้ว: เส้นซ้าย x=190 (center-15), text ห่าง 15px *@
     <path d="M 190 250 L 190 162"
-          fill="none" stroke="#993C1D" stroke-width="1.5" marker-end="@m" />
-    <text x="185" y="208" text-anchor="end" font-size="12"
-          fill="#993C1D" font-family="sans-serif">ซ่อมแซม</text>
+          fill="none" stroke="#993C1D" stroke-width="@repairSW" marker-end="@m" />
+    <text x="185" y="208" text-anchor="end" font-size="@repairFS"
+          fill="#993C1D" font-weight="@repairFW" font-family="sans-serif">@repairLbl</text>
 
     @* จำหน่ายออก: ชำรุด → จำหน่ายออก เส้น center=205, text ซ้ายเส้น *@
     <path d="M 205 310 L 205 397"
