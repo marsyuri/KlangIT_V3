@@ -12,7 +12,7 @@ var connectionString = builder.Configuration.GetConnectionString("WarehouseConne
 
 // Program.cs
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("IdentityConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection")));
 
 builder.Services.AddDbContext<ItLptWarehouseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("WarehouseConnection")));
