@@ -6,10 +6,6 @@ namespace KlangIT_V3.Models;
 
 public partial class ItLptWarehouseContext : DbContext
 {
-    public ItLptWarehouseContext()
-    {
-    }
-
     public ItLptWarehouseContext(DbContextOptions<ItLptWarehouseContext> options)
         : base(options)
     {
@@ -31,9 +27,7 @@ public partial class ItLptWarehouseContext : DbContext
 
     public virtual DbSet<Section> Sections { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=NATTLWATTF086\\SQLEXPRESS;Database=IT_LPT_Warehouse;Trusted_Connection=True;TrustServerCertificate=True;");
+    public virtual DbSet<StockLog> StockLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,35 +36,43 @@ public partial class ItLptWarehouseContext : DbContext
             entity.ToTable("BorrowHistory");
 
             entity.Property(e => e.BorrowDate).HasColumnType("datetime");
+            entity.Property(e => e.BorrowItname)
+                .HasMaxLength(1000)
+                .HasColumnName("BorrowITName");
+            entity.Property(e => e.BorrowTel)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.BorrowerUser).HasMaxLength(1000);
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
-            entity.Property(e => e.ExpectedReturnDate).HasColumnType("datetime");
-            entity.Property(e => e.Itstaff)
-                .HasMaxLength(1000)
-                .HasColumnName("ITStaff");
+            entity.Property(e => e.DueDate).HasColumnType("datetime");
             entity.Property(e => e.ModifiedBy)
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.OrderNo).HasDefaultValue(1, "DF_BorrowHistory_OrderNo");
-            entity.Property(e => e.RequestUser).HasMaxLength(1000);
+            entity.Property(e => e.ReferenceNo).HasMaxLength(100);
+            entity.Property(e => e.Remarks).HasMaxLength(1000);
             entity.Property(e => e.ReturnDate).HasColumnType("datetime");
+            entity.Property(e => e.ReturnItname)
+                .HasMaxLength(1000)
+                .HasColumnName("ReturnITName");
+
+            entity.HasOne(d => d.BorrowerDepartment).WithMany(p => p.BorrowHistories)
+                .HasForeignKey(d => d.BorrowerDepartmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BorrowHistory_Department");
+
+            entity.HasOne(d => d.BorrowerSection).WithMany(p => p.BorrowHistories)
+                .HasForeignKey(d => d.BorrowerSectionId)
+                .HasConstraintName("FK_BorrowHistory_Section");
 
             entity.HasOne(d => d.Item).WithMany(p => p.BorrowHistories)
                 .HasForeignKey(d => d.ItemId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_BorrowHistory_Item");
-
-            entity.HasOne(d => d.RequestDepartment).WithMany(p => p.BorrowHistories)
-                .HasForeignKey(d => d.RequestDepartmentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_BorrowHistory_Department");
-
-            entity.HasOne(d => d.RequestSection).WithMany(p => p.BorrowHistories)
-                .HasForeignKey(d => d.RequestSectionId)
-                .HasConstraintName("FK_BorrowHistory_Section");
         });
 
         modelBuilder.Entity<Department>(entity =>
@@ -93,6 +95,16 @@ public partial class ItLptWarehouseContext : DbContext
         {
             entity.ToTable("Item");
 
+            entity.HasIndex(e => e.AssetId, "IX_Item_AssetId").HasFilter("([AssetId] IS NOT NULL AND [IsDeleted]=(0))");
+
+            entity.HasIndex(e => e.ItemBrandId, "IX_Item_ItemBrandId");
+
+            entity.HasIndex(e => new { e.ItemStatus, e.IsDeleted }, "IX_Item_ItemStatus_IsDeleted");
+
+            entity.HasIndex(e => e.ItemTypeId, "IX_Item_ItemTypeId").HasFilter("([ItemTypeId] IS NOT NULL)");
+
+            entity.HasIndex(e => e.SerialNo, "IX_Item_SerialNo").HasFilter("([SerialNo] IS NOT NULL AND [IsDeleted]=(0))");
+
             entity.Property(e => e.AssetId)
                 .HasMaxLength(100)
                 .IsUnicode(false);
@@ -111,13 +123,17 @@ public partial class ItLptWarehouseContext : DbContext
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())", "DF_Item_CreatedDate")
+                .HasColumnType("datetime");
             entity.Property(e => e.ItemDescription).HasMaxLength(1000);
             entity.Property(e => e.ItemImageUrl).HasMaxLength(1000);
             entity.Property(e => e.ModifiedBy)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+            entity.Property(e => e.ModifiedDate)
+                .HasDefaultValueSql("(getdate())", "DF_Item_ModifiedDate")
+                .HasColumnType("datetime");
             entity.Property(e => e.OrderNo).HasDefaultValue(1, "DF_Item_OrderNo");
             entity.Property(e => e.OtherAssetId)
                 .HasMaxLength(100)
@@ -127,6 +143,7 @@ public partial class ItLptWarehouseContext : DbContext
 
             entity.HasOne(d => d.ItemBrand).WithMany(p => p.Items)
                 .HasForeignKey(d => d.ItemBrandId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Item_ItemBrand");
 
             entity.HasOne(d => d.ItemModel).WithMany(p => p.Items)
@@ -135,6 +152,7 @@ public partial class ItLptWarehouseContext : DbContext
 
             entity.HasOne(d => d.ItemType).WithMany(p => p.Items)
                 .HasForeignKey(d => d.ItemTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Item_ItemType");
         });
 
@@ -240,6 +258,29 @@ public partial class ItLptWarehouseContext : DbContext
                 .HasForeignKey(d => d.DepartmentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Section_Department");
+        });
+
+        modelBuilder.Entity<StockLog>(entity =>
+        {
+            entity.ToTable("StockLog");
+
+            entity.HasIndex(e => new { e.ItemId, e.CreatedDate }, "IX_StockLog_ItemId_CreatedDate").IsDescending(false, true);
+
+            entity.HasIndex(e => e.LogType, "IX_StockLog_LogType");
+
+            entity.HasIndex(e => e.ReferenceNo, "IX_StockLog_ReferenceNo").HasFilter("([ReferenceNo] IS NOT NULL)");
+
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.ReferenceNo).HasMaxLength(100);
+            entity.Property(e => e.Remarks).HasMaxLength(500);
+
+            entity.HasOne(d => d.Item).WithMany(p => p.StockLogs)
+                .HasForeignKey(d => d.ItemId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_StockLog_Item");
         });
 
         OnModelCreatingPartial(modelBuilder);

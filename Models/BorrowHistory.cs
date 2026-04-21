@@ -11,29 +11,33 @@ public partial class BorrowHistory
 
     public int ItemId { get; set; }
 
-    public string RequestUser { get; set; } = null!;
+    public string BorrowerUser { get; set; } = null!;
 
-    public int RequestDepartmentId { get; set; }
+    public int BorrowerDepartmentId { get; set; }
 
-    public int? RequestSectionId { get; set; }
+    public int? BorrowerSectionId { get; set; }
+
+    public string? BorrowTel { get; set; }
 
     public bool IsPermanentBorrow { get; set; }
 
+    public bool IsInitial { get; set; }
+
     public DateTime BorrowDate { get; set; }
 
-    public bool HasExpectedReturnDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
-    public DateTime? ExpectedReturnDate { get; set; }
-
-    public bool IsReturn { get; set; }
+    public string BorrowItname { get; set; } = null!;
 
     public DateTime? ReturnDate { get; set; }
 
-    public int? DurationDays { get; set; }
-
-    public string Itstaff { get; set; } = null!;
+    public string ReturnItname { get; set; } = null!;
 
     public int Amount { get; set; }
+
+    public string? ReferenceNo { get; set; }
+
+    public string? Remarks { get; set; }
 
     public DateTime CreatedDate { get; set; }
 
@@ -45,9 +49,9 @@ public partial class BorrowHistory
 
     public bool IsDeleted { get; set; }
 
+    public virtual Department BorrowerDepartment { get; set; } = null!;
+
+    public virtual Section? BorrowerSection { get; set; }
+
     public virtual Item Item { get; set; } = null!;
-
-    public virtual Department RequestDepartment { get; set; } = null!;
-
-    public virtual Section? RequestSection { get; set; }
 }

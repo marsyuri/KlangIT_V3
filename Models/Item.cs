@@ -1,5 +1,4 @@
-﻿using KlangIT_V3.Models.Enums;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace KlangIT_V3.Models;
@@ -10,21 +9,21 @@ public partial class Item
 
     public int OrderNo { get; set; }
 
-    public bool IsBulk { get; set; }
-
     public string? AssetId { get; set; }
 
     public string? SerialNo { get; set; }
 
-    public int? ItemTypeId { get; set; }
+    public int ItemTypeId { get; set; }
 
-    public int? ItemBrandId { get; set; }
+    public int ItemBrandId { get; set; }
 
     public int? ItemModelId { get; set; }
 
     public string? ItemDescription { get; set; }
 
     public string? ItemImageUrl { get; set; }
+
+    public bool IsBulk { get; set; }
 
     public int TotalAmount { get; set; }
 
@@ -40,7 +39,7 @@ public partial class Item
 
     public int MinimumAmount { get; set; }
 
-    public ItemStatusEnum ItemStatus { get; set; }
+    public int ItemStatus { get; set; }
 
     public string? AssetId1 { get; set; }
 
@@ -66,9 +65,11 @@ public partial class Item
 
     public virtual ICollection<BorrowHistory> BorrowHistories { get; set; } = new List<BorrowHistory>();
 
-    public virtual ItemBrand? ItemBrand { get; set; }
+    public virtual ItemBrand ItemBrand { get; set; } = null!;
 
     public virtual ItemModel? ItemModel { get; set; }
 
-    public virtual ItemType? ItemType { get; set; }
+    public virtual ItemType ItemType { get; set; } = null!;
+
+    public virtual ICollection<StockLog> StockLogs { get; set; } = new List<StockLog>();
 }
