@@ -1,7 +1,9 @@
+using KlangIT_V3.Data;
 using KlangIT_V3.Helpers;
 using KlangIT_V3.Models;
 using KlangIT_V3.Models.Enums;
 using KlangIT_V3.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +13,14 @@ namespace KlangIT_V3.Controllers
     public class BorrowHistoriesController : Controller
     {
         private readonly ItLptWarehouseContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public BorrowHistoriesController(ItLptWarehouseContext context)
+        public BorrowHistoriesController(
+            ItLptWarehouseContext context,
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // ── GET: BorrowHistories ──────────────────────────────────────────────────
@@ -65,7 +71,8 @@ namespace KlangIT_V3.Controllers
                 ItemAssetId    = item.AssetId ?? string.Empty,
                 ItemStatus     = (ItemStatusEnum)item.ItemStatus,
                 BorrowDate     = DateTime.Now,
-                ExpectedReturnDate = DateTime.Now
+                ExpectedReturnDate = DateTime.Now,
+                Itstaff        = await User.GetDisplayNameAsync(_userManager)
             };
             PopulateDepartments(vm);
             PopulateSections(vm);
@@ -77,6 +84,8 @@ namespace KlangIT_V3.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(BorrowCreateViewModel bhVM)
         {
+            bhVM.Itstaff = await User.GetDisplayNameAsync(_userManager);
+
             if (!ModelState.IsValid)
             {
                 PopulateDepartments(bhVM);
@@ -87,7 +96,7 @@ namespace KlangIT_V3.Controllers
             if (bhVM.BorrowDate.Date == DateTime.Now.Date)
                 bhVM.BorrowDate = DateTime.Now;
 
-            string itUser = Utility.GetCurrentUserName();
+            string itUser = bhVM.Itstaff;
             var bh = new BorrowHistory
             {
                 ItemId               = bhVM.ItemId,
@@ -155,7 +164,8 @@ namespace KlangIT_V3.Controllers
                 RequestUser         = bh.BorrowerUser,
                 SelectedDepartmentId= bh.BorrowerDepartmentId,
                 SelectedSectionId   = bh.BorrowerSectionId ?? 0,
-                BorrowDate          = bh.BorrowDate
+                BorrowDate          = bh.BorrowDate,
+                Itstaff             = await User.GetDisplayNameAsync(_userManager)
             };
             PopulateDepartments(vm);
             PopulateSections(vm);
@@ -167,6 +177,8 @@ namespace KlangIT_V3.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Return(ReturnCreateViewModel bhVM)
         {
+            bhVM.Itstaff = await User.GetDisplayNameAsync(_userManager);
+
             if (!ModelState.IsValid)
             {
                 PopulateDepartments(bhVM);
@@ -179,7 +191,7 @@ namespace KlangIT_V3.Controllers
                 .SingleOrDefaultAsync();
             if (bh == null) return NotFound();
 
-            string itUser = Utility.GetCurrentUserName();
+            string itUser = bhVM.Itstaff;
             bool fullyReturned   = bh.Amount == bhVM.ReturnAmount;
             bh.IsPermanentBorrow = false;
             if (fullyReturned)

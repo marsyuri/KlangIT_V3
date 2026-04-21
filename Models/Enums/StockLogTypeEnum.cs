@@ -29,6 +29,9 @@ namespace KlangIT_V3.Models.Enums
         Dispose = 7,
 
         [Display(Name = "ปรับปรุงจำนวน")]
-        Adjust = 8
+        Adjust = 8,
+
+        [Display(Name = "ซ่อมแล้ว")]
+        Repair = 10
     }
 }

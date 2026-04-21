@@ -1,7 +1,9 @@
+using KlangIT_V3.Data;
 using KlangIT_V3.Helpers;
 using KlangIT_V3.Models;
 using KlangIT_V3.Models.Enums;
 using KlangIT_V3.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +14,16 @@ namespace KlangIT_V3.Controllers
     {
         private readonly ItLptWarehouseContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ItemsController(ItLptWarehouseContext context, IWebHostEnvironment webHostEnvironment)
+        public ItemsController(
+            ItLptWarehouseContext context,
+            IWebHostEnvironment webHostEnvironment,
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _userManager = userManager;
         }
 
         // ── GET: Items ────────────────────────────────────────────────────────────
@@ -414,6 +421,140 @@ namespace KlangIT_V3.Controllers
 
         // ── ItemStates ────────────────────────────────────────────────────────────
         public IActionResult ItemStates() => View();
+
+        // ── GET: Items/Damaged/5 ──────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Damaged(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var item = await _context.Items
+                .Include(i => i.ItemType).Include(i => i.ItemBrand).Include(i => i.ItemModel)
+                .SingleOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+            if (item == null) return NotFound();
+
+            if (item.AvailableAmount <= 0)
+                return RedirectToAction(nameof(Details), new { id });
+
+            var vm = new ItemDamagedViewModel
+            {
+                ItemId          = item.Id,
+                ItemHeader      = $"{item.ItemType?.Name} {item.ItemBrand?.Name} {item.ItemModel?.Name}".Trim(),
+                ItemAssetId     = item.AssetId ?? string.Empty,
+                ItemStatus      = (ItemStatusEnum)item.ItemStatus,
+                AvailableAmount = item.AvailableAmount,
+                Itstaff         = await User.GetDisplayNameAsync(_userManager)
+            };
+            return View(vm);
+        }
+
+        // ── POST: Items/Damaged ───────────────────────────────────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Damaged(ItemDamagedViewModel vm)
+        {
+            var item = await _context.Items
+                .Include(i => i.ItemType).Include(i => i.ItemBrand).Include(i => i.ItemModel)
+                .SingleOrDefaultAsync(i => i.Id == vm.ItemId && !i.IsDeleted);
+            if (item == null) return NotFound();
+
+            vm.Itstaff = await User.GetDisplayNameAsync(_userManager);
+
+            if (vm.Amount > item.AvailableAmount)
+                ModelState.AddModelError(nameof(vm.Amount), "จำนวนเกินจำนวนพร้อมใช้");
+
+            if (!ModelState.IsValid)
+            {
+                vm.ItemHeader      = $"{item.ItemType?.Name} {item.ItemBrand?.Name} {item.ItemModel?.Name}".Trim();
+                vm.ItemAssetId     = item.AssetId ?? string.Empty;
+                vm.ItemStatus      = (ItemStatusEnum)item.ItemStatus;
+                vm.AvailableAmount = item.AvailableAmount;
+                return View(vm);
+            }
+
+            string itUser = vm.Itstaff;
+            item.ItemStatus = (int)ItemStatusEnum.Damaged;
+
+            await StockHelper.ApplyStockChangeAsync(
+                _context,
+                vm.ItemId,
+                (int)StockLogTypeEnum.Damage,
+                deltaAvailable: -vm.Amount,
+                deltaBorrowed:   0,
+                deltaDamaged:   +vm.Amount,
+                deltaDisposed:   0,
+                createdBy:       itUser,
+                remarks:         string.IsNullOrWhiteSpace(vm.Remarks) ? $"แจ้งเสียหาย โดย {vm.Itstaff}" : $"{vm.Remarks} (โดย {vm.Itstaff})");
+
+            return RedirectToAction(nameof(Details), new { id = vm.ItemId });
+        }
+
+        // ── GET: Items/Repair/5 ───────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Repair(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var item = await _context.Items
+                .Include(i => i.ItemType).Include(i => i.ItemBrand).Include(i => i.ItemModel)
+                .SingleOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+            if (item == null) return NotFound();
+
+            if (item.DamagedAmount <= 0)
+                return RedirectToAction(nameof(Details), new { id });
+
+            var vm = new ItemRepairViewModel
+            {
+                ItemId        = item.Id,
+                ItemHeader    = $"{item.ItemType?.Name} {item.ItemBrand?.Name} {item.ItemModel?.Name}".Trim(),
+                ItemAssetId   = item.AssetId ?? string.Empty,
+                ItemStatus    = (ItemStatusEnum)item.ItemStatus,
+                DamagedAmount = item.DamagedAmount,
+                Itstaff       = await User.GetDisplayNameAsync(_userManager)
+            };
+            return View(vm);
+        }
+
+        // ── POST: Items/Repair ────────────────────────────────────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Repair(ItemRepairViewModel vm)
+        {
+            var item = await _context.Items
+                .Include(i => i.ItemType).Include(i => i.ItemBrand).Include(i => i.ItemModel)
+                .SingleOrDefaultAsync(i => i.Id == vm.ItemId && !i.IsDeleted);
+            if (item == null) return NotFound();
+
+            vm.Itstaff = await User.GetDisplayNameAsync(_userManager);
+
+            if (vm.Amount > item.DamagedAmount)
+                ModelState.AddModelError(nameof(vm.Amount), "จำนวนเกินจำนวนที่ชำรุดอยู่");
+
+            if (!ModelState.IsValid)
+            {
+                vm.ItemHeader    = $"{item.ItemType?.Name} {item.ItemBrand?.Name} {item.ItemModel?.Name}".Trim();
+                vm.ItemAssetId   = item.AssetId ?? string.Empty;
+                vm.ItemStatus    = (ItemStatusEnum)item.ItemStatus;
+                vm.DamagedAmount = item.DamagedAmount;
+                return View(vm);
+            }
+
+            string itUser = vm.Itstaff;
+            item.ItemStatus = (int)ItemStatusEnum.Available;
+
+            await StockHelper.ApplyStockChangeAsync(
+                _context,
+                vm.ItemId,
+                (int)StockLogTypeEnum.Repair,
+                deltaAvailable: +vm.Amount,
+                deltaBorrowed:   0,
+                deltaDamaged:   -vm.Amount,
+                deltaDisposed:   0,
+                createdBy:       itUser,
+                remarks:         string.IsNullOrWhiteSpace(vm.Remarks) ? $"ซ่อมแล้ว โดย {vm.Itstaff}" : $"{vm.Remarks} (โดย {vm.Itstaff})");
+
+            return RedirectToAction(nameof(Details), new { id = vm.ItemId });
+        }
 
         // ── Private helpers ───────────────────────────────────────────────────────
 

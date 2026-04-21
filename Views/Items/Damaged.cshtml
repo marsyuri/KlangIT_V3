@@ -1,0 +1,81 @@
+@model KlangIT_V3.ViewModels.ItemDamagedViewModel
+@{
+    ViewData["Title"] = "แจ้งเสียหาย";
+}
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
+
+<h1 class="ds-page-title">แจ้งเสียหาย</h1>
+
+<div class="ds-card" style="max-width:560px">
+    @* ── Prominent "เสีย" visual ── *@
+    <div style="display:flex;align-items:center;gap:20px;padding:20px;background:#FDEDED;border:1px solid #F5C2C2;border-radius:var(--ds-radius-md);margin-bottom:1.25rem">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style="flex-shrink:0">
+            <path d="M32 6L60 56H4L32 6Z" stroke="#A32D2D" stroke-width="3" stroke-linejoin="round" fill="#FEF2F2"/>
+            <path d="M32 24V38" stroke="#A32D2D" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="32" cy="46" r="2.5" fill="#A32D2D"/>
+        </svg>
+        <div>
+            <div style="font-size:36px;font-weight:800;color:#A32D2D;line-height:1">เสีย</div>
+            <div style="font-size:13px;color:var(--ds-text2);margin-top:4px">บันทึกอุปกรณ์เข้าสู่สถานะ "ชำรุด/เสื่อมสภาพ"</div>
+        </div>
+    </div>
+
+    <span class="ds-section-lbl">รายละเอียดการแจ้งเสียหาย</span>
+    <form asp-action="Damaged" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+
+        <input type="hidden" asp-for="ItemId"/>
+
+        <div class="ds-row">
+            <label asp-for="ItemHeader" class="ds-lbl">ข้อมูลวัสดุ</label>
+            <input asp-for="ItemHeader" class="ds-input ds-input-ro" readonly/>
+        </div>
+
+        <div class="ds-row">
+            <label asp-for="ItemAssetId" class="ds-lbl">เลขทะเบียนทรัพย์สิน</label>
+            <input asp-for="ItemAssetId" class="ds-input ds-input-ro" readonly
+                   style="font-family:monospace;font-size:12px"/>
+        </div>
+
+        <div class="ds-row">
+            <span class="ds-lbl">สถานะปัจจุบัน</span>
+            <div style="padding:8px 12px;background:var(--ds-bg2);border-radius:var(--ds-radius-md)">
+                @{
+                    string statusBadge = Model.ItemStatus == KlangIT_V3.Models.Enums.ItemStatusEnum.Available
+                        ? "ds-badge ds-badge-teal" : "ds-badge ds-badge-amber";
+                }
+                <span class="@statusBadge">@Html.DisplayFor(m => m.ItemStatus)</span>
+                <span style="margin-left:12px;font-size:13px;color:var(--ds-text2)">พร้อมใช้ @Model.AvailableAmount เครื่อง</span>
+            </div>
+        </div>
+
+        <div class="ds-2col">
+            <div class="ds-row">
+                <label asp-for="Amount" class="ds-lbl">จำนวนที่เสียหาย</label>
+                <input asp-for="Amount" class="ds-input" type="number" min="1" max="@Model.AvailableAmount"/>
+                <span asp-validation-for="Amount" class="text-danger small"></span>
+            </div>
+            <div class="ds-row">
+                <label asp-for="Itstaff" class="ds-lbl">ผู้ดำเนินการ (IT)</label>
+                <input asp-for="Itstaff" class="ds-input ds-input-ro" readonly/>
+                <span asp-validation-for="Itstaff" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="ds-row">
+            <label asp-for="Remarks" class="ds-lbl">หมายเหตุ / อาการเสีย</label>
+            <input asp-for="Remarks" class="ds-input"/>
+        </div>
+
+        <div class="ds-actions">
+            <button type="submit" class="ds-btn-danger">ยืนยันแจ้งเสียหาย</button>
+            <a asp-controller="Items" asp-action="Details" asp-route-id="@Model.ItemId"
+               class="ds-btn-ghost">ยกเลิก</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
