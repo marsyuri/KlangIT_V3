@@ -117,6 +117,12 @@ namespace KlangIT_V3.Controllers
                 .Where(b => b.ItemId == item.Id && !b.IsDeleted)
                 .ToListAsync();
 
+            var stockLogs = await _context.StockLogs
+                .Where(sl => sl.ItemId == item.Id)
+                .OrderByDescending(sl => sl.CreatedDate)
+                .ThenByDescending(sl => sl.Id)
+                .ToListAsync();
+
             var vm = new ItemDetailsViewModel
             {
                 Id = item.Id,
@@ -157,6 +163,25 @@ namespace KlangIT_V3.Controllers
                     BorrowDate = bh.BorrowDate,
                     LatestITStaff = bh.ReturnDate.HasValue ? bh.ReturnItname : bh.BorrowItname,
                     IsReturn = bh.ReturnDate.HasValue
+                }).ToList(),
+                StockTimeline = stockLogs.Select(sl => new StockLogTimelineViewModel
+                {
+                    Id             = sl.Id,
+                    CreatedDate    = sl.CreatedDate,
+                    LogType        = (StockLogTypeEnum)sl.LogType,
+                    DeltaAvailable = sl.DeltaAvailable,
+                    DeltaBorrowed  = sl.DeltaBorrowed,
+                    DeltaDamaged   = sl.DeltaDamaged,
+                    DeltaDisposed  = sl.DeltaDisposed,
+                    DeltaTotal     = sl.DeltaTotal,
+                    AvailableAfter = sl.AvailableAfter,
+                    BorrowedAfter  = sl.BorrowedAfter,
+                    DamagedAfter   = sl.DamagedAfter,
+                    DisposedAfter  = sl.DisposedAfter,
+                    TotalAfter     = sl.TotalAfter,
+                    ReferenceNo    = sl.ReferenceNo,
+                    Remarks        = sl.Remarks,
+                    CreatedBy      = sl.CreatedBy
                 }).ToList()
             };
 
