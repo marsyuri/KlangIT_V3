@@ -13,6 +13,9 @@ namespace KlangIT_V3.Models.Enums
         [Display(Name = "ย้อนหลัง — ชำรุด")]
         InitialDamaged = 3,
 
+        [Display(Name = "ย้อนหลัง — จำหน่ายแล้ว")]
+        InitialDisposed = 9,
+
         [Display(Name = "ยืม")]
         Borrow = 4,
 

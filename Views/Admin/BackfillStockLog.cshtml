@@ -1,0 +1,74 @@
+@{
+    ViewData["Title"] = "Backfill StockLog — Opening Balance";
+}
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
+
+<h1 class="ds-page-title">Backfill StockLog</h1>
+<p class="ds-page-sub">สร้าง opening balance ใน StockLog สำหรับ Item ที่ยังไม่มี log</p>
+
+<div style="max-width:600px">
+    @if (ViewBag.Done == true)
+    {
+        <div class="ds-ok-row">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="7" stroke="#1D9E75" stroke-width="1.5"/>
+                <path d="M5 8l2.5 2.5L11 5.5" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            ดำเนินการสำเร็จ
+        </div>
+
+        <div class="ds-card" style="margin-bottom:1rem">
+            <div class="ds-field-grid">
+                <span class="ds-field-label">จำนวน Item ที่ backfill</span>
+                <span class="ds-field-value">@ViewBag.ItemsProcessed รายการ</span>
+
+                <span class="ds-field-label">StockLog ที่สร้างใหม่</span>
+                <span class="ds-field-value">@ViewBag.LogsCreated แถว</span>
+            </div>
+        </div>
+
+        <p class="ds-hint">
+            ฟังก์ชันนี้ idempotent — รันซ้ำจะข้าม Item ที่มี log แล้ว ถ้าจำนวนด้านบนเป็น 0 แสดงว่าทุก Item มี opening balance อยู่แล้ว
+        </p>
+
+        <div class="ds-actions">
+            <a asp-controller="Items" asp-action="Index" class="ds-btn-ghost">กลับหน้า Items</a>
+        </div>
+    }
+    else
+    {
+        <div class="ds-card" style="margin-bottom:1rem">
+            <p style="margin:0 0 12px 0">
+                จะดำเนินการ:
+            </p>
+            <ul style="margin:0;padding-left:20px;font-size:14px">
+                <li>หา Item ที่ยังไม่มี StockLog</li>
+                <li>สร้าง <code>InitialAvailable</code>/<code>InitialBorrowed</code>/<code>InitialDamaged</code>/<code>InitialDisposed</code> ตามจำนวนปัจจุบัน</li>
+                <li>ไม่กระทบ Item counter (เขียน StockLog อย่างเดียว)</li>
+                <li>Idempotent — รันซ้ำปลอดภัย</li>
+            </ul>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger small">@ViewBag.Error</div>
+        }
+
+        <form asp-action="BackfillStockLog" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="ds-toggle-row" style="margin-bottom:1rem">
+                <label class="ds-switch">
+                    <input type="checkbox" name="confirm" value="true" id="confirmChk"/>
+                    <span class="ds-slider"></span>
+                </label>
+                <span style="font-size:13px;font-weight:500">ยืนยันการดำเนินการ</span>
+            </div>
+
+            <div class="ds-actions">
+                <button type="submit" class="ds-btn-primary">รัน Backfill</button>
+                <a asp-controller="Items" asp-action="Index" class="ds-btn-ghost">ยกเลิก</a>
+            </div>
+        </form>
+    }
+</div>
