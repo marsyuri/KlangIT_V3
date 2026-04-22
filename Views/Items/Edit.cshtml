@@ -44,6 +44,7 @@
                     <span asp-validation-for="AssetId4" class="text-danger small"></span>
                 </div>
             </div>
+            @Html.ValidationMessage("AssetIdBlock", new { @class = "text-danger small" })
         </div>
 
         <div class="ds-row">
@@ -78,11 +79,6 @@
             <span asp-validation-for="SelectedItemModelId" class="text-danger small"></span>
         </div>
 
-        <div style="margin-top:-8px;margin-bottom:12px">
-            <button type="button" class="ds-btn-ghost" id="btnClearCascade" style="font-size:12px;height:30px;padding:0 12px">
-                ล้างประเภท/ยี่ห้อ/รุ่น
-            </button>
-        </div>
 
         <div class="ds-row">
             <label asp-for="ItemDescription" class="ds-lbl">รายละเอียดวัสดุ/อุปกรณ์</label>
@@ -245,18 +241,6 @@ $.validator.unobtrusive.adapters.add("numericfixedlength", ["length"], function 
         busy = false;
     });
 
-    // ล้าง cascade (Type / Brand / Model) ทั้งหมด
-    const btnClearCascade = document.getElementById('btnClearCascade');
-    if (btnClearCascade) btnClearCascade.addEventListener('click', function () {
-        busy = true;
-        ddlType.value = '';
-        ddlBrand.value = '';
-        ddlModel.value = '';
-        rebuild(ddlBrand, allBrand, null, '-- เลือกยี่ห้อ --');
-        rebuild(ddlModel, allModel, null, '-- เลือกรุ่น --');
-        rebuild(ddlType,  allType,  null, '-- เลือกประเภทอุปกรณ์ --');
-        busy = false;
-    });
 })();
 </script>
 }

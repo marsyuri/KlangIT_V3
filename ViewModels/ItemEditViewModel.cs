@@ -88,7 +88,7 @@ namespace KlangIT_V3.ViewModels
             {
                 yield return new ValidationResult(
                     "ต้องกรอกเลขครุภัณฑ์ครบทั้ง 4 ช่อง หรือเว้นว่างทั้งหมด",
-                    new[] { nameof(AssetId1) }
+                    new[] { "AssetIdBlock" }
                 );
             }
         }
