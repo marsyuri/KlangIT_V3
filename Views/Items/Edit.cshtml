@@ -4,6 +4,12 @@
 }
 @await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
+<script>
+    const typeToBrandsMap  = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.TypeToBrandsMap));
+    const brandToTypesMap  = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.BrandToTypesMap));
+    const brandToModelsMap = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.BrandToModelsMap));
+</script>
+
 <h1 class="ds-page-title">แก้ไขวัสดุ</h1>
 
 <div class="ds-card" style="max-width:560px">
@@ -56,25 +62,32 @@
         <div class="ds-2col">
             <div class="ds-row">
                 <label asp-for="SelectedItemTypeId" class="ds-lbl">ประเภทอุปกรณ์</label>
-                <select asp-for="SelectedItemTypeId" class="ds-select" asp-items="Model.ItemTypes"></select>
+                <select asp-for="SelectedItemTypeId" id="ddlItemType" class="ds-select" asp-items="Model.ItemTypes"></select>
                 <span asp-validation-for="SelectedItemTypeId" class="text-danger small"></span>
             </div>
             <div class="ds-row">
                 <label asp-for="SelectedItemBrandId" class="ds-lbl">ยี่ห้อ</label>
-                <select asp-for="SelectedItemBrandId" class="ds-select" asp-items="Model.ItemBrands"></select>
+                <select asp-for="SelectedItemBrandId" id="ddlItemBrand" class="ds-select" asp-items="Model.ItemBrands"></select>
                 <span asp-validation-for="SelectedItemBrandId" class="text-danger small"></span>
             </div>
         </div>
 
         <div class="ds-row">
             <label asp-for="SelectedItemModelId" class="ds-lbl">รุ่น</label>
-            <select asp-for="SelectedItemModelId" class="ds-select" asp-items="Model.ItemModels"></select>
+            <select asp-for="SelectedItemModelId" id="ddlItemModel" class="ds-select" asp-items="Model.ItemModels"></select>
             <span asp-validation-for="SelectedItemModelId" class="text-danger small"></span>
         </div>
 
+        <div style="margin-top:-8px;margin-bottom:12px">
+            <button type="button" class="ds-btn-ghost" id="btnClearCascade" style="font-size:12px;height:30px;padding:0 12px">
+                ล้างประเภท/ยี่ห้อ/รุ่น
+            </button>
+        </div>
+
         <div class="ds-row">
-            <label asp-for="ItemDescription" class="ds-lbl">คำอธิบาย</label>
+            <label asp-for="ItemDescription" class="ds-lbl">รายละเอียดวัสดุ/อุปกรณ์</label>
             <input asp-for="ItemDescription" class="ds-input"/>
+            <p class="ds-hint">ระบุรายละเอียดเพิ่มเติมของวัสดุ/อุปกรณ์ (เช่น สี, สเปก, จุดสังเกต)</p>
         </div>
 
         <div class="ds-row">
@@ -192,6 +205,58 @@ $.validator.unobtrusive.adapters.add("numericfixedlength", ["length"], function 
     };
     const chk = document.getElementById('isDeletedChk');
     if (chk) toggleDeleted(chk.checked);
+
+    // Cascade dropdowns (Type ↔ Brand bidirectional, Brand → Model)
+    const ddlType  = document.getElementById('ddlItemType');
+    const ddlBrand = document.getElementById('ddlItemBrand');
+    const ddlModel = document.getElementById('ddlItemModel');
+    if (!ddlType || !ddlBrand || !ddlModel) return;
+
+    const allType  = snap(ddlType);
+    const allBrand = snap(ddlBrand);
+    const allModel = snap(ddlModel);
+
+    function snap(sel) { return Array.from(sel.options).map(o => ({ value: o.value, text: o.text })); }
+
+    function rebuild(sel, all, allowed, ph) {
+        const cur = sel.value;
+        sel.innerHTML = '';
+        const p = document.createElement('option'); p.value = ''; p.text = ph; sel.appendChild(p);
+        all.forEach(o => {
+            if (!o.value) return;
+            if (!allowed || allowed.includes(String(o.value))) {
+                const opt = document.createElement('option'); opt.value = o.value; opt.text = o.text; sel.appendChild(opt);
+            }
+        });
+        sel.value = [...sel.options].some(o => o.value === cur) ? cur : '';
+    }
+
+    let busy = false;
+    ddlType.addEventListener('change', function () {
+        if (busy) return; busy = true;
+        rebuild(ddlBrand, allBrand, this.value ? (typeToBrandsMap[this.value] || []).map(String) : null, '-- เลือกยี่ห้อ --');
+        busy = false;
+        ddlBrand.dispatchEvent(new Event('change'));
+    });
+    ddlBrand.addEventListener('change', function () {
+        if (busy) return; busy = true;
+        rebuild(ddlModel, allModel, this.value ? (brandToModelsMap[this.value] || []).map(m => String(m.Value ?? m.value)) : null, '-- เลือกรุ่น --');
+        rebuild(ddlType,  allType,  this.value ? (brandToTypesMap[this.value]  || []).map(String) : null, '-- เลือกประเภทอุปกรณ์ --');
+        busy = false;
+    });
+
+    // ล้าง cascade (Type / Brand / Model) ทั้งหมด
+    const btnClearCascade = document.getElementById('btnClearCascade');
+    if (btnClearCascade) btnClearCascade.addEventListener('click', function () {
+        busy = true;
+        ddlType.value = '';
+        ddlBrand.value = '';
+        ddlModel.value = '';
+        rebuild(ddlBrand, allBrand, null, '-- เลือกยี่ห้อ --');
+        rebuild(ddlModel, allModel, null, '-- เลือกรุ่น --');
+        rebuild(ddlType,  allType,  null, '-- เลือกประเภทอุปกรณ์ --');
+        busy = false;
+    });
 })();
 </script>
 }

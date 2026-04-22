@@ -79,9 +79,16 @@
             <span asp-validation-for="SelectedItemModelId" class="text-danger small"></span>
         </div>
 
+        <div style="margin-top:-8px;margin-bottom:12px">
+            <button type="button" class="ds-btn-ghost" id="btnClearCascade" style="font-size:12px;height:30px;padding:0 12px">
+                ล้างประเภท/ยี่ห้อ/รุ่น
+            </button>
+        </div>
+
         <div class="ds-row">
-            <label asp-for="ItemDescription" class="ds-lbl">คำอธิบาย</label>
+            <label asp-for="ItemDescription" class="ds-lbl">รายละเอียดวัสดุ/อุปกรณ์</label>
             <input asp-for="ItemDescription" class="ds-input"/>
+            <p class="ds-hint">ระบุรายละเอียดเพิ่มเติมของวัสดุ/อุปกรณ์ (เช่น สี, สเปก, จุดสังเกต)</p>
             <span asp-validation-for="ItemDescription" class="text-danger small"></span>
         </div>
 
@@ -196,16 +203,26 @@ $.validator.unobtrusive.adapters.add("numericfixedlength", ["length"], function 
     function applyBulk(on) {
         totalInput.disabled = !on;
         totalInput.classList.toggle('ds-input-ro', !on);
+        minInput.disabled = !on;
+        minInput.classList.toggle('ds-input-ro', !on);
         if (!on) {
             totalInput.value = 1;
+            minInput.value = 0;
+            // Hidden inputs เพราะ disabled ไม่ส่งค่ามา server
             let h = document.querySelector('input[type=hidden][name=TotalAmount]');
             if (!h) { h = document.createElement('input'); h.type = 'hidden'; h.name = 'TotalAmount'; isBulkChk.closest('form').appendChild(h); }
             h.value = 1;
+            let hm = document.querySelector('input[type=hidden][name=MinimumAmount]');
+            if (!hm) { hm = document.createElement('input'); hm.type = 'hidden'; hm.name = 'MinimumAmount'; isBulkChk.closest('form').appendChild(hm); }
+            hm.value = 0;
         } else {
             const h = document.querySelector('input[type=hidden][name=TotalAmount]');
             if (h) h.remove();
+            const hm = document.querySelector('input[type=hidden][name=MinimumAmount]');
+            if (hm) hm.remove();
         }
         validateTotal();
+        validateMin();
     }
 
     function validateTotal() {
@@ -249,6 +266,19 @@ $.validator.unobtrusive.adapters.add("numericfixedlength", ["length"], function 
         if (busy) return; busy = true;
         rebuild(ddlModel, allModel, this.value ? (brandToModelsMap[this.value] || []).map(m => String(m.Value ?? m.value)) : null, '-- เลือกรุ่น --');
         rebuild(ddlType,  allType,  this.value ? (brandToTypesMap[this.value]  || []).map(String) : null, '-- เลือกประเภทอุปกรณ์ --');
+        busy = false;
+    });
+
+    // ล้าง cascade (Type / Brand / Model) ทั้งหมด
+    const btnClearCascade = document.getElementById('btnClearCascade');
+    if (btnClearCascade) btnClearCascade.addEventListener('click', function () {
+        busy = true;
+        ddlType.value = '';
+        ddlBrand.value = '';
+        ddlModel.value = '';
+        rebuild(ddlBrand, allBrand, null, '-- เลือกยี่ห้อ --');
+        rebuild(ddlModel, allModel, null, '-- เลือกรุ่น --');
+        rebuild(ddlType,  allType,  null, '-- เลือกประเภทอุปกรณ์ --');
         busy = false;
     });
 })();
