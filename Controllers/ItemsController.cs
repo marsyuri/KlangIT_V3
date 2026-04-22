@@ -274,9 +274,9 @@ namespace KlangIT_V3.Controllers
                 deltaDamaged:   selectedStatus == ItemStatusEnum.Damaged   ? initialAmount : 0,
                 deltaDisposed:  selectedStatus == ItemStatusEnum.Disposed  ? initialAmount : 0,
                 createdBy: itUser,
-                remarks: $"รับเข้าเริ่มต้น — {selectedStatus.GetDisplayName()}");
+                remarks: $"รับเข้าเริ่มต้น - {selectedStatus.GetDisplayName()}");
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { sortOrder = "moddate_desc" });
         }
 
         // ── GET: Items/Edit/5 ─────────────────────────────────────────────────────
@@ -373,7 +373,7 @@ namespace KlangIT_V3.Controllers
                 throw;
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { sortOrder = "moddate_desc" });
         }
 
         // ── GET: Items/Delete/5 ───────────────────────────────────────────────────
