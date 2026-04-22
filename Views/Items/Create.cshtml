@@ -130,6 +130,7 @@
             <label asp-for="SelectedItemStatus" class="ds-lbl">สถานะของวัสดุ/ครุภัณฑ์</label>
             <select asp-for="SelectedItemStatus" id="ddlItemStatus" class="ds-select" asp-items="Model.ItemStatuses"></select>
             <span asp-validation-for="SelectedItemStatus" class="text-danger small"></span>
+            <p class="ds-hint">"ใช้งานได้" สำหรับของใหม่; สถานะอื่นสำหรับ backfill ข้อมูลย้อนหลัง</p>
         </div>
 
         <div class="ds-row">

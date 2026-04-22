@@ -230,6 +230,7 @@ namespace KlangIT_V3.Controllers
 
             string itUser = User.GetUsernameLocalPart();
             int initialAmount = itemVM.IsBulk ? itemVM.TotalAmount : 1;
+            var selectedStatus = itemVM.SelectedItemStatus ?? ItemStatusEnum.Available;
 
             var item = new Item
             {
@@ -253,7 +254,7 @@ namespace KlangIT_V3.Controllers
                 DamagedAmount = 0,
                 DisposedAmount = 0,
                 MinimumAmount = itemVM.MinimumAmount,
-                ItemStatus = (int)(itemVM.SelectedItemStatus ?? ItemStatusEnum.Available),
+                ItemStatus = (int)selectedStatus,
                 Remarks = itemVM.Remarks,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
@@ -268,12 +269,12 @@ namespace KlangIT_V3.Controllers
                 _context,
                 item.Id,
                 item.ItemStatus,
-                deltaAvailable: initialAmount,
-                deltaBorrowed: 0,
-                deltaDamaged: 0,
-                deltaDisposed: 0,
+                deltaAvailable: selectedStatus == ItemStatusEnum.Available ? initialAmount : 0,
+                deltaBorrowed:  selectedStatus == ItemStatusEnum.Borrowed  ? initialAmount : 0,
+                deltaDamaged:   selectedStatus == ItemStatusEnum.Damaged   ? initialAmount : 0,
+                deltaDisposed:  selectedStatus == ItemStatusEnum.Disposed  ? initialAmount : 0,
                 createdBy: itUser,
-                remarks: "รับเข้าเริ่มต้น (Create Item)");
+                remarks: $"รับเข้าเริ่มต้น — {selectedStatus.GetDisplayName()}");
 
             return RedirectToAction(nameof(Index));
         }
