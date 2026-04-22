@@ -107,7 +107,6 @@
                 <span class="ds-slider"></span>
             </label>
             <span style="font-size:13px;font-weight:500">เป็นกลุ่มวัสดุ</span>
-            <span id="bulkHint" style="font-size:12px;color:var(--ds-text3);margin-left:auto">ปิด — จำนวนถูกกำหนดเป็น 1</span>
         </div>
 
         <div class="ds-2col">
@@ -125,14 +124,10 @@
             </div>
         </div>
 
-        @* ItemStatus fixed to Available on create *@
-        <input type="hidden" asp-for="SelectedItemStatus" value="1"/>
         <div class="ds-row">
-            <span class="ds-lbl">สถานะของวัสดุ/ครุภัณฑ์</span>
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--ds-bg2);border-radius:var(--ds-radius-md)">
-                <span class="ds-badge ds-badge-teal">ใช้งานได้</span>
-                <span style="font-size:12px;color:var(--ds-text3)">(กำหนดโดยระบบ)</span>
-            </div>
+            <label asp-for="SelectedItemStatus" class="ds-lbl">สถานะของวัสดุ/ครุภัณฑ์</label>
+            <select asp-for="SelectedItemStatus" id="ddlItemStatus" class="ds-select" asp-items="Model.ItemStatuses"></select>
+            <span asp-validation-for="SelectedItemStatus" class="text-danger small"></span>
         </div>
 
         <div class="ds-row">
@@ -191,12 +186,10 @@
         totalInput.classList.toggle('ds-input-ro', !on);
         if (!on) {
             totalInput.value = 1;
-            bulkHint.textContent = 'ปิด — จำนวนถูกกำหนดเป็น 1';
             let h = document.querySelector('input[type=hidden][name=TotalAmount]');
             if (!h) { h = document.createElement('input'); h.type = 'hidden'; h.name = 'TotalAmount'; isBulkChk.closest('form').appendChild(h); }
             h.value = 1;
         } else {
-            bulkHint.textContent = 'เปิด — ระบุจำนวนได้เอง';
             const h = document.querySelector('input[type=hidden][name=TotalAmount]');
             if (h) h.remove();
         }

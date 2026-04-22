@@ -205,8 +205,8 @@ namespace KlangIT_V3.Controllers
             PopulateItemModels(vm);
             PopulateItemStatuses(vm);
             PopulateCascadeMaps(vm);
-            vm.SelectedItemStatus = ItemStatusEnum.Available;
             vm.TotalAmount = 1;
+            vm.MinimumAmount= 0;
             return View(vm);
         }
 
@@ -253,7 +253,7 @@ namespace KlangIT_V3.Controllers
                 DamagedAmount = 0,
                 DisposedAmount = 0,
                 MinimumAmount = itemVM.MinimumAmount,
-                ItemStatus = (int)ItemStatusEnum.Available,
+                ItemStatus = (int)(itemVM.SelectedItemStatus ?? ItemStatusEnum.Available),
                 Remarks = itemVM.Remarks,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
@@ -267,7 +267,7 @@ namespace KlangIT_V3.Controllers
             await StockHelper.ApplyStockChangeAsync(
                 _context,
                 item.Id,
-                (int)StockLogTypeEnum.InitialAvailable,
+                item.ItemStatus,
                 deltaAvailable: initialAmount,
                 deltaBorrowed: 0,
                 deltaDamaged: 0,

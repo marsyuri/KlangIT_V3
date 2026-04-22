@@ -14,24 +14,26 @@ namespace KlangIT_V3.Models.Enums
         InitialDamaged = 3,
 
         [Display(Name = "ย้อนหลัง — จำหน่ายแล้ว")]
-        InitialDisposed = 9,
+        InitialDisposed = 4,
 
         [Display(Name = "ยืม")]
-        Borrow = 4,
+        Borrow = 5,
 
         [Display(Name = "คืน")]
-        Return = 5,
+        Return = 6,
 
         [Display(Name = "ชำรุด")]
-        Damage = 6,
-
-        [Display(Name = "จำหน่าย")]
-        Dispose = 7,
-
-        [Display(Name = "ปรับปรุงจำนวน")]
-        Adjust = 8,
+        Damage = 7,
 
         [Display(Name = "ซ่อมแล้ว")]
-        Repair = 10
+        Repair = 8,
+
+        [Display(Name = "จำหน่าย")]
+        Dispose = 9,
+
+        [Display(Name = "ปรับปรุงจำนวน")]
+        Adjust = 10,
+
+        
     }
 }

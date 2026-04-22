@@ -7,8 +7,6 @@ namespace KlangIT_V3.ViewModels
 {
     public class ItemCreateViewModel : IValidatableObject
     {
-        public bool IsBulk { get; set; }
-
         // ── Asset ID (split into 4 parts) ──
         [NumericFixedLengthAttribute(4)]
         public string? AssetId1 { get; set; }
@@ -57,6 +55,7 @@ namespace KlangIT_V3.ViewModels
         public string? ItemDescription { get; set; }
         public string? ItemImageUrl { get; set; }
         public IFormFile? ItemImageFile { get; set; }
+        public bool IsBulk { get; set; }
         public int TotalAmount { get; set; }
 
         public int MinimumAmount { get; set; }
