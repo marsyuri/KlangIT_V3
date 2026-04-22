@@ -226,7 +226,7 @@ namespace KlangIT_V3.Controllers
             }
 
             string assetId = BuildAssetId(itemVM);
-            string? imageUrl = await SaveImageAsync(itemVM);
+            string? imageUrl = await SaveImageAsync(itemVM.ItemImageFile);
 
             string itUser = User.GetUsernameLocalPart();
             int initialAmount = itemVM.IsBulk ? itemVM.TotalAmount : 1;
@@ -348,7 +348,11 @@ namespace KlangIT_V3.Controllers
             item.ItemBrandId = vm.SelectedItemBrandId;
             item.ItemModelId = vm.SelectedItemModelId == 0 ? null : vm.SelectedItemModelId;
             item.ItemDescription = vm.ItemDescription;
-            item.ItemImageUrl = vm.ItemImageUrl;
+            string? newImageUrl = await SaveImageAsync(vm.ItemImageFile);
+            if (newImageUrl != null)
+                item.ItemImageUrl = newImageUrl;   // upload รูปใหม่ → ใช้ URL ใหม่
+            else
+                item.ItemImageUrl = vm.ItemImageUrl;  // ไม่มีไฟล์ใหม่ → คง URL ที่ user พิมพ์ (หรือค่าเดิม)
             item.TotalAmount = vm.TotalAmount;
             item.MinimumAmount = vm.MinimumAmount;
             item.ItemStatus = (int)vm.SelectedItemStatus;
@@ -569,18 +573,18 @@ namespace KlangIT_V3.Controllers
             return !string.IsNullOrWhiteSpace(other) ? other : string.Empty;
         }
 
-        private async Task<string?> SaveImageAsync(ItemCreateViewModel vm)
+        private async Task<string?> SaveImageAsync(IFormFile? file)
         {
-            if (vm.ItemImageFile == null || vm.ItemImageFile.Length == 0) return null;
+            if (file == null || file.Length == 0) return null;
 
             var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-            var ext = Path.GetExtension(vm.ItemImageFile.FileName).ToLower();
+            var ext = Path.GetExtension(file.FileName).ToLower();
             if (!allowed.Contains(ext))
             {
                 ModelState.AddModelError("ItemImageFile", "อนุญาตเฉพาะไฟล์รูปภาพ (.jpg .png .gif .webp)");
                 return null;
             }
-            if (vm.ItemImageFile.Length > 2 * 1024 * 1024)
+            if (file.Length > 2 * 1024 * 1024)
             {
                 ModelState.AddModelError("ItemImageFile", "ขนาดไฟล์ต้องไม่เกิน 2MB");
                 return null;
@@ -592,7 +596,7 @@ namespace KlangIT_V3.Controllers
             Directory.CreateDirectory(uploadDir);
 
             using var stream = new FileStream(Path.Combine(uploadDir, fileName), FileMode.Create);
-            await vm.ItemImageFile.CopyToAsync(stream);
+            await file.CopyToAsync(stream);
 
             return $"/uploads/items/{fileName}";
         }

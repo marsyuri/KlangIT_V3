@@ -47,6 +47,7 @@ namespace KlangIT_V3.ViewModels
 
         public string? ItemDescription { get; set; }
         public string? ItemImageUrl    { get; set; }
+        public IFormFile? ItemImageFile { get; set; }
 
         // ── Amounts ──
         [Range(1, int.MaxValue, ErrorMessage = "จำนวนทั้งหมดต้องมากกว่า 0")]

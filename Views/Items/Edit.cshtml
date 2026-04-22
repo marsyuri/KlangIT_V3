@@ -3,6 +3,7 @@
     ViewData["Title"] = "แก้ไขวัสดุ";
 }
 @await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
+@await Html.PartialAsync("~/Views/Shared/_ItemStateDiagram.cshtml")
 
 <script>
     const typeToBrandsMap  = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.TypeToBrandsMap));
@@ -13,7 +14,7 @@
 <h1 class="ds-page-title">แก้ไขวัสดุ</h1>
 
 <div class="ds-card" style="max-width:560px">
-    <form asp-action="Edit">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
         <input type="hidden" asp-for="Id"/>
@@ -87,8 +88,8 @@
         </div>
 
         <div class="ds-row">
-            <label asp-for="ItemImageUrl" class="ds-lbl">URL รูปภาพ</label>
-            <div class="ds-img-preview" id="imgPreviewBox">
+            <label asp-for="ItemImageUrl" class="ds-lbl">รูปภาพ</label>
+            <div class="ds-img-preview" id="imgPreviewBox" style="cursor:zoom-in;height:160px">
                 @if (!string.IsNullOrWhiteSpace(Model.ItemImageUrl))
                 {
                     <img src="@Model.ItemImageUrl" alt="รูปอุปกรณ์"
@@ -99,7 +100,13 @@
                     <span>ยังไม่มีรูป</span>
                 }
             </div>
-            <input asp-for="ItemImageUrl" id="inputImageUrl" class="ds-input"/>
+            <p class="ds-hint" style="text-align:center;margin-top:-4px">คลิกรูปเพื่อขยาย</p>
+            <input asp-for="ItemImageUrl" id="inputImageUrl" class="ds-input" placeholder="URL รูปภาพ (หรือ upload ด้านล่าง)"/>
+            <input asp-for="ItemImageFile" type="file" class="ds-input"
+                   style="height:auto;padding:6px 10px;margin-top:6px"
+                   accept="image/*" id="inputImageFile"/>
+            <p class="ds-hint">แนบรูปใหม่จะทับ URL เดิม (.jpg .png .gif .webp ขนาดไม่เกิน 2MB)</p>
+            <span asp-validation-for="ItemImageFile" class="text-danger small"></span>
         </div>
 
         <hr class="ds-divider"/>
@@ -252,15 +259,34 @@ $.validator.unobtrusive.adapters.add("numericfixedlength", ["length"], function 
         busy = false;
     });
 
+    const imgBox = document.getElementById('imgPreviewBox');
+
     // Image preview update ตอน URL เปลี่ยน
     const inputImageUrl = document.getElementById('inputImageUrl');
     if (inputImageUrl) inputImageUrl.addEventListener('input', function () {
-        const box = document.getElementById('imgPreviewBox');
         if (this.value.trim()) {
-            box.innerHTML = '<img src="' + this.value + '" alt="รูปอุปกรณ์" onerror="this.parentElement.innerHTML=&quot;<span>ไม่พบไฟล์รูป</span>&quot;">';
+            imgBox.innerHTML = '<img src="' + this.value + '" alt="รูปอุปกรณ์" onerror="this.parentElement.innerHTML=&quot;<span>ไม่พบไฟล์รูป</span>&quot;">';
         } else {
-            box.innerHTML = '<span>ยังไม่มีรูป</span>';
+            imgBox.innerHTML = '<span>ยังไม่มีรูป</span>';
         }
+    });
+
+    // Preview รูปใหม่จาก file upload
+    const inputImageFile = document.getElementById('inputImageFile');
+    if (inputImageFile) inputImageFile.addEventListener('change', function () {
+        const f = this.files[0]; if (!f) return;
+        const r = new FileReader();
+        r.onload = e => { imgBox.innerHTML = '<img src="' + e.target.result + '" alt="รูปอุปกรณ์">'; };
+        r.readAsDataURL(f);
+    });
+
+    // Click preview → zoom overlay (reuse dsZoomOverlay / dsCloseZoom จาก _ItemStateDiagram)
+    imgBox.addEventListener('click', function (e) {
+        const img = imgBox.querySelector('img');
+        if (!img) return;
+        document.getElementById('dsZoomContent').innerHTML =
+            '<img src="' + img.src + '" style="max-width:90vw;max-height:85vh;object-fit:contain;cursor:zoom-out" onclick="dsCloseZoom()">';
+        document.getElementById('dsZoomOverlay').classList.add('open');
     });
 
 })();
