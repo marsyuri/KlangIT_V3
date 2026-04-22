@@ -152,23 +152,23 @@
         <thead>
             <tr>
                 <th rowspan="2">#</th>
-                <th rowspan="2">วันที่/เวลา</th>
-                <th rowspan="2">ประเภทรายการ</th>
+                <th rowspan="2" style="border-left:1px solid var(--ds-border)">วันที่/เวลา</th>
+                <th rowspan="2" style="border-left:1px solid var(--ds-border)">ประเภทรายการ</th>
                 <th colspan="5" style="text-align:center;border-left:1px solid var(--ds-border)">การเปลี่ยนแปลง (Δ)</th>
                 <th colspan="5" style="text-align:center;border-left:1px solid var(--ds-border)">คงเหลือหลังทำรายการ</th>
                 <th rowspan="2" style="border-left:1px solid var(--ds-border)">ดำเนินการโดย</th>
             </tr>
             <tr>
-                <th style="border-left:1px solid var(--ds-border)">พร้อมใช้</th>
-                <th>ยืม</th>
-                <th>ชำรุด</th>
-                <th>จำหน่าย</th>
-                <th>รวม</th>
-                <th style="border-left:1px solid var(--ds-border)">พร้อมใช้</th>
-                <th>ยืม</th>
-                <th>ชำรุด</th>
-                <th>จำหน่าย</th>
-                <th>รวม</th>
+                <th style="border-left:1px solid var(--ds-border);text-align:center">พร้อมใช้</th>
+                <th style="border-left:1px solid var(--ds-border);text-align:center">ยืม</th>
+                <th style="border-left:1px solid var(--ds-border);text-align:center">ชำรุด</th>
+                <th style="border-left:1px solid var(--ds-border);text-align:center">จำหน่าย</th>
+                <th style="border-left:1px solid var(--ds-border);text-align:center">รวม</th>
+                <th style="border-left:1px solid var(--ds-border);text-align:center">พร้อมใช้</th>
+                <th style="border-left:1px solid var(--ds-border);text-align:center">ยืม</th>
+                <th style="border-left:1px solid var(--ds-border);text-align:center">ชำรุด</th>
+                <th style="border-left:1px solid var(--ds-border);text-align:center">จำหน่าย</th>
+                <th style="border-left:1px solid var(--ds-border);text-align:center">รวม</th>
             </tr>
         </thead>
         <tbody>
@@ -184,18 +184,18 @@
                     i++;
                     <tr>
                         <td style="color:var(--ds-text3)">@i</td>
-                        <td style="color:var(--ds-text2);white-space:nowrap">@sl.CreatedDate.ToString("dd MMM yyyy HH:mm")</td>
-                        <td style="white-space:nowrap">@sl.LogType.GetDisplayName()</td>
-                        <td style="font-family:monospace;text-align:right;border-left:1px solid var(--ds-border)">@delta(sl.DeltaAvailable)</td>
-                        <td style="font-family:monospace;text-align:right">@delta(sl.DeltaBorrowed)</td>
-                        <td style="font-family:monospace;text-align:right">@delta(sl.DeltaDamaged)</td>
-                        <td style="font-family:monospace;text-align:right">@delta(sl.DeltaDisposed)</td>
-                        <td style="font-family:monospace;text-align:right">@delta(sl.DeltaTotal)</td>
-                        <td style="font-family:monospace;text-align:right;color:var(--ds-text2);border-left:1px solid var(--ds-border)">@sl.AvailableAfter</td>
-                        <td style="font-family:monospace;text-align:right;color:var(--ds-text2)">@sl.BorrowedAfter</td>
-                        <td style="font-family:monospace;text-align:right;color:var(--ds-text2)">@sl.DamagedAfter</td>
-                        <td style="font-family:monospace;text-align:right;color:var(--ds-text2)">@sl.DisposedAfter</td>
-                        <td style="font-family:monospace;text-align:right;color:var(--ds-text2);font-weight:500">@sl.TotalAfter</td>
+                        <td style="color:var(--ds-text2);white-space:nowrap;border-left:1px solid var(--ds-border)">@sl.CreatedDate.ToString("dd MMM yyyy HH:mm")</td>
+                        <td style="white-space:nowrap;border-left:1px solid var(--ds-border)">@sl.LogType.GetDisplayName()</td>
+                        <td style="font-family:monospace;text-align:center;border-left:1px solid var(--ds-border)">@delta(sl.DeltaAvailable)</td>
+                        <td style="font-family:monospace;text-align:center;border-left:1px solid var(--ds-border)">@delta(sl.DeltaBorrowed)</td>
+                        <td style="font-family:monospace;text-align:center;border-left:1px solid var(--ds-border)">@delta(sl.DeltaDamaged)</td>
+                        <td style="font-family:monospace;text-align:center;border-left:1px solid var(--ds-border)">@delta(sl.DeltaDisposed)</td>
+                        <td style="font-family:monospace;text-align:center;border-left:1px solid var(--ds-border)">@delta(sl.DeltaTotal)</td>
+                        <td style="font-family:monospace;text-align:center;color:var(--ds-text2);border-left:1px solid var(--ds-border)">@sl.AvailableAfter</td>
+                        <td style="font-family:monospace;text-align:center;color:var(--ds-text2);border-left:1px solid var(--ds-border)">@sl.BorrowedAfter</td>
+                        <td style="font-family:monospace;text-align:center;color:var(--ds-text2);border-left:1px solid var(--ds-border)">@sl.DamagedAfter</td>
+                        <td style="font-family:monospace;text-align:center;color:var(--ds-text2);border-left:1px solid var(--ds-border)">@sl.DisposedAfter</td>
+                        <td style="font-family:monospace;text-align:center;color:var(--ds-text2);font-weight:500;border-left:1px solid var(--ds-border)">@sl.TotalAfter</td>
                         <td style="color:var(--ds-text2);white-space:nowrap;border-left:1px solid var(--ds-border)">@sl.CreatedBy</td>
                     </tr>
                 }
