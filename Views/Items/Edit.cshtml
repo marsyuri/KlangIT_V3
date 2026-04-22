@@ -91,7 +91,8 @@
             <div class="ds-img-preview" id="imgPreviewBox">
                 @if (!string.IsNullOrWhiteSpace(Model.ItemImageUrl))
                 {
-                    <img src="@Model.ItemImageUrl" alt="รูปอุปกรณ์"/>
+                    <img src="@Model.ItemImageUrl" alt="รูปอุปกรณ์"
+                         onerror="this.parentElement.innerHTML='<span>ไม่พบไฟล์รูป</span>'"/>
                 }
                 else
                 {
@@ -256,7 +257,7 @@ $.validator.unobtrusive.adapters.add("numericfixedlength", ["length"], function 
     if (inputImageUrl) inputImageUrl.addEventListener('input', function () {
         const box = document.getElementById('imgPreviewBox');
         if (this.value.trim()) {
-            box.innerHTML = '<img src="' + this.value + '" alt="รูปอุปกรณ์">';
+            box.innerHTML = '<img src="' + this.value + '" alt="รูปอุปกรณ์" onerror="this.parentElement.innerHTML=&quot;<span>ไม่พบไฟล์รูป</span>&quot;">';
         } else {
             box.innerHTML = '<span>ยังไม่มีรูป</span>';
         }
