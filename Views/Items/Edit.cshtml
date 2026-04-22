@@ -88,7 +88,17 @@
 
         <div class="ds-row">
             <label asp-for="ItemImageUrl" class="ds-lbl">URL รูปภาพ</label>
-            <input asp-for="ItemImageUrl" class="ds-input"/>
+            <div class="ds-img-preview" id="imgPreviewBox">
+                @if (!string.IsNullOrWhiteSpace(Model.ItemImageUrl))
+                {
+                    <img src="@Model.ItemImageUrl" alt="รูปอุปกรณ์"/>
+                }
+                else
+                {
+                    <span>ยังไม่มีรูป</span>
+                }
+            </div>
+            <input asp-for="ItemImageUrl" id="inputImageUrl" class="ds-input"/>
         </div>
 
         <hr class="ds-divider"/>
@@ -239,6 +249,17 @@ $.validator.unobtrusive.adapters.add("numericfixedlength", ["length"], function 
         rebuild(ddlModel, allModel, this.value ? (brandToModelsMap[this.value] || []).map(m => String(m.Value ?? m.value)) : null, '-- เลือกรุ่น --');
         rebuild(ddlType,  allType,  this.value ? (brandToTypesMap[this.value]  || []).map(String) : null, '-- เลือกประเภทอุปกรณ์ --');
         busy = false;
+    });
+
+    // Image preview update ตอน URL เปลี่ยน
+    const inputImageUrl = document.getElementById('inputImageUrl');
+    if (inputImageUrl) inputImageUrl.addEventListener('input', function () {
+        const box = document.getElementById('imgPreviewBox');
+        if (this.value.trim()) {
+            box.innerHTML = '<img src="' + this.value + '" alt="รูปอุปกรณ์">';
+        } else {
+            box.innerHTML = '<span>ยังไม่มีรูป</span>';
+        }
     });
 
 })();
