@@ -40,6 +40,11 @@ namespace KlangIT_V3.ViewModels
         public List<SelectListItem> ItemBrands { get; set; } = new();
         public List<SelectListItem> ItemModels { get; set; } = new();
 
+        // ── Cascade maps (Type ↔ Brand M2M, Brand → Model 1-M) ──
+        public Dictionary<int, List<int>> TypeToBrandsMap { get; set; } = new();
+        public Dictionary<int, List<int>> BrandToTypesMap { get; set; } = new();
+        public Dictionary<int, List<SelectListItem>> BrandToModelsMap { get; set; } = new();
+
         public string? ItemDescription { get; set; }
         public string? ItemImageUrl    { get; set; }
 
@@ -74,6 +79,16 @@ namespace KlangIT_V3.ViewModels
                 yield return new ValidationResult(
                     "จำนวนขั้นต่ำต้องน้อยกว่าจำนวนทั้งหมด",
                     new[] { nameof(MinimumAmount) }
+                );
+            }
+
+            var parts = new[] { AssetId1, AssetId2, AssetId3, AssetId4 };
+            int filled = parts.Count(p => !string.IsNullOrWhiteSpace(p));
+            if (filled > 0 && filled < 4)
+            {
+                yield return new ValidationResult(
+                    "ต้องกรอกเลขครุภัณฑ์ครบทั้ง 4 ช่อง หรือเว้นว่างทั้งหมด",
+                    new[] { nameof(AssetId1), nameof(AssetId2), nameof(AssetId3), nameof(AssetId4) }
                 );
             }
         }

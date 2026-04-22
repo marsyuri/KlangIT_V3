@@ -651,6 +651,13 @@ namespace KlangIT_V3.Controllers
 
             vm.ItemStatuses = Enum.GetValues(typeof(ItemStatusEnum)).Cast<ItemStatusEnum>()
                 .Select(e => new SelectListItem { Value = ((int)e).ToString(), Text = e.GetDisplayName(), Selected = e == vm.SelectedItemStatus }).ToList();
+
+            var links = _context.ItemTypeToBrands.ToList();
+            vm.TypeToBrandsMap = links.GroupBy(l => l.ItemTypeId).ToDictionary(g => g.Key, g => g.Select(l => l.ItemBrandId).ToList());
+            vm.BrandToTypesMap = links.GroupBy(l => l.ItemBrandId).ToDictionary(g => g.Key, g => g.Select(l => l.ItemTypeId).ToList());
+            vm.BrandToModelsMap = _context.ItemModels.Where(m => !m.IsDeleted).OrderBy(m => m.Name)
+                .GroupBy(m => m.ItemBrandId)
+                .ToDictionary(g => g.Key, g => g.Select(m => new SelectListItem { Value = m.Id.ToString(), Text = m.Name }).ToList());
         }
 
         private bool ItemExists(int id) => _context.Items.Any(e => e.Id == id);

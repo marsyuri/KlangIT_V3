@@ -70,6 +70,16 @@ namespace KlangIT_V3.ViewModels
                     new[] { nameof(MinimumAmount) }
                 );
             }
+
+            var parts = new[] { AssetId1, AssetId2, AssetId3, AssetId4 };
+            int filled = parts.Count(p => !string.IsNullOrWhiteSpace(p));
+            if (filled > 0 && filled < 4)
+            {
+                yield return new ValidationResult(
+                    "ต้องกรอกเลขครุภัณฑ์ครบทั้ง 4 ช่อง หรือเว้นว่างทั้งหมด",
+                    new[] { nameof(AssetId1), nameof(AssetId2), nameof(AssetId3), nameof(AssetId4) }
+                );
+            }
         }
     }
 }
