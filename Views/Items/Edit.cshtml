@@ -24,17 +24,17 @@
                 </div>
                 <div class="ds-asset-sep">-</div>
                 <div style="display:flex;flex-direction:column;flex:1">
-                    <input asp-for="AssetId2" class="ds-input"/>
+                    <input asp-for="AssetId2" class="ds-input" maxlength="8"/>
                     <span asp-validation-for="AssetId2" class="text-danger small"></span>
                 </div>
                 <div class="ds-asset-sep">-</div>
                 <div style="display:flex;flex-direction:column;flex:1">
-                    <input asp-for="AssetId3" class="ds-input"/>
+                    <input asp-for="AssetId3" class="ds-input" maxlength="8"/>
                     <span asp-validation-for="AssetId3" class="text-danger small"></span>
                 </div>
                 <div class="ds-asset-sep">-</div>
                 <div style="display:flex;flex-direction:column;width:82px">
-                    <input asp-for="AssetId4" class="ds-input"/>
+                    <input asp-for="AssetId4" class="ds-input" maxlength="5"/>
                     <span asp-validation-for="AssetId4" class="text-danger small"></span>
                 </div>
             </div>
@@ -169,6 +169,18 @@
 
 @section Scripts {
 @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+<script>
+// jQuery Unobtrusive adapter สำหรับ NumericFixedLengthAttribute
+$.validator.addMethod("numericfixedlength", function (value, element, params) {
+    if (!value) return true;
+    if (!/^\d+$/.test(value)) return false;
+    return value.length === parseInt(params.length, 10);
+});
+$.validator.unobtrusive.adapters.add("numericfixedlength", ["length"], function (options) {
+    options.rules["numericfixedlength"] = { length: options.params.length };
+    options.messages["numericfixedlength"] = options.message;
+});
+</script>
 <script>
 (function () {
     window.toggleDeleted = function (on) {
