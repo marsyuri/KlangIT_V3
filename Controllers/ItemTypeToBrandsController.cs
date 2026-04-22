@@ -42,7 +42,7 @@ namespace KlangIT_V3.Controllers
         public async Task<IActionResult> Create(ItemTypeToBrandViewModel vm)
         {
             if (!ModelState.IsValid) { PopulateDropdowns(vm); return View(vm); }
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             _context.Add(new ItemTypeToBrand { ItemTypeId = vm.SelectedItemTypeId, ItemBrandId = vm.SelectedItemBrandId, CreatedBy = u, ModifiedBy = u, CreatedDate = DateTime.Now, ModifiedDate = DateTime.Now, IsDeleted = false });
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -65,7 +65,7 @@ namespace KlangIT_V3.Controllers
             if (!ModelState.IsValid) { PopulateDropdownsEdit(vm); return View(vm); }
             var e = await _context.ItemTypeToBrands.FindAsync(id);
             if (e == null) return NotFound();
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             e.ItemTypeId = vm.SelectedItemTypeId; e.ItemBrandId = vm.SelectedItemBrandId; e.ModifiedBy = u; e.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -85,7 +85,7 @@ namespace KlangIT_V3.Controllers
         {
             var e = await _context.ItemTypeToBrands.FindAsync(id);
             if (e == null) return NotFound();
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             e.IsDeleted = true; e.ModifiedBy = u; e.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

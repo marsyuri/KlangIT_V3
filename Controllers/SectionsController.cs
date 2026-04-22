@@ -50,7 +50,7 @@ namespace KlangIT_V3.Controllers
         public async Task<IActionResult> Create(SectionViewModel vm)
         {
             if (!ModelState.IsValid) { PopulateDepartments(vm); return View(vm); }
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             _context.Sections.Add(new Section { OrderNo = 1, Name = vm.Name, DepartmentId = vm.SelectedDepartmentId, CreatedDate = DateTime.Now, ModifiedDate = DateTime.Now, CreatedBy = u, ModifiedBy = u, IsDeleted = false });
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -72,7 +72,7 @@ namespace KlangIT_V3.Controllers
             if (!ModelState.IsValid) { PopulateDepartmentsEdit(vm); return View(vm); }
             var s = await _context.Sections.FindAsync(vm.Id);
             if (s == null) return NotFound();
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             s.Name = vm.Name; s.DepartmentId = vm.SelectedDepartmentId; s.ModifiedBy = u; s.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

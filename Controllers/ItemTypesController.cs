@@ -36,7 +36,7 @@ namespace KlangIT_V3.Controllers
         public async Task<IActionResult> Create(ItemTypeViewModel vm)
         {
             if (!ModelState.IsValid) return View(vm);
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             _context.ItemTypes.Add(new ItemType { Name = vm.Name, CreatedBy = u, ModifiedBy = u, CreatedDate = DateTime.Now, ModifiedDate = DateTime.Now, IsDeleted = false });
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -56,7 +56,7 @@ namespace KlangIT_V3.Controllers
             if (!ModelState.IsValid) return View(vm);
             var t = await _context.ItemTypes.FindAsync(id);
             if (t == null) return NotFound();
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             t.Name = vm.Name; t.ModifiedBy = u; t.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -77,7 +77,7 @@ namespace KlangIT_V3.Controllers
             var t = await _context.ItemTypes.Include(x => x.Items).FirstOrDefaultAsync(i => i.Id == id);
             if (t == null) return NotFound();
             if (t.Items.Any(i => !i.IsDeleted)) return RedirectToAction(nameof(Delete), new { id });
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             t.IsDeleted = true; t.ModifiedBy = u; t.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

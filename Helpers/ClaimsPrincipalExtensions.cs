@@ -20,5 +20,13 @@ namespace KlangIT_V3.Helpers
             int at = name.IndexOf('@');
             return at > 0 ? name[..at] : name;
         }
+
+        public static string GetUsernameLocalPart(this ClaimsPrincipal principal)
+        {
+            var name = principal?.Identity?.Name;
+            if (string.IsNullOrEmpty(name)) return string.Empty;
+            int at = name.IndexOf('@');
+            return at > 0 ? name[..at] : name;
+        }
     }
 }

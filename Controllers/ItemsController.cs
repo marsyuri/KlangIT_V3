@@ -228,7 +228,7 @@ namespace KlangIT_V3.Controllers
             string assetId = BuildAssetId(itemVM);
             string? imageUrl = await SaveImageAsync(itemVM);
 
-            string itUser = Utility.GetCurrentUserName();
+            string itUser = User.GetUsernameLocalPart();
             int initialAmount = itemVM.IsBulk ? itemVM.TotalAmount : 1;
 
             var item = new Item
@@ -336,7 +336,7 @@ namespace KlangIT_V3.Controllers
             var item = await _context.Items.FindAsync(id);
             if (item == null) return NotFound();
 
-            string itUser = Utility.GetCurrentUserName();
+            string itUser = User.GetUsernameLocalPart();
             item.AssetId1 = vm.AssetId1;
             item.AssetId2 = vm.AssetId2;
             item.AssetId3 = vm.AssetId3;
@@ -472,7 +472,7 @@ namespace KlangIT_V3.Controllers
                 return View(vm);
             }
 
-            string itUser = vm.Itstaff;
+            string username = User.GetUsernameLocalPart();
             item.ItemStatus = (int)ItemStatusEnum.Damaged;
 
             await StockHelper.ApplyStockChangeAsync(
@@ -483,7 +483,7 @@ namespace KlangIT_V3.Controllers
                 deltaBorrowed:   0,
                 deltaDamaged:   +vm.Amount,
                 deltaDisposed:   0,
-                createdBy:       itUser,
+                createdBy:       username,
                 remarks:         string.IsNullOrWhiteSpace(vm.Remarks) ? $"แจ้งเสียหาย โดย {vm.Itstaff}" : $"{vm.Remarks} (โดย {vm.Itstaff})");
 
             return RedirectToAction(nameof(Details), new { id = vm.ItemId });
@@ -539,7 +539,7 @@ namespace KlangIT_V3.Controllers
                 return View(vm);
             }
 
-            string itUser = vm.Itstaff;
+            string username = User.GetUsernameLocalPart();
             item.ItemStatus = (int)ItemStatusEnum.Available;
 
             await StockHelper.ApplyStockChangeAsync(
@@ -550,7 +550,7 @@ namespace KlangIT_V3.Controllers
                 deltaBorrowed:   0,
                 deltaDamaged:   -vm.Amount,
                 deltaDisposed:   0,
-                createdBy:       itUser,
+                createdBy:       username,
                 remarks:         string.IsNullOrWhiteSpace(vm.Remarks) ? $"ซ่อมแล้ว โดย {vm.Itstaff}" : $"{vm.Remarks} (โดย {vm.Itstaff})");
 
             return RedirectToAction(nameof(Details), new { id = vm.ItemId });

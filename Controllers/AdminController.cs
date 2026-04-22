@@ -27,7 +27,7 @@ namespace KlangIT_V3.Controllers
                 return View();
             }
 
-            string itUser = Utility.GetCurrentUserName();
+            string itUser = User.GetUsernameLocalPart();
             var (itemsProcessed, logsCreated) =
                 await StockLogBackfillHelper.BackfillOpeningBalancesAsync(_context, itUser);
 

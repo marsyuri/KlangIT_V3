@@ -39,7 +39,7 @@ namespace KlangIT_V3.Controllers
         public async Task<IActionResult> Create(DepartmentViewModel vm)
         {
             if (!ModelState.IsValid) return View(vm);
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             _context.Departments.Add(new Department { Name = vm.Name, CreatedBy = u, ModifiedBy = u, CreatedDate = DateTime.Now, ModifiedDate = DateTime.Now, IsDeleted = false });
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -58,7 +58,7 @@ namespace KlangIT_V3.Controllers
             if (!ModelState.IsValid) return View(vm);
             var d = await _context.Departments.FindAsync(vm.Id);
             if (d == null) return NotFound();
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             d.Name = vm.Name; d.ModifiedBy = u; d.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -83,7 +83,7 @@ namespace KlangIT_V3.Controllers
         {
             var d = await _context.Departments.FindAsync(id);
             if (d == null) return NotFound();
-            string u = Utility.GetCurrentUserName();
+            string u = User.GetUsernameLocalPart();
             d.IsDeleted = true; d.ModifiedBy = u; d.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

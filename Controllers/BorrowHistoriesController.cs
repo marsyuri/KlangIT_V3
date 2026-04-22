@@ -96,7 +96,8 @@ namespace KlangIT_V3.Controllers
             if (bhVM.BorrowDate.Date == DateTime.Now.Date)
                 bhVM.BorrowDate = DateTime.Now;
 
-            string itUser = bhVM.Itstaff;
+            string displayName = bhVM.Itstaff;
+            string username    = User.GetUsernameLocalPart();
             var bh = new BorrowHistory
             {
                 ItemId               = bhVM.ItemId,
@@ -107,13 +108,13 @@ namespace KlangIT_V3.Controllers
                 IsInitial            = false,
                 BorrowDate           = bhVM.BorrowDate,
                 DueDate              = bhVM.HasExpectedReturnDate ? bhVM.ExpectedReturnDate : null,
-                BorrowItname         = bhVM.Itstaff,
+                BorrowItname         = displayName,
                 ReturnItname         = string.Empty,
                 Amount               = bhVM.Amount,
                 CreatedDate          = DateTime.Now,
                 ModifiedDate         = DateTime.Now,
-                CreatedBy            = itUser,
-                ModifiedBy           = itUser,
+                CreatedBy            = username,
+                ModifiedBy           = username,
                 IsDeleted            = false
             };
             _context.BorrowHistories.Add(bh);
@@ -131,7 +132,7 @@ namespace KlangIT_V3.Controllers
                 deltaBorrowed:  +bhVM.Amount,
                 deltaDamaged:   0,
                 deltaDisposed:  0,
-                createdBy:      itUser,
+                createdBy:      username,
                 referenceNo:    $"BH-{bh.Id}",
                 remarks:        "ยืม");
 
@@ -191,16 +192,17 @@ namespace KlangIT_V3.Controllers
                 .SingleOrDefaultAsync();
             if (bh == null) return NotFound();
 
-            string itUser = bhVM.Itstaff;
+            string displayName = bhVM.Itstaff;
+            string username    = User.GetUsernameLocalPart();
             bool fullyReturned   = bh.Amount == bhVM.ReturnAmount;
             bh.IsPermanentBorrow = false;
             if (fullyReturned)
             {
                 bh.ReturnDate   = DateTime.Now;
-                bh.ReturnItname = bhVM.Itstaff;
+                bh.ReturnItname = displayName;
             }
             bh.Amount           -= bhVM.ReturnAmount;
-            bh.ModifiedBy        = itUser;
+            bh.ModifiedBy        = username;
             bh.ModifiedDate      = DateTime.Now;
 
             var item = await _context.Items.FindAsync(bhVM.ItemId);
@@ -215,7 +217,7 @@ namespace KlangIT_V3.Controllers
                 deltaBorrowed:  -bhVM.ReturnAmount,
                 deltaDamaged:   0,
                 deltaDisposed:  0,
-                createdBy:      itUser,
+                createdBy:      username,
                 referenceNo:    $"BH-{bh.Id}",
                 remarks:        fullyReturned ? "คืนทั้งหมด" : "คืนบางส่วน");
 
@@ -267,7 +269,7 @@ namespace KlangIT_V3.Controllers
             var bh = await _context.BorrowHistories.FindAsync(id);
             if (bh == null) return NotFound();
 
-            string itUser = Utility.GetCurrentUserName();
+            string itUser = User.GetUsernameLocalPart();
             bh.BorrowerUser          = vm.RequestUser;
             bh.BorrowerDepartmentId  = vm.SelectedDepartmentId;
             bh.BorrowerSectionId     = vm.SelectedSectionId == 0 ? null : vm.SelectedSectionId;
