@@ -52,10 +52,10 @@ namespace KlangIT_V3.ViewModels
         // ── Amounts ──
         [Range(1, int.MaxValue, ErrorMessage = "จำนวนทั้งหมดต้องมากกว่า 0")]
         public int TotalAmount     { get; set; }
-        public int AvailableAmount { get; set; }   // readonly — calculated
-        public int BorrowedAmount  { get; set; }   // readonly — calculated
-        public int DamagedAmount   { get; set; }   // readonly — calculated
-        public int DisposedAmount  { get; set; }   // readonly — calculated
+        public int AvailableAmount { get; set; }   // readonly - calculated
+        public int BorrowedAmount  { get; set; }   // readonly - calculated
+        public int DamagedAmount   { get; set; }   // readonly - calculated
+        public int DisposedAmount  { get; set; }   // readonly - calculated
 
         [Range(0, int.MaxValue)]
         public int MinimumAmount { get; set; }

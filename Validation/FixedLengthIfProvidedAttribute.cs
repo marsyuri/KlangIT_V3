@@ -23,7 +23,7 @@ namespace KlangIT_V3.Validation
                 : new ValidationResult(ErrorMessage);
         }
 
-        // Client-side — inject HTML attributes ให้ jQuery Validation อ่านได้
+        // Client-side - inject HTML attributes ให้ jQuery Validation อ่านได้
         public void AddValidation(ClientModelValidationContext context)
         {
             context.Attributes["data-val"] = "true";

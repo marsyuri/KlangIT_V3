@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Backfill StockLog — Opening Balance";
+    ViewData["Title"] = "Backfill StockLog - Opening Balance";
 }
 @await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
 
@@ -28,7 +28,7 @@
         </div>
 
         <p class="ds-hint">
-            ฟังก์ชันนี้ idempotent — รันซ้ำจะข้าม Item ที่มี log แล้ว ถ้าจำนวนด้านบนเป็น 0 แสดงว่าทุก Item มี opening balance อยู่แล้ว
+            ฟังก์ชันนี้ idempotent - รันซ้ำจะข้าม Item ที่มี log แล้ว ถ้าจำนวนด้านบนเป็น 0 แสดงว่าทุก Item มี opening balance อยู่แล้ว
         </p>
 
         <div class="ds-actions">
@@ -45,7 +45,7 @@
                 <li>หา Item ที่ยังไม่มี StockLog</li>
                 <li>สร้าง <code>InitialAvailable</code>/<code>InitialBorrowed</code>/<code>InitialDamaged</code>/<code>InitialDisposed</code> ตามจำนวนปัจจุบัน</li>
                 <li>ไม่กระทบ Item counter (เขียน StockLog อย่างเดียว)</li>
-                <li>Idempotent — รันซ้ำปลอดภัย</li>
+                <li>Idempotent - รันซ้ำปลอดภัย</li>
             </ul>
         </div>
 

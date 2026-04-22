@@ -18,7 +18,7 @@
             <span class="ds-field-value">@Model.ItemTypeName</span>
 
             <span class="ds-field-label">ยี่ห้อ / รุ่น</span>
-            <span class="ds-field-value">@Model.ItemBrandName — @Model.ItemModelName</span>
+            <span class="ds-field-value">@Model.ItemBrandName - @Model.ItemModelName</span>
 
             <span class="ds-field-label">สถานะ</span>
             <span class="ds-field-value">@Html.DisplayFor(m => m.ItemStatus)</span>
@@ -36,7 +36,7 @@
                     <circle cx="8" cy="8" r="7" stroke="#A32D2D" stroke-width="1.5"/>
                     <path d="M5 5L11 11M11 5L5 11" stroke="#A32D2D" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
-                ไม่สามารถลบได้ — มีข้อมูลที่เกี่ยวข้องอยู่
+                ไม่สามารถลบได้ - มีข้อมูลที่เกี่ยวข้องอยู่
             </div>
             <p class="ds-blocked-desc">
                 อุปกรณ์นี้มีประวัติการยืม-คืน @Model.BorrowHistoryCount รายการ
@@ -44,7 +44,7 @@
                 {
                     <strong> (มีรายการที่ยังไม่คืน)</strong>
                 }
-                — ต้องลบหรือคืนให้ครบก่อน
+                - ต้องลบหรือคืนให้ครบก่อน
             </p>
             <div class="ds-dep-list">
                 <div class="ds-dep-item">
@@ -70,7 +70,7 @@
                 <circle cx="8" cy="8" r="7" stroke="#1D9E75" stroke-width="1.5"/>
                 <path d="M5 8l2.5 2.5L11 5.5" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            ตรวจสอบแล้ว — ไม่มีประวัติการยืม-คืนที่เกี่ยวข้อง สามารถลบได้
+            ตรวจสอบแล้ว - ไม่มีประวัติการยืม-คืนที่เกี่ยวข้อง สามารถลบได้
         </div>
 
         <div class="ds-danger-box">

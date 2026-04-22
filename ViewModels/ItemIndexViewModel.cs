@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KlangIT_V3.ViewModels
 {
-    /// <summary>ViewModel สำหรับ Items/Index — รองรับ filter, sort และ cascade dropdowns</summary>
+    /// <summary>ViewModel สำหรับ Items/Index - รองรับ filter, sort และ cascade dropdowns</summary>
     public class ItemIndexViewModel
     {
         // ── Filter values ──

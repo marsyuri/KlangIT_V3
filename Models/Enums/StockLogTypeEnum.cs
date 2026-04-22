@@ -7,13 +7,13 @@ namespace KlangIT_V3.Models.Enums
         [Display(Name = "รับเข้าเริ่มต้น (พร้อมใช้)")]
         InitialAvailable = 1,
 
-        [Display(Name = "ย้อนหลัง — ถูกยืม")]
+        [Display(Name = "ย้อนหลัง - ถูกยืม")]
         InitialBorrowed = 2,
 
-        [Display(Name = "ย้อนหลัง — ชำรุด")]
+        [Display(Name = "ย้อนหลัง - ชำรุด")]
         InitialDamaged = 3,
 
-        [Display(Name = "ย้อนหลัง — จำหน่ายแล้ว")]
+        [Display(Name = "ย้อนหลัง - จำหน่ายแล้ว")]
         InitialDisposed = 4,
 
         [Display(Name = "ยืม")]
