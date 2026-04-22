@@ -10,6 +10,7 @@
     <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort"/>
     <input type="text" name="searchBox" class="ds-input" style="width:220px" placeholder="ค้นหา..." value="@ViewBag.CurrentSearch"/>
     <button type="submit" class="ds-btn-primary">ค้นหา</button>
+    <a asp-action="Index" class="ds-btn-ghost">ล้างทั้งหมด</a>
 </form>
 <div class="ds-table-wrap">
     <table class="ds-table">
