@@ -1,0 +1,236 @@
+@model KlangIT_V3.Services.DataIntegrityReport
+@{
+    ViewData["Title"] = "ตรวจสอบความสอดคล้องของข้อมูล";
+}
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
+
+<h1 class="ds-page-title">Data Integrity Check</h1>
+<p class="ds-page-sub">ตรวจสอบความสอดคล้องของข้อมูล Item, StockLog, BorrowHistory</p>
+
+<div style="max-width:1100px">
+
+@if (Model.IsConsistent)
+{
+    <div class="ds-ok-row">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="7" stroke="#1D9E75" stroke-width="1.5"/>
+            <path d="M5 8l2.5 2.5L11 5.5" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ผ่านทุก check - ข้อมูลสอดคล้อง
+    </div>
+}
+else
+{
+    <div class="alert alert-warning small">
+        พบปัญหา <strong>@Model.TotalIssueCount</strong> รายการรวม - ดูรายละเอียดด้านล่าง
+    </div>
+}
+
+@* ============ Check 1: Internal math ============ *@
+<h3 class="ds-section-lbl">
+    Check 1: Item internal math
+    <span class="badge bg-@(Model.InternalMathIssues.Count == 0 ? "success" : "danger")">@Model.InternalMathIssues.Count</span>
+</h3>
+<p class="ds-hint">ActiveAmount ต้องเท่ากับ (Available + Borrowed + Damaged); TotalAmount = (Active + Disposed)</p>
+@if (Model.InternalMathIssues.Any())
+{
+    <div class="ds-table-wrap">
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Id</th><th>AssetId</th>
+                <th>Avl</th><th>Bor</th><th>Dmg</th><th>Dsp</th>
+                <th>Active</th><th>calc</th>
+                <th>Total</th><th>calc</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var i in Model.InternalMathIssues)
+        {
+            var calcActive = i.AvailableAmount + i.BorrowedAmount + i.DamagedAmount;
+            var calcTotal  = calcActive + i.DisposedAmount;
+            <tr>
+                <td><a asp-controller="Items" asp-action="Details" asp-route-id="@i.Id">@i.Id</a></td>
+                <td>@i.AssetId</td>
+                <td>@i.AvailableAmount</td>
+                <td>@i.BorrowedAmount</td>
+                <td>@i.DamagedAmount</td>
+                <td>@i.DisposedAmount</td>
+                <td class="@(i.ActiveAmount != calcActive ? "text-danger fw-bold" : "")">@i.ActiveAmount</td>
+                <td>@calcActive</td>
+                <td class="@(i.TotalAmount != calcTotal ? "text-danger fw-bold" : "")">@i.TotalAmount</td>
+                <td>@calcTotal</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+}
+
+@* ============ Check 2: Item vs latest StockLog ============ *@
+<h3 class="ds-section-lbl">
+    Check 2: Item amounts vs StockLog ล่าสุด
+    <span class="badge bg-@(Model.AmountVsStockLogIssues.Count == 0 ? "success" : "danger")">@Model.AmountVsStockLogIssues.Count</span>
+</h3>
+<p class="ds-hint">Item.AvailableAmount/Borrowed/Damaged/Disposed/Total ต้องตรงกับค่า After ของ StockLog ล่าสุด</p>
+@if (Model.AmountVsStockLogIssues.Any())
+{
+    <div class="ds-table-wrap">
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Id</th><th>AssetId</th><th>สถานะ</th>
+                <th>Avl (Item / Log)</th>
+                <th>Bor (Item / Log)</th>
+                <th>Dmg (Item / Log)</th>
+                <th>Dsp (Item / Log)</th>
+                <th>Total (Item / Log)</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var m in Model.AmountVsStockLogIssues)
+        {
+            <tr>
+                <td><a asp-controller="Items" asp-action="Details" asp-route-id="@m.Item.Id">@m.Item.Id</a></td>
+                <td>@m.Item.AssetId</td>
+                @if (m.LatestLog == null)
+                {
+                    <td colspan="6" class="text-danger">ไม่มี StockLog เลย</td>
+                }
+                else
+                {
+                    <td>มี log</td>
+                    <td class="@(m.Item.AvailableAmount != m.LatestLog.AvailableAfter ? "text-danger fw-bold" : "")">@m.Item.AvailableAmount / @m.LatestLog.AvailableAfter</td>
+                    <td class="@(m.Item.BorrowedAmount  != m.LatestLog.BorrowedAfter ? "text-danger fw-bold" : "")">@m.Item.BorrowedAmount / @m.LatestLog.BorrowedAfter</td>
+                    <td class="@(m.Item.DamagedAmount   != m.LatestLog.DamagedAfter ? "text-danger fw-bold" : "")">@m.Item.DamagedAmount / @m.LatestLog.DamagedAfter</td>
+                    <td class="@(m.Item.DisposedAmount  != m.LatestLog.DisposedAfter ? "text-danger fw-bold" : "")">@m.Item.DisposedAmount / @m.LatestLog.DisposedAfter</td>
+                    <td class="@(m.Item.TotalAmount     != m.LatestLog.TotalAfter ? "text-danger fw-bold" : "")">@m.Item.TotalAmount / @m.LatestLog.TotalAfter</td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+}
+
+@* ============ Check 3: BorrowedAmount vs active BH ============ *@
+<h3 class="ds-section-lbl">
+    Check 3: BorrowedAmount vs BorrowHistory ที่ยังไม่คืน
+    <span class="badge bg-@(Model.BorrowedVsActiveBhIssues.Count == 0 ? "success" : "danger")">@Model.BorrowedVsActiveBhIssues.Count</span>
+</h3>
+<p class="ds-hint">Item.BorrowedAmount ต้องเท่ากับ SUM(BorrowHistory.Amount) ที่ ReturnDate IS NULL และ IsDeleted = false</p>
+@if (Model.BorrowedVsActiveBhIssues.Any())
+{
+    <div class="ds-table-wrap">
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Id</th><th>AssetId</th>
+                <th>BorrowedAmount (Item)</th>
+                <th>SUM (BH active)</th>
+                <th>Active BH count</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var b in Model.BorrowedVsActiveBhIssues)
+        {
+            <tr>
+                <td><a asp-controller="Items" asp-action="Details" asp-route-id="@b.Item.Id">@b.Item.Id</a></td>
+                <td>@b.Item.AssetId</td>
+                <td class="text-danger fw-bold">@b.Item.BorrowedAmount</td>
+                <td>@b.ActiveBorrowSum</td>
+                <td>@b.ActiveBorrowCount</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+}
+
+@* ============ Check 4: Negative ============ *@
+<h3 class="ds-section-lbl">
+    Check 4: ตัวเลขติดลบ
+    <span class="badge bg-@(Model.NegativeAmountIssues.Count == 0 ? "success" : "danger")">@Model.NegativeAmountIssues.Count</span>
+</h3>
+<p class="ds-hint">ทุก Amount ต้อง >= 0</p>
+@if (Model.NegativeAmountIssues.Any())
+{
+    <div class="ds-table-wrap">
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Id</th><th>AssetId</th>
+                <th>Avl</th><th>Bor</th><th>Dmg</th><th>Dsp</th>
+                <th>Active</th><th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var i in Model.NegativeAmountIssues)
+        {
+            <tr>
+                <td><a asp-controller="Items" asp-action="Details" asp-route-id="@i.Id">@i.Id</a></td>
+                <td>@i.AssetId</td>
+                <td class="@(i.AvailableAmount < 0 ? "text-danger fw-bold" : "")">@i.AvailableAmount</td>
+                <td class="@(i.BorrowedAmount  < 0 ? "text-danger fw-bold" : "")">@i.BorrowedAmount</td>
+                <td class="@(i.DamagedAmount   < 0 ? "text-danger fw-bold" : "")">@i.DamagedAmount</td>
+                <td class="@(i.DisposedAmount  < 0 ? "text-danger fw-bold" : "")">@i.DisposedAmount</td>
+                <td class="@(i.ActiveAmount    < 0 ? "text-danger fw-bold" : "")">@i.ActiveAmount</td>
+                <td class="@(i.TotalAmount     < 0 ? "text-danger fw-bold" : "")">@i.TotalAmount</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+}
+
+@* ============ Check 5: StockLog continuity ============ *@
+<h3 class="ds-section-lbl">
+    Check 5: StockLog continuity (After = previous.After + Delta)
+    <span class="badge bg-@(Model.StockLogContinuityIssues.Count == 0 ? "success" : "danger")">@Model.StockLogContinuityIssues.Count</span>
+</h3>
+<p class="ds-hint">แต่ละ StockLog row ต้อง: After = previous After + Delta (ledger ต่อเนื่อง)</p>
+@if (Model.StockLogContinuityIssues.Any())
+{
+    <div class="ds-table-wrap">
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>StockLog Id</th><th>ItemId</th><th>CreatedDate</th>
+                <th>Avl (prev + delta → after)</th>
+                <th>Bor (prev + delta → after)</th>
+                <th>Dmg (prev + delta → after)</th>
+                <th>Dsp (prev + delta → after)</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var g in Model.StockLogContinuityIssues)
+        {
+            <tr>
+                <td>@g.Current.Id</td>
+                <td><a asp-controller="Items" asp-action="Details" asp-route-id="@g.Current.ItemId">@g.Current.ItemId</a></td>
+                <td>@g.Current.CreatedDate.ToString("dd MMM yyyy HH:mm")</td>
+                <td class="@(g.Previous.AvailableAfter + g.Current.DeltaAvailable != g.Current.AvailableAfter ? "text-danger fw-bold" : "")">
+                    @g.Previous.AvailableAfter + @g.Current.DeltaAvailable → @g.Current.AvailableAfter
+                </td>
+                <td class="@(g.Previous.BorrowedAfter + g.Current.DeltaBorrowed != g.Current.BorrowedAfter ? "text-danger fw-bold" : "")">
+                    @g.Previous.BorrowedAfter + @g.Current.DeltaBorrowed → @g.Current.BorrowedAfter
+                </td>
+                <td class="@(g.Previous.DamagedAfter + g.Current.DeltaDamaged != g.Current.DamagedAfter ? "text-danger fw-bold" : "")">
+                    @g.Previous.DamagedAfter + @g.Current.DeltaDamaged → @g.Current.DamagedAfter
+                </td>
+                <td class="@(g.Previous.DisposedAfter + g.Current.DeltaDisposed != g.Current.DisposedAfter ? "text-danger fw-bold" : "")">
+                    @g.Previous.DisposedAfter + @g.Current.DeltaDisposed → @g.Current.DisposedAfter
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+}
+
+<div class="ds-actions" style="margin-top:1.5rem">
+    <a asp-action="DataIntegrityCheck" class="ds-btn-primary">รันใหม่</a>
+    <a asp-controller="Items" asp-action="Index" class="ds-btn-ghost">กลับหน้า Items</a>
+</div>
+
+</div>

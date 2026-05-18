@@ -1,5 +1,6 @@
 using KlangIT_V3.Helpers;
 using KlangIT_V3.Models;
+using KlangIT_V3.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KlangIT_V3.Controllers
@@ -8,10 +9,12 @@ namespace KlangIT_V3.Controllers
     public class AdminController : Controller
     {
         private readonly ItLptWarehouseContext _context;
+        private readonly IDataIntegrityService _integrityService;
 
-        public AdminController(ItLptWarehouseContext context)
+        public AdminController(ItLptWarehouseContext context, IDataIntegrityService integrityService)
         {
             _context = context;
+            _integrityService = integrityService;
         }
 
         [HttpGet]
@@ -35,6 +38,13 @@ namespace KlangIT_V3.Controllers
             ViewBag.ItemsProcessed = itemsProcessed;
             ViewBag.LogsCreated    = logsCreated;
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DataIntegrityCheck()
+        {
+            var report = await _integrityService.RunChecksAsync();
+            return View(report);
         }
     }
 }

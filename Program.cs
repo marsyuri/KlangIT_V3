@@ -29,6 +29,7 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddScoped<IStockService, StockService>();
 builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IBorrowService, BorrowService>();
+builder.Services.AddScoped<IDataIntegrityService, DataIntegrityService>();
 
 var app = builder.Build();
 
