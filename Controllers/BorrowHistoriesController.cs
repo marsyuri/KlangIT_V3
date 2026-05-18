@@ -7,52 +7,35 @@ using KlangIT_V3.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace KlangIT_V3.Controllers
 {
     public class BorrowHistoriesController : Controller
     {
-        private readonly ItLptWarehouseContext _context;
+        private readonly IBorrowService _borrowService;
+        private readonly IItemService _itemService;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IStockService _stockService;
 
         public BorrowHistoriesController(
-            ItLptWarehouseContext context,
-            UserManager<ApplicationUser> userManager,
-            IStockService stockService)
+            IBorrowService borrowService,
+            IItemService itemService,
+            UserManager<ApplicationUser> userManager)
         {
-            _context = context;
+            _borrowService = borrowService;
+            _itemService = itemService;
             _userManager = userManager;
-            _stockService = stockService;
         }
 
         // ── GET: BorrowHistories ──────────────────────────────────────────────────
         public async Task<IActionResult> Index()
-        {
-            var list = await _context.BorrowHistories
-                .Include(b => b.Item).ThenInclude(i => i!.ItemType)
-                .Include(b => b.Item).ThenInclude(i => i!.ItemBrand)
-                .Include(b => b.BorrowerDepartment)
-                .Include(b => b.BorrowerSection)
-                .Where(b => !b.IsDeleted)
-                .OrderByDescending(b => b.BorrowDate)
-                .ToListAsync();
-            return View(list);
-        }
+            => View(await _borrowService.GetIndexAsync());
 
         // ── GET: BorrowHistories/Details/5 ───────────────────────────────────────
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
-            var bh = await _context.BorrowHistories
-                .Include(b => b.Item).ThenInclude(i => i!.ItemType)
-                .Include(b => b.Item).ThenInclude(i => i!.ItemBrand)
-                .Include(b => b.Item).ThenInclude(i => i!.ItemModel)
-                .Include(b => b.BorrowerDepartment)
-                .Include(b => b.BorrowerSection)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var bh = await _borrowService.GetDetailsAsync(id.Value);
             if (bh == null) return NotFound();
 
             return View(bh);
@@ -63,23 +46,20 @@ namespace KlangIT_V3.Controllers
         {
             if (itemId == null) return NotFound();
 
-            var item = await _context.Items
-                .Include(i => i.ItemType).Include(i => i.ItemBrand).Include(i => i.ItemModel)
-                .SingleOrDefaultAsync(i => i.Id == itemId);
+            var item = await _itemService.GetItemWithRelationsAsync(itemId.Value);
             if (item == null) return NotFound();
 
             var vm = new BorrowCreateViewModel
             {
-                ItemId         = item.Id,
-                ItemHeader     = $"{item.ItemType?.Name} {item.ItemBrand?.Name} {item.ItemModel?.Name}".Trim(),
-                ItemAssetId    = item.AssetId ?? string.Empty,
-                ItemStatus     = (ItemStatusEnum)item.ItemStatus,
-                BorrowDate     = DateTime.Now,
+                ItemId             = item.Id,
+                ItemHeader         = $"{item.ItemType?.Name} {item.ItemBrand?.Name} {item.ItemModel?.Name}".Trim(),
+                ItemAssetId        = item.AssetId ?? string.Empty,
+                ItemStatus         = (ItemStatusEnum)item.ItemStatus,
+                BorrowDate         = DateTime.Now,
                 ExpectedReturnDate = DateTime.Now,
-                Itstaff        = await User.GetDisplayNameAsync(_userManager)
+                Itstaff            = await User.GetDisplayNameAsync(_userManager)
             };
-            PopulateDepartments(vm);
-            PopulateSections(vm);
+            await PopulateBorrowCreateDropdownsAsync(vm);
             return View(vm);
         }
 
@@ -92,52 +72,25 @@ namespace KlangIT_V3.Controllers
 
             if (!ModelState.IsValid)
             {
-                PopulateDepartments(bhVM);
-                PopulateSections(bhVM);
+                await PopulateBorrowCreateDropdownsAsync(bhVM);
                 return View(bhVM);
             }
 
             if (bhVM.BorrowDate.Date == DateTime.Now.Date)
                 bhVM.BorrowDate = DateTime.Now;
 
-            string displayName = bhVM.Itstaff;
-            string username    = User.GetUsernameLocalPart();
-            var bh = new BorrowHistory
-            {
-                ItemId               = bhVM.ItemId,
-                BorrowerUser         = bhVM.RequestUser,
-                BorrowerSectionId    = bhVM.SelectedSectionId == 0 ? null : bhVM.SelectedSectionId,
-                BorrowerDepartmentId = bhVM.SelectedDepartmentId,
-                IsPermanentBorrow    = bhVM.IsPermanentBorrow,
-                IsInitial            = false,
-                BorrowDate           = bhVM.BorrowDate,
-                DueDate              = bhVM.HasExpectedReturnDate ? bhVM.ExpectedReturnDate : null,
-                BorrowItname         = displayName,
-                ReturnItname         = string.Empty,
-                Amount               = bhVM.Amount,
-                CreatedDate          = DateTime.Now,
-                ModifiedDate         = DateTime.Now,
-                CreatedBy            = username,
-                ModifiedBy           = username,
-                IsDeleted            = false
-            };
-            _context.BorrowHistories.Add(bh);
-            await _context.SaveChangesAsync();
-
-            var item = await _context.Items.FindAsync(bhVM.ItemId);
-            if (item == null) return NotFound();
-            item.ItemStatus = (int)ItemStatusEnum.Borrowed;
-
-            await _stockService.ApplyStockChangeAsync(
-                bhVM.ItemId,
-                StockLogTypeEnum.Borrow,
-                deltaAvailable: -bhVM.Amount,
-                deltaBorrowed:  +bhVM.Amount,
-                deltaDamaged:   0,
-                deltaDisposed:  0,
-                createdBy:      username,
-                referenceNo:    $"BH-{bh.Id}",
-                remarks:        "ยืม");
+            string username = User.GetUsernameLocalPart();
+            await _borrowService.CreateBorrowAsync(
+                itemId:        bhVM.ItemId,
+                borrowerUser:  bhVM.RequestUser,
+                departmentId:  bhVM.SelectedDepartmentId,
+                sectionId:     bhVM.SelectedSectionId == 0 ? null : bhVM.SelectedSectionId,
+                isPermanent:   bhVM.IsPermanentBorrow,
+                borrowDate:    bhVM.BorrowDate,
+                dueDate:       bhVM.HasExpectedReturnDate ? bhVM.ExpectedReturnDate : null,
+                amount:        bhVM.Amount,
+                displayName:   bhVM.Itstaff,
+                username:      username);
 
             return RedirectToAction(nameof(ItemsController.Details), "Items", new { id = bhVM.ItemId });
         }
@@ -148,31 +101,26 @@ namespace KlangIT_V3.Controllers
         {
             if (id == null) return NotFound();
 
-            var bh = await _context.BorrowHistories
-                .Where(b => b.Id == id && !b.IsDeleted && !b.ReturnDate.HasValue)
-                .SingleOrDefaultAsync();
+            var bh = await _borrowService.GetActiveBorrowAsync(id.Value);
             if (bh == null) return NotFound();
 
-            var item = await _context.Items
-                .Include(i => i.ItemType).Include(i => i.ItemBrand).Include(i => i.ItemModel)
-                .SingleOrDefaultAsync(i => i.Id == bh.ItemId && !i.IsDeleted);
-            if (item == null) return NotFound();
+            var item = await _itemService.GetItemWithRelationsAsync(bh.ItemId);
+            if (item == null || item.IsDeleted) return NotFound();
 
             var vm = new ReturnCreateViewModel
             {
-                Id                  = bh.Id,
-                ItemId              = item.Id,
-                ItemHeader          = $"{item.ItemType?.Name} {item.ItemBrand?.Name} {item.ItemModel?.Name}".Trim(),
-                ItemAssetId         = item.AssetId ?? string.Empty,
-                ItemStatus          = (ItemStatusEnum)item.ItemStatus,
-                RequestUser         = bh.BorrowerUser,
-                SelectedDepartmentId= bh.BorrowerDepartmentId,
-                SelectedSectionId   = bh.BorrowerSectionId ?? 0,
-                BorrowDate          = bh.BorrowDate,
-                Itstaff             = await User.GetDisplayNameAsync(_userManager)
+                Id                   = bh.Id,
+                ItemId               = item.Id,
+                ItemHeader           = $"{item.ItemType?.Name} {item.ItemBrand?.Name} {item.ItemModel?.Name}".Trim(),
+                ItemAssetId          = item.AssetId ?? string.Empty,
+                ItemStatus           = (ItemStatusEnum)item.ItemStatus,
+                RequestUser          = bh.BorrowerUser,
+                SelectedDepartmentId = bh.BorrowerDepartmentId,
+                SelectedSectionId    = bh.BorrowerSectionId ?? 0,
+                BorrowDate           = bh.BorrowDate,
+                Itstaff              = await User.GetDisplayNameAsync(_userManager)
             };
-            PopulateDepartments(vm);
-            PopulateSections(vm);
+            await PopulateReturnDropdownsAsync(vm);
             return View(vm);
         }
 
@@ -185,43 +133,13 @@ namespace KlangIT_V3.Controllers
 
             if (!ModelState.IsValid)
             {
-                PopulateDepartments(bhVM);
-                PopulateSections(bhVM);
+                await PopulateReturnDropdownsAsync(bhVM);
                 return View(bhVM);
             }
 
-            var bh = await _context.BorrowHistories
-                .Where(b => b.Id == bhVM.Id && !b.IsDeleted && !b.ReturnDate.HasValue)
-                .SingleOrDefaultAsync();
-            if (bh == null) return NotFound();
-
-            string displayName = bhVM.Itstaff;
-            string username    = User.GetUsernameLocalPart();
-            bool fullyReturned   = bh.Amount == bhVM.ReturnAmount;
-            bh.IsPermanentBorrow = false;
-            if (fullyReturned)
-            {
-                bh.ReturnDate   = DateTime.Now;
-                bh.ReturnItname = displayName;
-            }
-            bh.Amount           -= bhVM.ReturnAmount;
-            bh.ModifiedBy        = username;
-            bh.ModifiedDate      = DateTime.Now;
-
-            var item = await _context.Items.FindAsync(bhVM.ItemId);
-            if (item == null) return NotFound();
-            item.ItemStatus = (int)ItemStatusEnum.Available;
-
-            await _stockService.ApplyStockChangeAsync(
-                bhVM.ItemId,
-                StockLogTypeEnum.Return,
-                deltaAvailable: +bhVM.ReturnAmount,
-                deltaBorrowed:  -bhVM.ReturnAmount,
-                deltaDamaged:   0,
-                deltaDisposed:  0,
-                createdBy:      username,
-                referenceNo:    $"BH-{bh.Id}",
-                remarks:        fullyReturned ? "คืนทั้งหมด" : "คืนบางส่วน");
+            string username = User.GetUsernameLocalPart();
+            bool ok = await _borrowService.ProcessReturnAsync(bhVM.Id, bhVM.ReturnAmount, bhVM.Itstaff, username);
+            if (!ok) return NotFound();
 
             return RedirectToAction(nameof(ItemsController.Details), "Items", new { id = bhVM.ItemId });
         }
@@ -231,26 +149,25 @@ namespace KlangIT_V3.Controllers
         {
             if (id == null) return NotFound();
 
-            var bh = await _context.BorrowHistories.FindAsync(id);
+            var bh = await _borrowService.GetForEditAsync(id.Value);
             if (bh == null) return NotFound();
 
             var vm = new BorrowHistoryEditViewModel
             {
-                Id                   = bh.Id,
-                RequestUser          = bh.BorrowerUser,
-                SelectedDepartmentId = bh.BorrowerDepartmentId,
-                SelectedSectionId    = bh.BorrowerSectionId ?? 0,
-                IsPermanentBorrow    = bh.IsPermanentBorrow,
-                BorrowDate           = bh.BorrowDate,
-                HasExpectedReturnDate= bh.DueDate.HasValue,
-                ExpectedReturnDate   = bh.DueDate,
-                IsReturn             = bh.ReturnDate.HasValue,
-                ReturnDate           = bh.ReturnDate,
-                Itstaff              = bh.ReturnDate.HasValue ? bh.ReturnItname : bh.BorrowItname,
-                Amount               = bh.Amount
+                Id                    = bh.Id,
+                RequestUser           = bh.BorrowerUser,
+                SelectedDepartmentId  = bh.BorrowerDepartmentId,
+                SelectedSectionId     = bh.BorrowerSectionId ?? 0,
+                IsPermanentBorrow     = bh.IsPermanentBorrow,
+                BorrowDate            = bh.BorrowDate,
+                HasExpectedReturnDate = bh.DueDate.HasValue,
+                ExpectedReturnDate    = bh.DueDate,
+                IsReturn              = bh.ReturnDate.HasValue,
+                ReturnDate            = bh.ReturnDate,
+                Itstaff               = bh.ReturnDate.HasValue ? bh.ReturnItname : bh.BorrowItname,
+                Amount                = bh.Amount
             };
-            PopulateDepartmentsEdit(vm);
-            PopulateSectionsEdit(vm);
+            await PopulateBorrowEditDropdownsAsync(vm);
             return View(vm);
         }
 
@@ -263,37 +180,32 @@ namespace KlangIT_V3.Controllers
 
             if (!ModelState.IsValid)
             {
-                PopulateDepartmentsEdit(vm);
-                PopulateSectionsEdit(vm);
+                await PopulateBorrowEditDropdownsAsync(vm);
                 return View(vm);
             }
 
-            var bh = await _context.BorrowHistories.FindAsync(id);
+            var bh = await _borrowService.GetForEditAsync(id);
             if (bh == null) return NotFound();
 
-            string itUser = User.GetUsernameLocalPart();
-            bh.BorrowerUser          = vm.RequestUser;
-            bh.BorrowerDepartmentId  = vm.SelectedDepartmentId;
-            bh.BorrowerSectionId     = vm.SelectedSectionId == 0 ? null : vm.SelectedSectionId;
-            bh.IsPermanentBorrow     = vm.IsPermanentBorrow;
-            bh.BorrowDate            = vm.BorrowDate;
-            bh.DueDate               = vm.HasExpectedReturnDate ? vm.ExpectedReturnDate : null;
-            bh.ReturnDate            = vm.IsReturn ? (vm.ReturnDate ?? DateTime.Now) : null;
+            bh.BorrowerUser         = vm.RequestUser;
+            bh.BorrowerDepartmentId = vm.SelectedDepartmentId;
+            bh.BorrowerSectionId    = vm.SelectedSectionId == 0 ? null : vm.SelectedSectionId;
+            bh.IsPermanentBorrow    = vm.IsPermanentBorrow;
+            bh.BorrowDate           = vm.BorrowDate;
+            bh.DueDate              = vm.HasExpectedReturnDate ? vm.ExpectedReturnDate : null;
+            bh.ReturnDate           = vm.IsReturn ? (vm.ReturnDate ?? DateTime.Now) : null;
             if (vm.IsReturn) bh.ReturnItname = vm.Itstaff;
             else             bh.BorrowItname = vm.Itstaff;
-            bh.Amount                = vm.Amount;
-            bh.ModifiedBy            = itUser;
-            bh.ModifiedDate          = DateTime.Now;
+            bh.Amount               = vm.Amount;
 
+            string username = User.GetUsernameLocalPart();
             try
             {
-                _context.Update(bh);
-                await _context.SaveChangesAsync();
+                await _borrowService.UpdateBorrowAsync(bh, username);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (KeyNotFoundException)
             {
-                if (!BorrowHistoryExists(bh.Id)) return NotFound();
-                throw;
+                return NotFound();
             }
 
             return RedirectToAction(nameof(Index));
@@ -304,13 +216,7 @@ namespace KlangIT_V3.Controllers
         {
             if (id == null) return NotFound();
 
-            var bh = await _context.BorrowHistories
-                .Include(b => b.Item).ThenInclude(i => i!.ItemType)
-                .Include(b => b.Item).ThenInclude(i => i!.ItemBrand)
-                .Include(b => b.Item).ThenInclude(i => i!.ItemModel)
-                .Include(b => b.BorrowerDepartment)
-                .Include(b => b.BorrowerSection)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var bh = await _borrowService.GetForDeleteAsync(id.Value);
             if (bh == null) return NotFound();
 
             var vm = new BorrowHistoryDeleteViewModel
@@ -334,53 +240,44 @@ namespace KlangIT_V3.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var bh = await _context.BorrowHistories.FindAsync(id);
-            if (bh != null) _context.BorrowHistories.Remove(bh);
-            await _context.SaveChangesAsync();
+            await _borrowService.DeleteBorrowAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool BorrowHistoryExists(int id) => _context.BorrowHistories.Any(e => e.Id == id);
+        // ── Private helpers (UI concerns only) ────────────────────────────────────
 
-        // ── Populate helpers ──────────────────────────────────────────────────────
-        private void PopulateDepartments(BorrowCreateViewModel model)
+        private async Task PopulateBorrowCreateDropdownsAsync(BorrowCreateViewModel vm)
         {
-            model.Departments = GetDepartmentList(model.SelectedDepartmentId);
-        }
-        private void PopulateDepartments(ReturnCreateViewModel model)
-        {
-            model.Departments = GetDepartmentList(model.SelectedDepartmentId);
-        }
-        private void PopulateDepartmentsEdit(BorrowHistoryEditViewModel model)
-        {
-            model.Departments = GetDepartmentList(model.SelectedDepartmentId);
+            vm.Departments = BuildDepartmentList(await _borrowService.GetActiveDepartmentsAsync(), vm.SelectedDepartmentId);
+            vm.Sections    = BuildSectionList(await _borrowService.GetActiveSectionsAsync(), vm.SelectedSectionId);
         }
 
-        private void PopulateSections(BorrowCreateViewModel model)
+        private async Task PopulateReturnDropdownsAsync(ReturnCreateViewModel vm)
         {
-            model.Sections = GetSectionList(model.SelectedSectionId);
-        }
-        private void PopulateSections(ReturnCreateViewModel model)
-        {
-            model.Sections = GetSectionList(model.SelectedSectionId);
-        }
-        private void PopulateSectionsEdit(BorrowHistoryEditViewModel model)
-        {
-            model.Sections = GetSectionList(model.SelectedSectionId);
+            vm.Departments = BuildDepartmentList(await _borrowService.GetActiveDepartmentsAsync(), vm.SelectedDepartmentId);
+            vm.Sections    = BuildSectionList(await _borrowService.GetActiveSectionsAsync(), vm.SelectedSectionId);
         }
 
-        private List<SelectListItem> GetDepartmentList(int selectedId)
+        private async Task PopulateBorrowEditDropdownsAsync(BorrowHistoryEditViewModel vm)
         {
-            var list = _context.Departments.Where(d => !d.IsDeleted).OrderBy(d => d.Name)
-                .Select(d => new SelectListItem { Value = d.Id.ToString(), Text = d.Name, Selected = d.Id == selectedId }).ToList();
+            vm.Departments = BuildDepartmentList(await _borrowService.GetActiveDepartmentsAsync(), vm.SelectedDepartmentId);
+            vm.Sections    = BuildSectionList(await _borrowService.GetActiveSectionsAsync(), vm.SelectedSectionId);
+        }
+
+        private static List<SelectListItem> BuildDepartmentList(IEnumerable<Department> source, int selectedId)
+        {
+            var list = source
+                .Select(d => new SelectListItem { Value = d.Id.ToString(), Text = d.Name, Selected = d.Id == selectedId })
+                .ToList();
             list.Insert(0, new SelectListItem { Value = "", Text = "-- เลือกฝ่าย/กลุ่มงาน --" });
             return list;
         }
 
-        private List<SelectListItem> GetSectionList(int selectedId)
+        private static List<SelectListItem> BuildSectionList(IEnumerable<Section> source, int selectedId)
         {
-            var list = _context.Sections.Where(s => !s.IsDeleted).OrderBy(s => s.Name)
-                .Select(s => new SelectListItem { Value = s.Id.ToString(), Text = s.Name, Selected = s.Id == selectedId }).ToList();
+            var list = source
+                .Select(s => new SelectListItem { Value = s.Id.ToString(), Text = s.Name, Selected = s.Id == selectedId })
+                .ToList();
             list.Insert(0, new SelectListItem { Value = "0", Text = "-- เลือกหน่วยงาน --", Selected = selectedId == 0 });
             return list;
         }
