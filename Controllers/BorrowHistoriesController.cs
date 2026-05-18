@@ -2,6 +2,7 @@ using KlangIT_V3.Data;
 using KlangIT_V3.Helpers;
 using KlangIT_V3.Models;
 using KlangIT_V3.Models.Enums;
+using KlangIT_V3.Services;
 using KlangIT_V3.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,13 +15,16 @@ namespace KlangIT_V3.Controllers
     {
         private readonly ItLptWarehouseContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IStockService _stockService;
 
         public BorrowHistoriesController(
             ItLptWarehouseContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IStockService stockService)
         {
             _context = context;
             _userManager = userManager;
+            _stockService = stockService;
         }
 
         // ── GET: BorrowHistories ──────────────────────────────────────────────────
@@ -124,8 +128,7 @@ namespace KlangIT_V3.Controllers
             if (item == null) return NotFound();
             item.ItemStatus = (int)ItemStatusEnum.Borrowed;
 
-            await StockHelper.ApplyStockChangeAsync(
-                _context,
+            await _stockService.ApplyStockChangeAsync(
                 bhVM.ItemId,
                 StockLogTypeEnum.Borrow,
                 deltaAvailable: -bhVM.Amount,
@@ -209,8 +212,7 @@ namespace KlangIT_V3.Controllers
             if (item == null) return NotFound();
             item.ItemStatus = (int)ItemStatusEnum.Available;
 
-            await StockHelper.ApplyStockChangeAsync(
-                _context,
+            await _stockService.ApplyStockChangeAsync(
                 bhVM.ItemId,
                 StockLogTypeEnum.Return,
                 deltaAvailable: +bhVM.ReturnAmount,

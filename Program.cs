@@ -1,5 +1,6 @@
 using KlangIT_V3.Data;
 using KlangIT_V3.Models;
+using KlangIT_V3.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -24,6 +25,8 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter()));
+
+builder.Services.AddScoped<IStockService, StockService>();
 
 var app = builder.Build();
 

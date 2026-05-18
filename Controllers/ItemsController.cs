@@ -2,6 +2,7 @@ using KlangIT_V3.Data;
 using KlangIT_V3.Helpers;
 using KlangIT_V3.Models;
 using KlangIT_V3.Models.Enums;
+using KlangIT_V3.Services;
 using KlangIT_V3.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,15 +16,18 @@ namespace KlangIT_V3.Controllers
         private readonly ItLptWarehouseContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IStockService _stockService;
 
         public ItemsController(
             ItLptWarehouseContext context,
             IWebHostEnvironment webHostEnvironment,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IStockService stockService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
             _userManager = userManager;
+            _stockService = stockService;
         }
 
         // ── GET: Items ────────────────────────────────────────────────────────────
@@ -274,8 +278,7 @@ namespace KlangIT_V3.Controllers
                 _ => throw new InvalidOperationException($"ไม่รองรับ ItemStatus: {selectedStatus}")
             };
 
-            await StockHelper.ApplyStockChangeAsync(
-                _context,
+            await _stockService.ApplyStockChangeAsync(
                 item.Id,
                 initialLogType,
                 deltaAvailable: selectedStatus == ItemStatusEnum.Available ? initialAmount : 0,
@@ -489,8 +492,7 @@ namespace KlangIT_V3.Controllers
             string username = User.GetUsernameLocalPart();
             item.ItemStatus = (int)ItemStatusEnum.Damaged;
 
-            await StockHelper.ApplyStockChangeAsync(
-                _context,
+            await _stockService.ApplyStockChangeAsync(
                 vm.ItemId,
                 StockLogTypeEnum.Damage,
                 deltaAvailable: -vm.Amount,
@@ -556,8 +558,7 @@ namespace KlangIT_V3.Controllers
             string username = User.GetUsernameLocalPart();
             item.ItemStatus = (int)ItemStatusEnum.Available;
 
-            await StockHelper.ApplyStockChangeAsync(
-                _context,
+            await _stockService.ApplyStockChangeAsync(
                 vm.ItemId,
                 StockLogTypeEnum.Repair,
                 deltaAvailable: +vm.Amount,

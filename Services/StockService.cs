@@ -1,12 +1,19 @@
+using KlangIT_V3.Data;
 using KlangIT_V3.Models;
 using KlangIT_V3.Models.Enums;
 
-namespace KlangIT_V3.Helpers
+namespace KlangIT_V3.Services
 {
-    public static class StockHelper
+    public class StockService : IStockService
     {
-        public static async Task ApplyStockChangeAsync(
-            ItLptWarehouseContext db,
+        private readonly ItLptWarehouseContext _db;
+
+        public StockService(ItLptWarehouseContext db)
+        {
+            _db = db;
+        }
+
+        public async Task ApplyStockChangeAsync(
             int itemId,
             StockLogTypeEnum logType,
             int deltaAvailable,
@@ -17,9 +24,9 @@ namespace KlangIT_V3.Helpers
             string? referenceNo = null,
             string? remarks = null)
         {
-            using var tx = await db.Database.BeginTransactionAsync();
+            using var tx = await _db.Database.BeginTransactionAsync();
 
-            var item = await db.Items.FindAsync(itemId)
+            var item = await _db.Items.FindAsync(itemId)
                 ?? throw new InvalidOperationException("ไม่พบ Item");
 
             item.AvailableAmount += deltaAvailable;
@@ -35,7 +42,7 @@ namespace KlangIT_V3.Helpers
                 || item.DamagedAmount < 0 || item.DisposedAmount < 0)
                 throw new InvalidOperationException("จำนวนติดลบ");
 
-            db.StockLogs.Add(new StockLog
+            _db.StockLogs.Add(new StockLog
             {
                 ItemId = itemId,
                 LogType = (int)logType,
@@ -55,7 +62,7 @@ namespace KlangIT_V3.Helpers
                 CreatedBy = createdBy
             });
 
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
             await tx.CommitAsync();
         }
     }
