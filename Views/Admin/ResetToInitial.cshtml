@@ -1,0 +1,113 @@
+@model KlangIT_V3.Services.ResetPreview
+@{
+    ViewData["Title"] = "Reset ข้อมูลกลับสู่ Initial State";
+    var result = ViewBag.Result as KlangIT_V3.Services.ResetResult;
+}
+@await Html.PartialAsync("~/Views/Shared/_DesignSystem.cshtml")
+
+<h1 class="ds-page-title">Reset to Initial State</h1>
+<p class="ds-page-sub">ลบข้อมูล activity ทั้งหมด เหลือเฉพาะ Initial StockLog</p>
+
+<div style="max-width:700px">
+
+@if (ViewBag.Done == true && result != null)
+{
+    <div class="ds-ok-row">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="7" stroke="#1D9E75" stroke-width="1.5"/>
+            <path d="M5 8l2.5 2.5L11 5.5" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ดำเนินการสำเร็จ
+    </div>
+
+    <div class="ds-card" style="margin-bottom:1rem">
+        <div class="ds-field-grid">
+            <span class="ds-field-label">BorrowHistory ที่ลบ</span>
+            <span class="ds-field-value">@result.BorrowHistoriesDeleted แถว</span>
+
+            <span class="ds-field-label">StockLog (non-Initial) ที่ลบ</span>
+            <span class="ds-field-value">@result.StockLogsDeleted แถว</span>
+
+            <span class="ds-field-label">Items ที่ recompute amounts</span>
+            <span class="ds-field-value">@result.ItemsRecomputed รายการ</span>
+
+            <span class="ds-field-label">Items ที่ reset เป็น 0 (ไม่มี log)</span>
+            <span class="ds-field-value">@result.ItemsResetToZero รายการ</span>
+
+            <span class="ds-field-label">Orphan borrowed ที่ normalize</span>
+            <span class="ds-field-value">@result.OrphanBorrowedNormalized รายการ</span>
+        </div>
+    </div>
+
+    <p class="ds-hint">
+        แนะนำให้รัน <a asp-action="DataIntegrityCheck">/Admin/DataIntegrityCheck</a> ซ้ำเพื่อยืนยันผล
+    </p>
+
+    <div class="ds-actions">
+        <a asp-action="DataIntegrityCheck" class="ds-btn-primary">รัน Integrity Check</a>
+        <a asp-controller="Items" asp-action="Index" class="ds-btn-ghost">กลับหน้า Items</a>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger small" style="margin-bottom:1rem">
+        <strong>⚠ Destructive operation</strong> — ลบข้อมูลถาวร backup ก่อนรัน
+    </div>
+
+    <div class="ds-card" style="margin-bottom:1rem">
+        <p style="margin:0 0 12px 0;font-weight:500">จะดำเนินการ:</p>
+        <ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.7">
+            <li>ลบ <strong>BorrowHistory ทั้งหมด</strong> (@Model.BorrowHistoryCount แถว)</li>
+            <li>ลบ <strong>StockLog ที่ LogType > 4</strong> (non-Initial = @Model.NonInitialStockLogCount แถว)</li>
+            <li>Recompute <code>Item.Amounts</code> จาก StockLog ล่าสุดที่เหลือ (@Model.ItemsToRecomputeCount items)</li>
+            <li>Items ที่ไม่มี StockLog → reset amounts = 0 (@Model.ItemsWithoutLogCount items)</li>
+            <li>(ถ้าติ๊ก) Normalize orphan borrowed: ย้าย BorrowedAmount → AvailableAmount + เพิ่ม Adjust log
+                <span style="color:#666">(@Model.OrphanBorrowedCount items)</span></li>
+        </ol>
+    </div>
+
+    <div class="ds-card" style="margin-bottom:1rem;background:#fff8e7;border-color:#f5d57b">
+        <p style="margin:0;font-size:13px">
+            <strong>หมายเหตุ:</strong>
+            <br>• Master data (ItemType, ItemBrand, ItemModel, Department, Section) ไม่ถูกแตะ
+            <br>• Initial StockLog ทั้งหมด (LogType 1-4) เก็บไว้
+            <br>• ItemStatus ไม่เปลี่ยน (ยกเว้น orphan normalize → set Available)
+            <br>• ทำใน 1 transaction — ถ้าพังกลางทาง rollback ทั้งหมด
+        </p>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger small">@ViewBag.Error</div>
+    }
+
+    <form asp-action="ResetToInitial" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="ds-toggle-row" style="margin-bottom:0.75rem">
+            <label class="ds-switch">
+                <input type="checkbox" name="normalizeOrphan" value="true"/>
+                <span class="ds-slider"></span>
+            </label>
+            <span style="font-size:13px">
+                Normalize orphan borrowed (@Model.OrphanBorrowedCount items)
+                <small style="color:#666;display:block">ย้าย BorrowedAmount → AvailableAmount สำหรับ items ที่ไม่มี BH รองรับ</small>
+            </span>
+        </div>
+
+        <div class="ds-toggle-row" style="margin-bottom:1rem">
+            <label class="ds-switch">
+                <input type="checkbox" name="confirm" value="true" id="confirmChk"/>
+                <span class="ds-slider"></span>
+            </label>
+            <span style="font-size:13px;font-weight:500">ยืนยันการดำเนินการ (destructive)</span>
+        </div>
+
+        <div class="ds-actions">
+            <button type="submit" class="ds-btn-danger">รัน Reset</button>
+            <a asp-action="DataIntegrityCheck" class="ds-btn-ghost">ยกเลิก</a>
+        </div>
+    </form>
+}
+
+</div>

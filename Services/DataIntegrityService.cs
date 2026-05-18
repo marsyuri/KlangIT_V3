@@ -1,5 +1,6 @@
 using KlangIT_V3.Data;
 using KlangIT_V3.Models;
+using KlangIT_V3.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace KlangIT_V3.Services
@@ -108,6 +109,132 @@ namespace KlangIT_V3.Services
                 AmountVsStockLogIssues   = amountVsLog,
                 BorrowedVsActiveBhIssues = borrowMismatch,
                 StockLogContinuityIssues = continuityIssues
+            };
+        }
+
+        // ── Reset to Initial state ────────────────────────────────────────────────
+        public async Task<ResetPreview> GetResetPreviewAsync()
+        {
+            int bhCount = await _db.BorrowHistories.CountAsync();
+            int nonInitLogCount = await _db.StockLogs.CountAsync(sl => sl.LogType > 4);
+
+            int itemsWithLog = await _db.Items
+                .Where(i => !i.IsDeleted && i.StockLogs.Any())
+                .CountAsync();
+
+            int itemsWithoutLog = await _db.Items
+                .Where(i => !i.IsDeleted && !i.StockLogs.Any())
+                .CountAsync();
+
+            int orphanBorrowed = await _db.Items
+                .Where(i => !i.IsDeleted && i.BorrowedAmount > 0)
+                .CountAsync();
+
+            return new ResetPreview
+            {
+                BorrowHistoryCount      = bhCount,
+                NonInitialStockLogCount = nonInitLogCount,
+                ItemsToRecomputeCount   = itemsWithLog,
+                ItemsWithoutLogCount    = itemsWithoutLog,
+                OrphanBorrowedCount     = orphanBorrowed
+            };
+        }
+
+        public async Task<ResetResult> ResetToInitialAsync(string username, bool normalizeOrphanBorrowed)
+        {
+            using var tx = await _db.Database.BeginTransactionAsync();
+
+            // 1. ลบ BorrowHistory ทั้งหมด
+            int bhDeleted = await _db.BorrowHistories.ExecuteDeleteAsync();
+
+            // 2. ลบ StockLog ที่ไม่ใช่ Initial (LogType > 4)
+            int logsDeleted = await _db.StockLogs.Where(sl => sl.LogType > 4).ExecuteDeleteAsync();
+
+            // 3. Recompute Item.Amounts จาก StockLog ล่าสุดที่เหลือ (= Initial row)
+            var latestLogs = await _db.StockLogs
+                .GroupBy(sl => sl.ItemId)
+                .Select(g => g.OrderByDescending(sl => sl.CreatedDate)
+                              .ThenByDescending(sl => sl.Id)
+                              .First())
+                .ToListAsync();
+            var latestByItem = latestLogs.ToDictionary(sl => sl.ItemId);
+
+            var activeItems = await _db.Items.Where(i => !i.IsDeleted).ToListAsync();
+            int recomputed = 0, resetZero = 0;
+
+            foreach (var item in activeItems)
+            {
+                if (latestByItem.TryGetValue(item.Id, out var log))
+                {
+                    item.AvailableAmount = log.AvailableAfter;
+                    item.BorrowedAmount  = log.BorrowedAfter;
+                    item.DamagedAmount   = log.DamagedAfter;
+                    item.DisposedAmount  = log.DisposedAfter;
+                    item.ActiveAmount    = log.AvailableAfter + log.BorrowedAfter + log.DamagedAfter;
+                    item.TotalAmount     = log.TotalAfter;
+                    recomputed++;
+                }
+                else
+                {
+                    item.AvailableAmount = 0;
+                    item.BorrowedAmount  = 0;
+                    item.DamagedAmount   = 0;
+                    item.DisposedAmount  = 0;
+                    item.ActiveAmount    = 0;
+                    item.TotalAmount     = 0;
+                    resetZero++;
+                }
+                item.ModifiedBy   = username;
+                item.ModifiedDate = DateTime.Now;
+            }
+            await _db.SaveChangesAsync();
+
+            // 4. (optional) Pattern B normalize: ย้าย BorrowedAmount → AvailableAmount + Adjust log
+            int orphanNormalized = 0;
+            if (normalizeOrphanBorrowed)
+            {
+                var orphans = activeItems.Where(i => i.BorrowedAmount > 0).ToList();
+                foreach (var item in orphans)
+                {
+                    int amount = item.BorrowedAmount;
+                    item.AvailableAmount += amount;
+                    item.BorrowedAmount   = 0;
+                    item.ItemStatus       = (int)ItemStatusEnum.Available;
+                    item.ModifiedBy       = username;
+                    item.ModifiedDate     = DateTime.Now;
+
+                    _db.StockLogs.Add(new StockLog
+                    {
+                        ItemId         = item.Id,
+                        LogType        = (int)StockLogTypeEnum.Adjust,
+                        DeltaAvailable = +amount,
+                        DeltaBorrowed  = -amount,
+                        DeltaDamaged   = 0,
+                        DeltaDisposed  = 0,
+                        DeltaTotal     = 0,
+                        AvailableAfter = item.AvailableAmount,
+                        BorrowedAfter  = item.BorrowedAmount,
+                        DamagedAfter   = item.DamagedAmount,
+                        DisposedAfter  = item.DisposedAmount,
+                        TotalAfter     = item.TotalAmount,
+                        Remarks        = "Reset: ปรับ BorrowedAmount → AvailableAmount เพราะไม่มี BH รองรับ",
+                        CreatedDate    = DateTime.Now,
+                        CreatedBy      = username
+                    });
+                    orphanNormalized++;
+                }
+                await _db.SaveChangesAsync();
+            }
+
+            await tx.CommitAsync();
+
+            return new ResetResult
+            {
+                BorrowHistoriesDeleted   = bhDeleted,
+                StockLogsDeleted         = logsDeleted,
+                ItemsRecomputed          = recomputed,
+                ItemsResetToZero         = resetZero,
+                OrphanBorrowedNormalized = orphanNormalized
             };
         }
     }

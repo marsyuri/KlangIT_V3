@@ -46,5 +46,31 @@ namespace KlangIT_V3.Controllers
             var report = await _integrityService.RunChecksAsync();
             return View(report);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ResetToInitial()
+        {
+            var preview = await _integrityService.GetResetPreviewAsync();
+            return View(preview);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetToInitial(bool confirm, bool normalizeOrphan)
+        {
+            if (!confirm)
+            {
+                ViewBag.Error = "กรุณาติ๊ก ยืนยันการดำเนินการ ก่อนกดรัน";
+                var preview = await _integrityService.GetResetPreviewAsync();
+                return View(preview);
+            }
+
+            string itUser = User.GetUsernameLocalPart();
+            var result = await _integrityService.ResetToInitialAsync(itUser, normalizeOrphan);
+
+            ViewBag.Done   = true;
+            ViewBag.Result = result;
+            return View(await _integrityService.GetResetPreviewAsync());
+        }
     }
 }
