@@ -1,4 +1,6 @@
-﻿using KlangIT_V3.Models.Enums;
+﻿using KlangIT_V3.Helpers;
+using KlangIT_V3.Models.Enums;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
@@ -29,10 +31,12 @@ namespace KlangIT_V3.ViewModels
 
         public bool IsPermanentBorrow { get; set; }
 
+        [ModelBinder(BinderType = typeof(IsoDateModelBinder))]
         public DateTime BorrowDate { get; set; }
 
         public bool HasExpectedReturnDate { get; set; }
 
+        [ModelBinder(BinderType = typeof(IsoDateModelBinder))]
         public DateTime? ExpectedReturnDate { get; set; }
 
         public bool IsReturn { get; set; }

@@ -1,3 +1,5 @@
+using KlangIT_V3.Helpers;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -15,12 +17,16 @@ namespace KlangIT_V3.ViewModels
 
         [DisplayName("ยืมถาวร")] public bool IsPermanentBorrow { get; set; }
 
-        [Required] public DateTime BorrowDate { get; set; } = DateTime.Now;
+        [Required]
+        [ModelBinder(BinderType = typeof(IsoDateModelBinder))]
+        public DateTime BorrowDate { get; set; } = DateTime.Now;
 
         [DisplayName("มีวันคืนที่คาดไว้")] public bool HasExpectedReturnDate { get; set; }
+        [ModelBinder(BinderType = typeof(IsoDateModelBinder))]
         public DateTime? ExpectedReturnDate { get; set; }
 
         [DisplayName("คืนแล้ว")] public bool IsReturn { get; set; }
+        [ModelBinder(BinderType = typeof(IsoDateModelBinder))]
         public DateTime? ReturnDate { get; set; }
 
         [Required] public string Itstaff { get; set; } = string.Empty;

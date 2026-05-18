@@ -42,8 +42,8 @@
 
         <div class="ds-row">
             <label asp-for="BorrowDate" class="ds-lbl">วันที่ยืม</label>
-            <input asp-for="BorrowDate" class="ds-input" type="date"
-                   value="@Model.BorrowDate.ToString("yyyy-MM-dd")"/>
+            <input asp-for="BorrowDate" class="ds-input flatpickr-be" type="text"
+                   value="@Model.BorrowDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"/>
             <span asp-validation-for="BorrowDate" class="text-danger small"></span>
         </div>
 
@@ -59,8 +59,8 @@
 
         <div class="ds-row">
             <label asp-for="ExpectedReturnDate" class="ds-lbl">กำหนดคืน</label>
-            <input asp-for="ExpectedReturnDate" class="ds-input" type="date"
-                   value="@Model.ExpectedReturnDate?.ToString("yyyy-MM-dd")"/>
+            <input asp-for="ExpectedReturnDate" class="ds-input flatpickr-be" type="text"
+                   value="@(Model.ExpectedReturnDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))"/>
         </div>
 
         <hr class="ds-divider"/>
@@ -77,8 +77,8 @@
 
         <div class="ds-row">
             <label asp-for="ReturnDate" class="ds-lbl">วันที่คืน</label>
-            <input asp-for="ReturnDate" class="ds-input" type="date"
-                   value="@Model.ReturnDate?.ToString("yyyy-MM-dd")"/>
+            <input asp-for="ReturnDate" class="ds-input flatpickr-be" type="text"
+                   value="@(Model.ReturnDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))"/>
         </div>
 
         <hr class="ds-divider"/>
