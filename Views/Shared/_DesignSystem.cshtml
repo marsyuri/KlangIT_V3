@@ -65,28 +65,57 @@
     .ds-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .ds-three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; }
 
-    /* Buttons */
-    .ds-btn-primary {
-        height: 36px; padding: 0 20px; font-size: 13px; font-weight: 500;
-        background: #1a1a1a; color: #fff; border: none;
-        border-radius: var(--ds-radius-md); cursor: pointer;
+    /* Buttons — common base for all variants */
+    .ds-btn-primary,
+    .ds-btn-ghost,
+    .ds-btn-danger,
+    .ds-btn-del-ghost {
+        height: 36px;
+        padding: 0 20px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: var(--ds-radius-md);
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent;
+        font-family: inherit;
+        line-height: 1;
+        white-space: nowrap;
     }
-    .ds-btn-primary:hover { background: #333; }
-    .ds-btn-ghost {
-        height: 36px; padding: 0 16px; font-size: 13px;
-        background: transparent; color: var(--ds-text-secondary);
-        border: 0.5px solid var(--ds-border-md);
-        border-radius: var(--ds-radius-md); cursor: pointer; text-decoration: none;
-        display: inline-flex; align-items: center;
+
+    /* Variants — color only */
+    .ds-btn-primary       { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+    .ds-btn-primary:hover { background: #333; border-color: #333; }
+
+    .ds-btn-ghost         { background: transparent; color: var(--ds-text-secondary); border-color: var(--ds-border-md); }
+    .ds-btn-ghost:hover   { background: var(--ds-bg-secondary); }
+
+    .ds-btn-danger        { background: #E24B4A; color: #fff; border-color: #E24B4A; }
+    .ds-btn-danger:hover  { background: #A32D2D; border-color: #A32D2D; }
+
+    .ds-btn-del-ghost       { background: transparent; color: #E24B4A; border-color: #E24B4A; }
+    .ds-btn-del-ghost:hover { background: var(--ds-red-fill); }
+
+    /* Size modifier — smaller buttons inside tables */
+    .ds-tbl-btn {
+        height: 28px;
+        padding: 0 12px;
+        font-size: 12px;
     }
-    .ds-btn-ghost:hover { background: var(--ds-bg-secondary); }
-    .ds-btn-danger {
-        height: 36px; padding: 0 20px; font-size: 13px; font-weight: 500;
-        background: #E24B4A; color: #fff; border: none;
-        border-radius: var(--ds-radius-md); cursor: pointer;
+
+    /* Disabled state — applies to all variants */
+    .ds-btn-primary:disabled, .ds-btn-primary.disabled,
+    .ds-btn-ghost:disabled,   .ds-btn-ghost.disabled,
+    .ds-btn-danger:disabled,  .ds-btn-danger.disabled,
+    .ds-btn-del-ghost:disabled, .ds-btn-del-ghost.disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        pointer-events: none;
     }
-    .ds-btn-danger:hover  { background: #A32D2D; }
-    .ds-btn-danger:disabled { background: #B4B2A9; cursor: not-allowed; }
+
     .ds-actions { display: flex; gap: 8px; align-items: center; margin-top: 1.5rem; }
 
     /* Badges */
