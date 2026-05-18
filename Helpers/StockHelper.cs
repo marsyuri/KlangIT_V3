@@ -8,7 +8,7 @@ namespace KlangIT_V3.Helpers
         public static async Task ApplyStockChangeAsync(
             ItLptWarehouseContext db,
             int itemId,
-            int itemStatus,
+            StockLogTypeEnum logType,
             int deltaAvailable,
             int deltaBorrowed,
             int deltaDamaged,
@@ -35,12 +35,10 @@ namespace KlangIT_V3.Helpers
                 || item.DamagedAmount < 0 || item.DisposedAmount < 0)
                 throw new InvalidOperationException("จำนวนติดลบ");
 
-            int logType = MapItemStatusToStockLogType(itemStatus);
-
             db.StockLogs.Add(new StockLog
             {
                 ItemId = itemId,
-                LogType = logType,
+                LogType = (int)logType,
                 DeltaAvailable = deltaAvailable,
                 DeltaBorrowed = deltaBorrowed,
                 DeltaDamaged = deltaDamaged,
@@ -59,18 +57,6 @@ namespace KlangIT_V3.Helpers
 
             await db.SaveChangesAsync();
             await tx.CommitAsync();
-        }
-
-        private static int MapItemStatusToStockLogType(int itemStatus)
-        {
-            return itemStatus switch
-            {
-                (int)ItemStatusEnum.Available => (int)StockLogTypeEnum.InitialAvailable,
-                (int)ItemStatusEnum.Borrowed => (int)StockLogTypeEnum.InitialBorrowed,
-                (int)ItemStatusEnum.Damaged => (int)StockLogTypeEnum.InitialDamaged,
-                (int)ItemStatusEnum.Disposed => (int)StockLogTypeEnum.InitialDisposed,
-                _ => throw new InvalidOperationException($"ไม่รองรับ ItemStatus: {itemStatus}")
-            };
         }
     }
 }

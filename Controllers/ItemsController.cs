@@ -265,10 +265,19 @@ namespace KlangIT_V3.Controllers
             _context.Items.Add(item);
             await _context.SaveChangesAsync();
 
+            var initialLogType = selectedStatus switch
+            {
+                ItemStatusEnum.Available => StockLogTypeEnum.InitialAvailable,
+                ItemStatusEnum.Borrowed  => StockLogTypeEnum.InitialBorrowed,
+                ItemStatusEnum.Damaged   => StockLogTypeEnum.InitialDamaged,
+                ItemStatusEnum.Disposed  => StockLogTypeEnum.InitialDisposed,
+                _ => throw new InvalidOperationException($"ไม่รองรับ ItemStatus: {selectedStatus}")
+            };
+
             await StockHelper.ApplyStockChangeAsync(
                 _context,
                 item.Id,
-                item.ItemStatus,
+                initialLogType,
                 deltaAvailable: selectedStatus == ItemStatusEnum.Available ? initialAmount : 0,
                 deltaBorrowed:  selectedStatus == ItemStatusEnum.Borrowed  ? initialAmount : 0,
                 deltaDamaged:   selectedStatus == ItemStatusEnum.Damaged   ? initialAmount : 0,
@@ -483,7 +492,7 @@ namespace KlangIT_V3.Controllers
             await StockHelper.ApplyStockChangeAsync(
                 _context,
                 vm.ItemId,
-                (int)StockLogTypeEnum.Damage,
+                StockLogTypeEnum.Damage,
                 deltaAvailable: -vm.Amount,
                 deltaBorrowed:   0,
                 deltaDamaged:   +vm.Amount,
@@ -550,7 +559,7 @@ namespace KlangIT_V3.Controllers
             await StockHelper.ApplyStockChangeAsync(
                 _context,
                 vm.ItemId,
-                (int)StockLogTypeEnum.Repair,
+                StockLogTypeEnum.Repair,
                 deltaAvailable: +vm.Amount,
                 deltaBorrowed:   0,
                 deltaDamaged:   -vm.Amount,

@@ -127,7 +127,7 @@ namespace KlangIT_V3.Controllers
             await StockHelper.ApplyStockChangeAsync(
                 _context,
                 bhVM.ItemId,
-                (int)StockLogTypeEnum.Borrow,
+                StockLogTypeEnum.Borrow,
                 deltaAvailable: -bhVM.Amount,
                 deltaBorrowed:  +bhVM.Amount,
                 deltaDamaged:   0,
@@ -212,7 +212,7 @@ namespace KlangIT_V3.Controllers
             await StockHelper.ApplyStockChangeAsync(
                 _context,
                 bhVM.ItemId,
-                (int)StockLogTypeEnum.Return,
+                StockLogTypeEnum.Return,
                 deltaAvailable: +bhVM.ReturnAmount,
                 deltaBorrowed:  -bhVM.ReturnAmount,
                 deltaDamaged:   0,
