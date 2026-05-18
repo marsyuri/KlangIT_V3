@@ -27,6 +27,7 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter()));
 
 builder.Services.AddScoped<IStockService, StockService>();
+builder.Services.AddScoped<IItemService, ItemService>();
 
 var app = builder.Build();
 
