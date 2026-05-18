@@ -53,21 +53,26 @@
     });
 
     function applyBeYearLabel(selectedDates, dateStr, instance) {
-        // เปลี่ยน label "ปี" ที่ flatpickr render เป็น พ.ศ.
+        // โชว์ปี พ.ศ. แทน ค.ศ. ใน header — readonly เพื่อกัน user พิมพ์ ค.ศ. ลงไป
+        // ปุ่มลูกศร ↑↓ ยังเลื่อนปีได้เพราะ flatpickr ใช้ instance.currentYear ไม่อ่านจาก input.value
         const yearInput = instance.currentYearElement;
         if (!yearInput) return;
-        const ceYear = parseInt(yearInput.value, 10);
-        if (isNaN(ceYear)) return;
-        // ใช้ wrapper text node แสดง พ.ศ. ทับ
-        let beLabel = instance.calendarContainer.querySelector(".be-year-label");
-        if (!beLabel) {
-            beLabel = document.createElement("span");
-            beLabel.className = "be-year-label";
-            beLabel.style.marginLeft = "0.4em";
-            beLabel.style.color = "#666";
-            beLabel.style.fontSize = "0.9em";
-            yearInput.parentNode.appendChild(beLabel);
+        const ceYear = instance.currentYear;
+        if (typeof ceYear !== "number" || isNaN(ceYear)) return;
+
+        yearInput.readOnly = true;
+        yearInput.value = (ceYear + 543).toString();
+        yearInput.title = "ค.ศ. " + ceYear;
+
+        // เพิ่ม prefix "พ.ศ." ก่อน wrapper ของ year input (ครั้งเดียวเท่านั้น)
+        const wrapper = yearInput.closest(".numInputWrapper");
+        if (wrapper && !wrapper.previousElementSibling?.classList?.contains("be-year-prefix")) {
+            const prefix = document.createElement("span");
+            prefix.className = "be-year-prefix";
+            prefix.textContent = "พ.ศ.";
+            prefix.style.marginRight = "0.25em";
+            prefix.style.fontWeight = "500";
+            wrapper.parentNode.insertBefore(prefix, wrapper);
         }
-        beLabel.textContent = "(พ.ศ. " + (ceYear + 543) + ")";
     }
 })();
