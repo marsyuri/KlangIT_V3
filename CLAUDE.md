@@ -121,7 +121,8 @@ False confidence wastes more time than asking.
 ### Tech stack (don't change without asking)
 - **Framework:** ASP.NET Core MVC (not Razor Pages, not Minimal API)
 - **ORM:** Entity Framework Core
-- **Database:** SQL Server (main data) + SQLite (Identity)
+- **Database:** SQL Server (main data: `IT_LPT_Warehouse`) + SQL Server (Identity: `IT_LPT_Identity`)
+- **Auth:** ASP.NET Core Identity + global `AuthorizeFilter` (every controller requires login unless `[AllowAnonymous]`)
 - **Frontend:** Bootstrap 5 + custom `ds-*` design system CSS
 - **Locale:** Thai (th-TH) + Thai Buddhist calendar
 
@@ -224,7 +225,7 @@ if (entity.ChildEntities.Any(c => !c.IsDeleted))
 ## 11. What NOT to do
 
 - ❌ Don't rename existing classes/methods to "improve naming"
-- ❌ Don't add `[Authorize]` without asking (project doesn't use it yet)
+- ❌ Don't change auth posture without asking — global `AuthorizeFilter` is already enabled in `Program.cs`; new public pages need `[AllowAnonymous]`. Role-based `[Authorize(Roles=...)]` is NOT in use yet (see TODO in `AdminController`)
 - ❌ Don't introduce new libraries without asking (project uses: EF Core, Bootstrap, jQuery validation, Newtonsoft.Json)
 - ❌ Don't convert to async if method is already sync and works
 - ❌ Don't add logging/telemetry unless requested
@@ -289,7 +290,7 @@ Files changed:
 
 ## 14. Current project status
 
-- **Last updated**: 2026-04-19
+- **Last updated**: 2026-05-19
 - **Current phase**: Post-redesign, integrating ViewModels
 - **Active focus**: BUG-001 (return amount), badge cleanup, pagination planning
 
@@ -300,6 +301,12 @@ See `TODO.md` at project root for:
 - UX improvements (UX-XXX)
 
 When user references a task ID (e.g. "do BUG-001"), look up TODO.md for full context.
+
+### Project documentation
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — architecture overview (~430 lines): tech stack, entity diagram, service layer, flows, conventions. Read this first when onboarding.
+- [`docs/PROJECT_GUIDE.md`](docs/PROJECT_GUIDE.md) — module-level deep dive (~1500 lines): every controller, service, viewmodel, helper explained. Reference doc for new programmers.
+- [`docs/PROJECT_GUIDE.docx`](docs/PROJECT_GUIDE.docx) — Word version of the guide (generated via pandoc).
 
 ---
 
